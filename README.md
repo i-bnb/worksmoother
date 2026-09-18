@@ -510,6 +510,21 @@ The web client is scaffolded as a modern Next.js 14 App Router application locat
   - **10-Minute Hold Slot Booking (`/booking`)**: Single-threaded slot booking with real-time countdown timer synchronized with `SlotDurableObject.hold()` and automated alarm release.
   - **Encrypted Medical Records Vault (`/records`)**: Zero-trust clinical record explorer with AES-256-GCM + AAD envelope inspection, non-extractable KEK status, and live append-only R2 hash-chained block explorer.
   - **DPDP Act 2023 Consent Center (`/consent`)**: Granular consent management with multilingual notices, purpose limitation (`APPOINTMENT_COMMUNICATION`, `EHR_DATA_PROCESSING`), and instant right-to-withdraw toggles.
+  - **Staff Authentication Portal (`/login`)**: Zero-trust token exchange with ephemeral in-memory access tokens and HttpOnly SameSite=Strict refresh cookies.
+
+### 24.1 In-Memory Access Token Storage & HttpOnly Strict Cookie Architecture
+- **In-Memory Access Token Store (`apps/web/src/lib/auth/tokenStore.ts`)**:
+  - The short-lived (15-minute) JWT access token resides strictly in a JavaScript memory closure and React Context.
+  - **Zero Web Storage Footprint**: `localStorage` and `sessionStorage` are never written to, preventing persistent XSS token harvesting.
+  - Ephemeral lifecycle: On tab reload or closure, memory is purged; sessions are seamlessly restored via silent refresh.
+- **HttpOnly, SameSite=Strict Refresh Cookie (`__Host-refresh_token`)**:
+  - Browser-managed C-engine storage inaccessible to JavaScript (`document.cookie` cannot read or leak the refresh token).
+  - Scope: Restricted to HTTPS origin with `SameSite=Strict` and `Path=/`.
+- **Single-Flight Refresh Mutex (`apps/web/src/lib/auth/authClient.ts`)**:
+  - Deduplicates concurrent background API refreshes into exactly one rotation request, eliminating race conditions in the Session Durable Object.
+- **Authenticated API Client (`apps/web/src/lib/api/apiClient.ts`)**:
+  - `apiFetch()` automatically injects `Authorization: Bearer <inMemoryToken>`.
+  - Intercepts 401 Unauthorized, triggers silent token rotation via HttpOnly cookie, and retries the original request.
 
 ---
 
@@ -554,7 +569,8 @@ npm.cmd run test:notify        # Meta WhatsApp, Email & DPDP Consent Tests
 npm.cmd run test:audit-chain   # R2 Write-Only Vault & Cryptographic Hash-Chain Tests
 npm.cmd run test:ratelimit     # Four-Layer Defense-in-Depth Rate Limiting Tests
 npm.cmd run test:frontend      # Next.js Frontend Scaffold & Design System Tests
-npm.cmd run test:all           # Complete Test Suite (All 10 verification suites, 54 tests)
+npm.cmd run test:token-exchange # Frontend Token Exchange & In-Memory Auth Tests
+npm.cmd run test:all           # Complete Test Suite (All 11 verification suites, 61 tests)
 ```
 
 

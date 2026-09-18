@@ -14,8 +14,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import { useAuth } from '@/context/AuthContext';
+
 export function Navbar() {
   const pathname = usePathname();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navLinks = [
     { name: 'Overview', href: '/', icon: Activity },
@@ -75,13 +78,35 @@ export function Navbar() {
               <span>4-LAYER WAF ACTIVE</span>
             </div>
 
-            <Link
-              href="/records"
-              className="flex items-center gap-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 text-xs font-medium transition-all shadow-lg shadow-blue-500/25 border border-blue-400/30"
-            >
-              <UserCheck className="h-3.5 w-3.5" />
-              <span>Staff Portal</span>
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-medium hover:bg-emerald-900/40 transition-all"
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="truncate max-w-[120px]">{user.name.split(' ')[0]}</span>
+                  <span className="text-[10px] font-mono text-emerald-400/70 border-l border-emerald-500/20 pl-1.5">
+                    In-Memory
+                  </span>
+                </Link>
+                <button
+                  onClick={() => logout()}
+                  title="Sign Out"
+                  className="p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all text-xs"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 text-xs font-medium transition-all shadow-lg shadow-blue-500/25 border border-blue-400/30"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                <span>Staff Portal</span>
+              </Link>
+            )}
           </div>
         </nav>
       </div>

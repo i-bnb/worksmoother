@@ -34,7 +34,8 @@
     "test:audit-chain": "npx tsx tests/audit-hash-chain-r2.test.ts",
     "test:ratelimit": "npx tsx tests/rate-limiting-4-layers.test.ts",
     "test:frontend": "npx tsx tests/frontend-scaffold.test.ts",
-    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts && npx tsx tests/record-access-log-fail-closed.test.ts && npx tsx tests/audit-hash-chain-r2.test.ts && npx tsx tests/rate-limiting-4-layers.test.ts && npx tsx tests/frontend-scaffold.test.ts"
+    "test:token-exchange": "npx tsx tests/frontend-token-exchange.test.ts",
+    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts && npx tsx tests/record-access-log-fail-closed.test.ts && npx tsx tests/audit-hash-chain-r2.test.ts && npx tsx tests/rate-limiting-4-layers.test.ts && npx tsx tests/frontend-scaffold.test.ts && npx tsx tests/frontend-token-exchange.test.ts"
   },
   "keywords": [
     "healthcare",
