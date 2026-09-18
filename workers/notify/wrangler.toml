@@ -1,0 +1,11 @@
+name = "doctorcare-notify"
+main = "src/index.ts"
+compatibility_date = "2024-09-18"
+compatibility_flags = ["nodejs_compat"]
+
+# Operational Data (Appwrite Cloud Project A) Environment Variables
+# Notice: No Secrets Store binding and no Project B credentials
+[vars]
+ENVIRONMENT = "production"
+APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
+APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"

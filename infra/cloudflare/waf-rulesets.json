@@ -1,0 +1,41 @@
+{
+  "zone": "yourhospital.com",
+  "plan": "pro",
+  "endpoint": "api.yourhospital.com",
+  "phase": "http_request_firewall_managed",
+  "rulesets": [
+    {
+      "name": "Cloudflare Managed Ruleset Execution",
+      "action": "execute",
+      "expression": "http.host eq \"api.yourhospital.com\"",
+      "action_parameters": {
+        "id": "efb79d62c8814b68844470d33a810f44",
+        "overrides": {
+          "enabled": true,
+          "action": "block"
+        }
+      },
+      "description": "Enforce Cloudflare Managed Ruleset on api.yourhospital.com to mitigate zero-day and common web vulnerabilities"
+    },
+    {
+      "name": "Cloudflare OWASP Core Ruleset Execution",
+      "action": "execute",
+      "expression": "http.host eq \"api.yourhospital.com\"",
+      "action_parameters": {
+        "id": "4814384a9e5d47ee937000e3f019f39f",
+        "overrides": {
+          "enabled": true,
+          "action": "block",
+          "categories": [
+            {
+              "category": "owasp-crs-v33-php",
+              "enabled": false
+            }
+          ]
+        },
+        "score_threshold": 40
+      },
+      "description": "Enforce OWASP ModSecurity Core Ruleset with anomaly scoring on api.yourhospital.com to protect healthcare endpoints"
+    }
+  ]
+}

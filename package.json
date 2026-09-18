@@ -1,0 +1,40 @@
+{
+  "name": "doctorcare-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DoctorCare Healthcare Platform - Multi-Worker Cloudflare Architecture with Appwrite Cloud Isolation",
+  "workspaces": [
+    "workers/*",
+    "packages/*",
+    "infra"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace=@doctorcare/worker-api run dev",
+    "dev:records": "npm --workspace=@doctorcare/worker-records run dev",
+    "dev:notify": "npm --workspace=@doctorcare/worker-notify run dev",
+    "build": "npm run --workspaces --if-present build",
+    "typecheck": "npm run --workspaces --if-present typecheck",
+    "deploy:api": "npm --workspace=@doctorcare/worker-api run deploy",
+    "deploy:records": "npm --workspace=@doctorcare/worker-records run deploy",
+    "deploy:notify": "npm --workspace=@doctorcare/worker-notify run deploy",
+    "deploy:all": "npm run deploy:records && npm run deploy:notify && npm run deploy:api",
+    "infra:secrets": "npm --workspace=@doctorcare/infra run setup:secrets",
+    "infra:appwrite": "npm --workspace=@doctorcare/infra run setup:appwrite",
+    "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf"
+  },
+  "keywords": [
+    "healthcare",
+    "cloudflare-workers",
+    "appwrite",
+    "hipaa",
+    "ehr",
+    "secrets-store"
+  ],
+  "author": "itsmesyaam",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260917.1",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.134.0"
+  }
+}

@@ -1,0 +1,5 @@
+# Worker: api (Points strictly to Project A Operational Data)
+ENVIRONMENT=production
+APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+APPWRITE_PROJECT_A_ID=doctorcare-operational-prod
+APPWRITE_PROJECT_A_KEY=mock_appwrite_project_a_key_oper_0918

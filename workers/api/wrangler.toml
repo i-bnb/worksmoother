@@ -1,0 +1,27 @@
+name = "doctorcare-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-18"
+compatibility_flags = ["nodejs_compat"]
+
+# Point api.yourhospital.com to a Cloudflare Pro zone to enable Managed WAF and OWASP Core rulesets
+routes = [
+  { pattern = "api.yourhospital.com", custom_domain = true }
+]
+
+# Service Bindings to internal Workers
+[[services]]
+binding = "RECORDS_SERVICE"
+service = "doctorcare-records"
+
+[[services]]
+binding = "NOTIFY_SERVICE"
+service = "doctorcare-notify"
+
+# Operational Data (Appwrite Cloud Project A) Environment Variables
+[vars]
+ENVIRONMENT = "production"
+APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
+APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
+
+# Note: APPWRITE_PROJECT_A_KEY is managed via `wrangler secret put APPWRITE_PROJECT_A_KEY`
+# to ensure credentials are never committed in plaintext.

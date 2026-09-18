@@ -1,0 +1,20 @@
+{
+  "name": "@doctorcare/infra",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "setup:secrets": "tsx cloudflare/provision-secrets-store.ts",
+    "setup:appwrite": "tsx appwrite/provision-projects.ts",
+    "setup:waf": "tsx cloudflare/deploy-zone-waf.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "@types/node": "^22.7.5"
+  }
+}

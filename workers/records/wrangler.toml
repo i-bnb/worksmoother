@@ -1,0 +1,21 @@
+name = "doctorcare-records"
+main = "src/index.ts"
+compatibility_date = "2024-09-18"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Secrets Store Provisioning & Exclusive Binding:
+# Key-Encryption Key (KEK) named kek-2026-09 bound EXCLUSIVELY to this Worker.
+# Neither api nor notify worker has access to this store or key.
+[[secrets_store_secrets]]
+binding = "KEK_2026_09"
+store_id = "doctorcare_vault_store"
+secret_name = "kek-2026-09"
+
+# Medical Records (Appwrite Cloud Project B strictly for PHI)
+[vars]
+ENVIRONMENT = "production"
+APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
+APPWRITE_PROJECT_B_ID = "doctorcare-medical-records-prod"
+
+# Note: APPWRITE_PROJECT_B_KEY is provisioned separately and scoped strictly
+# to Project B medical databases, ensuring credential isolation.

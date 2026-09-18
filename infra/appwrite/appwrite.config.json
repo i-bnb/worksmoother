@@ -1,0 +1,98 @@
+{
+  "projectA": {
+    "name": "DoctorCare Operational Data",
+    "projectId": "doctorcare-operational-prod",
+    "description": "Operational workloads: appointments, clinic scheduling, staff directory, and notifications audit trail.",
+    "databases": [
+      {
+        "id": "operational_db",
+        "name": "Operational Database",
+        "collections": [
+          {
+            "id": "appointments",
+            "name": "Appointments",
+            "attributes": [
+              { "key": "patientId", "type": "string", "size": 128, "required": true },
+              { "key": "doctorId", "type": "string", "size": 128, "required": true },
+              { "key": "clinicId", "type": "string", "size": 128, "required": true },
+              { "key": "scheduledAt", "type": "string", "size": 64, "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true },
+              { "key": "notes", "type": "string", "size": 1000, "required": false }
+            ]
+          },
+          {
+            "id": "clinics",
+            "name": "Clinics",
+            "attributes": [
+              { "key": "name", "type": "string", "size": 255, "required": true },
+              { "key": "address", "type": "string", "size": 500, "required": true },
+              { "key": "phone", "type": "string", "size": 32, "required": true },
+              { "key": "timezone", "type": "string", "size": 64, "required": true }
+            ]
+          },
+          {
+            "id": "notifications_log",
+            "name": "Notifications Log",
+            "attributes": [
+              { "key": "recipientId", "type": "string", "size": 128, "required": true },
+              { "key": "type", "type": "string", "size": 64, "required": true },
+              { "key": "message", "type": "string", "size": 1000, "required": true },
+              { "key": "dispatchedAt", "type": "string", "size": 64, "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true }
+            ]
+          }
+        ]
+      }
+    ],
+    "scopedApiKey": {
+      "name": "key-project-a-operational",
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "collections.read",
+        "collections.write",
+        "documents.read",
+        "documents.write",
+        "users.read"
+      ]
+    }
+  },
+  "projectB": {
+    "name": "DoctorCare Medical Records",
+    "projectId": "doctorcare-medical-records-prod",
+    "description": "Strictly isolated Protected Health Information (PHI) and Electronic Health Records (EHR) encrypted under KEK kek-2026-09.",
+    "databases": [
+      {
+        "id": "medical_records_db",
+        "name": "Medical Records & PHI Database",
+        "collections": [
+          {
+            "id": "patient_charts",
+            "name": "Patient Charts & Encounters",
+            "attributes": [
+              { "key": "patientId", "type": "string", "size": 128, "required": true },
+              { "key": "doctorId", "type": "string", "size": 128, "required": true },
+              { "key": "encounterDate", "type": "string", "size": 64, "required": true },
+              { "key": "encryptedPayload", "type": "string", "size": 65535, "required": true },
+              { "key": "kekId", "type": "string", "size": 64, "required": true },
+              { "key": "createdAt", "type": "string", "size": 64, "required": true }
+            ]
+          }
+        ]
+      }
+    ],
+    "scopedApiKey": {
+      "name": "key-project-b-medical-records-phi",
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "collections.read",
+        "collections.write",
+        "documents.read",
+        "documents.write",
+        "files.read",
+        "files.write"
+      ]
+    }
+  }
+}
