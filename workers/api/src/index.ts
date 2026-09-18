@@ -33,6 +33,9 @@ import {
   CreatePaymentOrderSchema,
   GrantConsentSchema,
   WithdrawConsentSchema,
+  CreateMedicalRecordSchema,
+  GenerateUploadUrlSchema,
+  ValidateFileSchema,
 } from './schemas/index.js';
 
 // Export Durable Object classes for Cloudflare Workers runtime
@@ -622,6 +625,36 @@ export default {
           })
         );
       }
+
+      // Strict validation for file upload URL generation
+      if (url.pathname === '/api/v1/records/files/upload-url' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, GenerateUploadUrlSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const recordsReq = new Request(request.url, {
+          method: 'POST',
+          headers: request.headers,
+          body: JSON.stringify(validation.data),
+        });
+        const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
+        return addSecurityHeaders(recordsResponse);
+      }
+
+      // Strict validation for JSON-based file validation
+      if (url.pathname === '/api/v1/records/files/validate' && request.method === 'POST') {
+        const contentType = request.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const validation = await validateStrictJson(request, ValidateFileSchema);
+          if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+          const recordsReq = new Request(request.url, {
+            method: 'POST',
+            headers: request.headers,
+            body: JSON.stringify(validation.data),
+          });
+          const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
+          return addSecurityHeaders(recordsResponse);
+        }
+      }
+
       const recordsResponse = await env.RECORDS_SERVICE.fetch(request);
       return addSecurityHeaders(recordsResponse);
     }

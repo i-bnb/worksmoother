@@ -5,4 +5,5 @@ export * from './auth/validation.js';
 export * from './payments/razorpay.js';
 export * from './notifications/whatsapp.js';
 export * from './notifications/email.js';
-
+export * from './files/validator.js';
+export * from './r2/presigner.js';

@@ -125,6 +125,13 @@ async function runProvisioning() {
     console.log(`    - Scoped API Key: "${config.projectB.scopedApiKey.name}"`);
     console.log(`    - Scopes: [${config.projectB.scopedApiKey.scopes.join(', ')}]`);
     console.log(`    - Databases: ${config.projectB.databases.map((d) => d.name).join(', ')}`);
+    for (const db of config.projectB.databases) {
+      console.log(`      * Database "${db.id}": ${db.collections.length} Collections:`);
+      for (const col of db.collections) {
+        const idxStr = col.indexes ? ` [Indexed: ${col.indexes.map((i) => `${i.key} (${i.type})`).join(', ')}]` : '';
+        console.log(`        - ${col.id} (${col.name})${idxStr}`);
+      }
+    }
     console.log('    - Isolation Constraint: Zero operational tables; access restricted to EHR collections');
 
     // Generate isolated environment template files

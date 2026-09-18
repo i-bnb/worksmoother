@@ -232,6 +232,27 @@
               { "key": "kekId", "type": "string", "size": 64, "required": true },
               { "key": "createdAt", "type": "string", "size": 64, "required": true }
             ]
+          },
+          {
+            "id": "MEDICAL_RECORD",
+            "name": "Medical Records & Clinical Encounters",
+            "attributes": [
+              { "key": "record_id", "type": "string", "size": 128, "required": true },
+              { "key": "patient_id", "type": "string", "size": 128, "required": true },
+              { "key": "hospital_id", "type": "string", "size": 128, "required": true },
+              { "key": "record_class", "type": "string", "size": 64, "required": true },
+              { "key": "envelope", "type": "string", "size": 65535, "required": true },
+              { "key": "kek_id", "type": "string", "size": 64, "required": true },
+              { "key": "alg", "type": "string", "size": 32, "required": true },
+              { "key": "retention_until", "type": "string", "size": 64, "required": true },
+              { "key": "legal_hold", "type": "boolean", "required": true },
+              { "key": "created_at", "type": "string", "size": 64, "required": true }
+            ],
+            "indexes": [
+              { "key": "idx_record_id_unique", "type": "unique", "attributes": ["record_id"] },
+              { "key": "idx_patient_records", "type": "key", "attributes": ["patient_id", "record_class"] },
+              { "key": "idx_legal_hold", "type": "key", "attributes": ["legal_hold"] }
+            ]
           }
         ]
       }

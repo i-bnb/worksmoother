@@ -138,6 +138,47 @@ export const WithdrawConsentSchema = z
 export type GrantConsentDto = z.infer<typeof GrantConsentSchema>;
 export type WithdrawConsentDto = z.infer<typeof WithdrawConsentSchema>;
 
+// 7. Medical Records & R2 File Schemas (.strict() enforced)
+export const CreateMedicalRecordSchema = z
+  .object({
+    record_id: z.string().optional(),
+    patient_id: z.string().min(1, 'patient_id is required'),
+    hospital_id: z.string().min(1, 'hospital_id is required'),
+    record_class: z.enum([
+      'EHR_NOTE',
+      'DIAGNOSTIC_REPORT',
+      'PRESCRIPTION',
+      'LAB_RESULT',
+      'DISCHARGE_SUMMARY',
+    ]),
+    clinical_data: z.record(z.unknown()),
+    retention_until: z.string().optional(),
+    legal_hold: z.boolean().default(false),
+  })
+  .strict();
+
+export const GenerateUploadUrlSchema = z
+  .object({
+    file_extension: z.string().optional(),
+    content_type: z.string().optional(),
+    file_name: z.string().optional(),
+    patient_id: z.string().optional(),
+    record_id: z.string().optional(),
+  })
+  .strict();
+
+export const ValidateFileSchema = z
+  .object({
+    file_base64: z.string().optional(),
+    declared_mime_type: z.string().optional(),
+    object_key: z.string().optional(),
+  })
+  .strict();
+
+export type CreateMedicalRecordDto = z.infer<typeof CreateMedicalRecordSchema>;
+export type GenerateUploadUrlDto = z.infer<typeof GenerateUploadUrlSchema>;
+export type ValidateFileDto = z.infer<typeof ValidateFileSchema>;
+
 export type HoldSlotDto = z.infer<typeof HoldSlotSchema>;
 export type ConfirmSlotDto = z.infer<typeof ConfirmSlotSchema>;
 export type ReleaseSlotDto = z.infer<typeof ReleaseSlotSchema>;

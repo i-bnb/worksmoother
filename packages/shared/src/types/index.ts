@@ -36,11 +36,21 @@ export interface AuditLog {
 }
 
 // Medical Records & EHR Models (Appwrite Cloud Project B - Sensitive PHI)
+export interface MedicalRecordAAD {
+  hospital_id: string;
+  patient_id: string;
+  record_id: string;
+  field: string;
+  kek_id: string;
+}
+
 export interface EncryptedPayload {
-  version: 'v1';
+  version: 'v1' | 'v2';
   iv: string; // Base64 AES-GCM IV
-  encryptedDek: string; // DEK encrypted under KEK kek-2026-09
-  ciphertext: string; // Payload encrypted under DEK
+  encryptedDek: string; // 32-byte DEK encrypted under KEK kek-2026-09
+  ciphertext: string; // Payload encrypted under DEK with AAD
+  alg?: string; // 'AES-256-GCM'
+  aad?: MedicalRecordAAD;
   tag?: string;
 }
 
@@ -65,6 +75,21 @@ export interface MedicalRecordDecrypted {
   }[];
 }
 
+export interface MedicalRecordEntity {
+  $id?: string;
+  record_id: string;
+  patient_id: string;
+  hospital_id: string;
+  record_class: 'EHR_NOTE' | 'DIAGNOSTIC_REPORT' | 'PRESCRIPTION' | 'LAB_RESULT' | 'DISCHARGE_SUMMARY';
+  envelope: string; // Serialized EncryptedPayload
+  kek_id: string; // 'kek-2026-09'
+  alg: string; // 'AES-256-GCM'
+  retention_until: string; // ISO datetime
+  legal_hold: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface MedicalRecordDocument {
   $id: string;
   patientId: string;
@@ -74,6 +99,34 @@ export interface MedicalRecordDocument {
   kekId: 'kek-2026-09';
   createdAt: string;
   updatedAt: string;
+}
+
+// R2 Presigned URL & File Validation Types
+export interface R2PresignedUrlRequest {
+  fileName: string;
+  contentType: string;
+  fileExtension?: string;
+  recordId?: string;
+  patientId?: string;
+}
+
+export interface R2PresignedUrlResult {
+  uploadUrl: string;
+  objectKey: string;
+  method: 'PUT';
+  expiresInSeconds: 300; // Strict 5-minute expiry
+  expiresAt: string;
+  headers: Record<string, string>;
+  mock?: boolean;
+}
+
+export interface FileValidationResult {
+  valid: boolean;
+  detectedMimeType?: string;
+  detectedExtension?: string;
+  fileSize: number;
+  magicBytesHex: string;
+  error?: string;
 }
 
 // Notification Payload
@@ -388,6 +441,11 @@ export interface RecordsEnv {
   APPWRITE_PROJECT_B_KEY: string;
   // Cloudflare Secrets Store key binding
   KEK_2026_09: string;
+  // Cloudflare R2 Bucket for Patient Files
+  PATIENT_FILES_BUCKET?: R2Bucket;
+  R2_ACCOUNT_ID?: string;
+  R2_ACCESS_KEY_ID?: string;
+  R2_SECRET_ACCESS_KEY?: string;
 }
 
 export interface NotifyEnv {

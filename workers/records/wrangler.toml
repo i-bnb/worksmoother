@@ -19,3 +19,8 @@ APPWRITE_PROJECT_B_ID = "doctorcare-medical-records-prod"
 
 # Note: APPWRITE_PROJECT_B_KEY is provisioned separately and scoped strictly
 # to Project B medical databases, ensuring credential isolation.
+
+# Cloudflare R2 Bucket exclusively for patient file uploads
+[[r2_buckets]]
+binding = "PATIENT_FILES_BUCKET"
+bucket_name = "doctorcare-patient-files"

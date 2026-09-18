@@ -345,7 +345,65 @@ To comply with Section 6 of India's **Digital Personal Data Protection (DPDP) Ac
 
 ---
 
-## 17. Development & Verification
+---
+
+## 17. Appwrite Project B `MEDICAL_RECORD` & Envelope Encryption with AAD
+
+To ensure zero-trust security and HIPAA compliance for sensitive clinical data:
+- **`MEDICAL_RECORD` Collection**:
+  - `record_id`: String (128), unique index (`idx_record_id_unique`).
+  - `patient_id`: String (128), key index with `record_class` (`idx_patient_records`).
+  - `hospital_id`: String (128).
+  - `record_class`: Category (`EHR_NOTE`, `DIAGNOSTIC_REPORT`, `PRESCRIPTION`, `LAB_RESULT`, `DISCHARGE_SUMMARY`).
+  - `envelope`: Serialized encrypted envelope containing AES-256-GCM ciphertext, IV, and wrapped DEK.
+  - `kek_id`: Key encryption key identifier (`kek-2026-09`).
+  - `alg`: Encryption algorithm (`AES-256-GCM`).
+  - `retention_until`: ISO datetime defining legal data retention period.
+  - `legal_hold`: Boolean flag (`idx_legal_hold`) preventing record destruction during active litigation or audits.
+- **Envelope Encryption with Ephemeral 32-Byte DEK**:
+  - Generates a fresh, cryptographically random 32-byte (256-bit) Data Encryption Key (DEK) for every record via `crypto.getRandomValues(new Uint8Array(32))`.
+  - The DEK is encrypted (wrapped) under `kek-2026-09` using AES-256-GCM.
+- **Cryptographic AAD Binding**:
+  - The record's medical ciphertext is cryptographically bound to its identity by passing `{hospital_id, patient_id, record_id, field, kek_id}` as Additional Authenticated Data (`additionalData` / AAD) to `crypto.subtle.encrypt`.
+  - Tampering with `patient_id`, `record_id`, or `hospital_id` causes an immediate `OperationError` authentication tag verification failure upon decryption.
+- **Non-Extractable KEK Decryption**:
+  - In the `records` Worker, `kek-2026-09` is imported into Web Crypto with `extractable: false`. Any attempt to call `crypto.subtle.exportKey()` throws an error, guaranteeing the master key cannot be leaked from worker memory.
+
+---
+
+## 18. Cloudflare R2 Bucket & 5-Minute Presigned PUT URLs
+
+For direct-to-storage patient document uploads (e.g. lab PDFs, DICOM scans, imaging):
+- **Bucket**: `doctorcare-patient-files` bound exclusively to `workers/records/wrangler.toml` as `PATIENT_FILES_BUCKET`.
+- **AWS SigV4 Presigned PUT URLs**:
+  - Generated on-demand via `generateR2PresignedPutUrl()`.
+  - **Strict 5-Minute Expiration**: Explicitly enforces `expiresInSeconds = 300` and `X-Amz-Expires=300`.
+  - **Cryptographically Random Keys**: Object keys are formatted as `raw/${crypto.randomUUID()}.${ext}`, eliminating path collisions and upload enumeration attacks.
+- **Endpoint**: `POST /api/v1/records/files/upload-url` (proxied through API worker behind Staff MFA).
+
+---
+
+## 19. Server-Side File Validation Middleware (Magic Bytes)
+
+Prior to clinical processing, patient files are validated server-side by inspecting their raw magic byte signatures:
+- **`validateFileMagicBytes(buffer, declaredMimeType)`**:
+  - `%PDF-` (`0x25, 0x50, 0x44, 0x46, 0x2D`): Medical reports and discharge summaries.
+  - `DICM` (`0x44, 0x49, 0x43, 0x4D`): Medical imaging (MRI, CT, X-Ray) at standard offset 128 (after 128-byte preamble) or offset 0.
+  - JPEG (`0xFF, 0xD8, 0xFF`) and PNG (`0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A`): Clinical scans and plots.
+  - TIFF (`0x49, 0x49, 0x2A, 0x00` / `0x4D, 0x4D, 0x00, 0x2A`): Digital pathology.
+- **Malicious File Rejection**: Rejects PE executables (`MZ`), scripts, HTML, and files masquerading under false extensions with `INVALID_FILE_MAGIC_BYTES` (HTTP 422).
+- **Endpoint**: `POST /api/v1/records/files/validate`.
+
+---
+
+## 20. Private Records Service Binding & Network Isolation
+
+- **Zero Public Routes**: The `records` Worker configuration in `workers/records/wrangler.toml` contains no `routes` or `custom_domain`. It is completely unreachable from the public internet.
+- **Service Binding**: The `api` Worker links to `doctorcare-records` via `RECORDS_SERVICE`. All incoming requests to `/api/v1/records/*` must pass through the API Worker's strict Zod schema validation and Staff MFA middleware before reaching the records service.
+
+---
+
+## 21. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -363,13 +421,15 @@ npm.cmd run infra:secrets    # Cloudflare Secrets Store & KEK (kek-2026-09)
 npm.cmd run infra:appwrite   # Appwrite Dual-Project & TablesDB Collections
 npm.cmd run infra:waf        # Cloudflare Pro Zone WAF & OWASP Rulesets
 npm.cmd run infra:queues     # Cloudflare Queues & Dead-Letter Queue
+npm.cmd run infra:r2         # Cloudflare R2 Bucket & Isolation Audit
 ```
 
 ### Run Test Suites:
 ```bash
-npm.cmd run test             # Meta WhatsApp, Email & DPDP Consent Test Suite
-npm.cmd run test:notify      # Notify Worker & DPDP Test Suite
-npm.cmd run test:all         # Complete Test Suite (All 5 verification suites)
+npm.cmd run test             # Medical Records, R2 Presigned URLs & AAD Test Suite
+npm.cmd run test:records     # Medical Records & R2 Tests
+npm.cmd run test:notify      # Meta WhatsApp, Email & DPDP Consent Tests
+npm.cmd run test:all         # Complete Test Suite (All 6 verification suites)
 ```
 
 
