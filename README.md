@@ -492,7 +492,28 @@ The DoctorCare platform implements four distinct architectural layers of rate li
 
 ---
 
-## 24. Development & Verification
+## 24. Next.js Frontend on Cloudflare Workers via `@opennextjs/cloudflare`
+
+The web client is scaffolded as a modern Next.js 14 App Router application located in `apps/web`:
+- **Cloudflare OpenNext Adapter (`@opennextjs/cloudflare`)**:
+  - Configured in `apps/web/open-next.config.ts` via `defineCloudflareConfig({})`.
+  - Deploys as an edge worker targeting `.open-next/worker.js` with `nodejs_compat` runtime.
+  - Serves static assets directly via Cloudflare Assets binding `ASSETS`.
+  - Connects to backend services via internal Service Binding `API_SERVICE` -> `doctorcare-api`.
+- **Apple-Inspired Minimalist Dark Aesthetic**:
+  - Pitch black background (`#000000`) with subtle radial gradients and high-contrast typographic hierarchy (SF Pro Display / Inter).
+  - Frosted glass cards (`.glass-panel`) with `backdrop-filter: blur(24px)` and hairline borders (`border: 1px solid rgba(255, 255, 255, 0.08)`).
+  - Refined Apple status pills (`.apple-pill`) and micro-glow highlights for cryptographic and security states.
+- **Application Modules**:
+  - **Telemetry & Platform Overview (`/`)**: Real-time status cards displaying Cloudflare Pro Zone WAF, Secrets Store KEK, Dual Appwrite Isolation, and 4-Layer Rate Limiting metrics.
+  - **Doctor & Clinic Directory (`/directory`)**: Searchable care directory with specialty filters, room/tower assignments, and server-derived consultation fees.
+  - **10-Minute Hold Slot Booking (`/booking`)**: Single-threaded slot booking with real-time countdown timer synchronized with `SlotDurableObject.hold()` and automated alarm release.
+  - **Encrypted Medical Records Vault (`/records`)**: Zero-trust clinical record explorer with AES-256-GCM + AAD envelope inspection, non-extractable KEK status, and live append-only R2 hash-chained block explorer.
+  - **DPDP Act 2023 Consent Center (`/consent`)**: Granular consent management with multilingual notices, purpose limitation (`APPOINTMENT_COMMUNICATION`, `EHR_DATA_PROCESSING`), and instant right-to-withdraw toggles.
+
+---
+
+## 25. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -502,6 +523,16 @@ npm.cmd install
 ### Run Typecheck across all monorepo workspaces:
 ```bash
 npm.cmd run typecheck
+```
+
+### Run Frontend Development Server:
+```bash
+npm.cmd run dev:web
+```
+
+### Build Frontend for Cloudflare Workers:
+```bash
+npm.cmd run build:web
 ```
 
 ### Run Provisioning Scripts:
@@ -522,7 +553,8 @@ npm.cmd run test:records       # Medical Records, R2 & AAD Tests
 npm.cmd run test:notify        # Meta WhatsApp, Email & DPDP Consent Tests
 npm.cmd run test:audit-chain   # R2 Write-Only Vault & Cryptographic Hash-Chain Tests
 npm.cmd run test:ratelimit     # Four-Layer Defense-in-Depth Rate Limiting Tests
-npm.cmd run test:all           # Complete Test Suite (All 9 verification suites)
+npm.cmd run test:frontend      # Next.js Frontend Scaffold & Design System Tests
+npm.cmd run test:all           # Complete Test Suite (All 10 verification suites, 54 tests)
 ```
 
 

@@ -24,6 +24,8 @@ pnpm-debug.log*
 dist/
 build/
 out/
+.next/
+.open-next/
 *.tsbuildinfo
 
 # OS & Editor

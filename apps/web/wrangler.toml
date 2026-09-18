@@ -1,0 +1,17 @@
+name = "doctorcare-web"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-18"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Service Binding to internal API Worker
+[[services]]
+binding = "API_SERVICE"
+service = "doctorcare-api"
+
+[vars]
+NEXT_PUBLIC_APP_NAME = "DoctorCare"
+NEXT_PUBLIC_API_URL = "https://api.yourhospital.com"

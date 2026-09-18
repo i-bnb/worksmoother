@@ -4,15 +4,18 @@
   "private": true,
   "description": "DoctorCare Healthcare Platform - Multi-Worker Cloudflare Architecture with Appwrite Cloud Isolation",
   "workspaces": [
+    "apps/*",
     "workers/*",
     "packages/*",
     "infra"
   ],
   "scripts": {
+    "dev:web": "npm --workspace=@doctorcare/web run dev",
     "dev:api": "npm --workspace=@doctorcare/worker-api run dev",
     "dev:records": "npm --workspace=@doctorcare/worker-records run dev",
     "dev:notify": "npm --workspace=@doctorcare/worker-notify run dev",
     "build": "npm run --workspaces --if-present build",
+    "build:web": "npm --workspace=@doctorcare/web run build",
     "typecheck": "npm run --workspaces --if-present typecheck",
     "deploy:api": "npm --workspace=@doctorcare/worker-api run deploy",
     "deploy:records": "npm --workspace=@doctorcare/worker-records run deploy",
@@ -30,7 +33,8 @@
     "test:notify": "npx tsx tests/notify-consent-dpdp.test.ts",
     "test:audit-chain": "npx tsx tests/audit-hash-chain-r2.test.ts",
     "test:ratelimit": "npx tsx tests/rate-limiting-4-layers.test.ts",
-    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts && npx tsx tests/record-access-log-fail-closed.test.ts && npx tsx tests/audit-hash-chain-r2.test.ts && npx tsx tests/rate-limiting-4-layers.test.ts"
+    "test:frontend": "npx tsx tests/frontend-scaffold.test.ts",
+    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts && npx tsx tests/record-access-log-fail-closed.test.ts && npx tsx tests/audit-hash-chain-r2.test.ts && npx tsx tests/rate-limiting-4-layers.test.ts && npx tsx tests/frontend-scaffold.test.ts"
   },
   "keywords": [
     "healthcare",
