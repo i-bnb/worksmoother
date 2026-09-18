@@ -101,6 +101,23 @@ export interface MedicalRecordDocument {
   updatedAt: string;
 }
 
+// Fail-Closed Access Audit Log (Project B - RECORD_ACCESS_LOG)
+export interface RecordAccessLog {
+  $id?: string;
+  log_id: string;
+  record_id: string;
+  patient_id: string;
+  hospital_id: string;
+  accessor_id: string;
+  accessor_role: string;
+  action: 'READ' | 'DECRYPT' | 'EXPORT' | 'UPDATE';
+  purpose: string;
+  ip_address: string;
+  user_agent: string;
+  status: 'RECORDED' | 'DENIED' | 'FAILED';
+  created_at: string;
+}
+
 // R2 Presigned URL & File Validation Types
 export interface R2PresignedUrlRequest {
   fileName: string;

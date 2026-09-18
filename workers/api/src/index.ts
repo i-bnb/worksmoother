@@ -626,13 +626,24 @@ export default {
         );
       }
 
+      // Propagate authenticated actor context to records Worker for RECORD_ACCESS_LOG
+      const forwardedHeaders = new Headers(request.headers);
+      if (mfaCheck.authContext?.tokenPayload) {
+        forwardedHeaders.set('X-Actor-Id', mfaCheck.authContext.tokenPayload.sub);
+        forwardedHeaders.set('X-Actor-Role', mfaCheck.authContext.tokenPayload.roles.join(','));
+        forwardedHeaders.set('X-Session-Id', mfaCheck.authContext.tokenPayload.sid);
+      }
+      if (!forwardedHeaders.has('X-Access-Purpose')) {
+        forwardedHeaders.set('X-Access-Purpose', 'CLINICAL_TREATMENT');
+      }
+
       // Strict validation for file upload URL generation
       if (url.pathname === '/api/v1/records/files/upload-url' && request.method === 'POST') {
         const validation = await validateStrictJson(request, GenerateUploadUrlSchema);
         if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
         const recordsReq = new Request(request.url, {
           method: 'POST',
-          headers: request.headers,
+          headers: forwardedHeaders,
           body: JSON.stringify(validation.data),
         });
         const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
@@ -647,7 +658,7 @@ export default {
           if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
           const recordsReq = new Request(request.url, {
             method: 'POST',
-            headers: request.headers,
+            headers: forwardedHeaders,
             body: JSON.stringify(validation.data),
           });
           const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
@@ -655,7 +666,12 @@ export default {
         }
       }
 
-      const recordsResponse = await env.RECORDS_SERVICE.fetch(request);
+      const recordsReq = new Request(request.url, {
+        method: request.method,
+        headers: forwardedHeaders,
+        body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+      });
+      const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
       return addSecurityHeaders(recordsResponse);
     }
 

@@ -23,10 +23,11 @@
     "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf",
     "infra:queues": "npm --workspace=@doctorcare/infra run setup:queues",
     "infra:r2": "npm --workspace=@doctorcare/infra run setup:r2",
-    "test": "npx tsx tests/records-r2-aad.test.ts",
+    "test": "npx tsx tests/record-access-log-fail-closed.test.ts",
+    "test:access-log": "npx tsx tests/record-access-log-fail-closed.test.ts",
     "test:records": "npx tsx tests/records-r2-aad.test.ts",
     "test:notify": "npx tsx tests/notify-consent-dpdp.test.ts",
-    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts"
+    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts && npx tsx tests/records-r2-aad.test.ts && npx tsx tests/record-access-log-fail-closed.test.ts"
   },
   "keywords": [
     "healthcare",

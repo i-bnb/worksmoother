@@ -403,7 +403,30 @@ Prior to clinical processing, patient files are validated server-side by inspect
 
 ---
 
-## 21. Development & Verification
+---
+
+## 21. `RECORD_ACCESS_LOG` & Fail-Closed Audit Architecture in Project B
+
+To strictly comply with HIPAA § 164.312(b) and India DPDP Act 2023 audit standards:
+- **`RECORD_ACCESS_LOG` Collection**:
+  - Located strictly in Project B (`medical_records_db`).
+  - Fields: `log_id` (unique index `idx_log_id_unique`), `record_id`, `patient_id`, `hospital_id`, `accessor_id`, `accessor_role`, `action` (`READ`), `purpose` (`CLINICAL_TREATMENT`, `EMERGENCY`, etc.), `ip_address`, `user_agent`, `status` (`RECORDED`), `created_at`.
+  - Indexes: `idx_log_id_unique` (unique), `idx_record_access` (key: `["record_id", "created_at"]`), `idx_accessor_patient` (key: `["accessor_id", "patient_id"]`).
+- **Fail-Closed Architecture Guarantee**:
+  - The `records` Worker **must** durably persist the access log to `RECORD_ACCESS_LOG` **before** executing `decryptMedicalRecord()`.
+  - If the audit log write fails, times out, or encounters any database error, the operation **fails closed**:
+    - Aborts immediately with HTTP 500 (`AUDIT_LOG_FAILED`).
+    - Decryption is completely blocked.
+    - Zero clinical payload, diagnosis, or notes are returned to the caller.
+- **Actor Context Propagation**:
+  - The `api` Worker injects authenticated actor headers (`X-Actor-Id`, `X-Actor-Role`, `X-Session-Id`, `X-Access-Purpose`) over the internal `RECORDS_SERVICE` binding behind Staff MFA.
+- **Endpoints**:
+  - `GET /api/v1/records/:recordId`: Returns clinical data only after successful audit log persistence.
+  - `GET /api/v1/records/:recordId/access-logs`: Queries immutable audit history for the record.
+
+---
+
+## 22. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -426,10 +449,11 @@ npm.cmd run infra:r2         # Cloudflare R2 Bucket & Isolation Audit
 
 ### Run Test Suites:
 ```bash
-npm.cmd run test             # Medical Records, R2 Presigned URLs & AAD Test Suite
-npm.cmd run test:records     # Medical Records & R2 Tests
+npm.cmd run test             # Record Access Log & Fail-Closed Test Suite
+npm.cmd run test:access-log  # Fail-Closed Audit Log Tests
+npm.cmd run test:records     # Medical Records, R2 & AAD Tests
 npm.cmd run test:notify      # Meta WhatsApp, Email & DPDP Consent Tests
-npm.cmd run test:all         # Complete Test Suite (All 6 verification suites)
+npm.cmd run test:all         # Complete Test Suite (All 7 verification suites)
 ```
 
 

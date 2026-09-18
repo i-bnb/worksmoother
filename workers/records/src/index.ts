@@ -234,8 +234,27 @@ export default {
       }
 
       // =======================================================================
-      // 4. Retrieve & Decrypt Medical Record (with AAD verification & non-extractable KEK)
+      // 4. Retrieve & Decrypt Medical Record (Enforces FAIL-CLOSED RECORD_ACCESS_LOG)
       // =======================================================================
+      // Access logs query endpoint
+      const logMatch = url.pathname.match(/\/api\/v1\/records\/([^/]+)\/access-logs$/);
+      if (logMatch && request.method === 'GET') {
+        const targetRecordId = logMatch[1];
+        const logs = await appwrite.databases.listDocuments(
+          'medical_records_db',
+          'RECORD_ACCESS_LOG'
+        );
+        const filtered = logs.documents.filter((d: any) => d.record_id === targetRecordId);
+        return new Response(
+          JSON.stringify({
+            record_id: targetRecordId,
+            total: filtered.length,
+            access_logs: filtered,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       const match = url.pathname.match(/\/api\/v1\/records\/(?:patient-records\/)?([^/]+)$/);
       if (match && request.method === 'GET') {
         const recordId = match[1];
@@ -247,7 +266,7 @@ export default {
           );
         }
 
-        // Fetch from Project B database
+        // Fetch encrypted record from Project B database
         let doc: Record<string, unknown>;
         let isMedicalRecordSchema = true;
 
@@ -267,15 +286,86 @@ export default {
           isMedicalRecordSchema = false;
         }
 
+        const normalizedRecordId = (doc.record_id || doc.$id || recordId) as string;
+        const normalizedPatientId = (doc.patient_id || doc.patientId) as string;
+        const normalizedHospitalId = (doc.hospital_id || 'hosp_default_01') as string;
+
+        // Extract accessor context from request headers
+        const accessorId =
+          request.headers.get('x-actor-id') ||
+          request.headers.get('X-Actor-Id') ||
+          'unspecified_actor';
+        const accessorRole =
+          request.headers.get('x-actor-role') ||
+          request.headers.get('X-Actor-Role') ||
+          'doctor';
+        const accessPurpose =
+          request.headers.get('x-access-purpose') ||
+          request.headers.get('X-Access-Purpose') ||
+          'CLINICAL_TREATMENT';
+        const ipAddress =
+          request.headers.get('cf-connecting-ip') ||
+          request.headers.get('x-forwarded-for') ||
+          '127.0.0.1';
+        const userAgent =
+          request.headers.get('user-agent') || 'DoctorCare-Records-Worker';
+        const logId = `log_${crypto.randomUUID()}`;
+        const accessTimestamp = new Date().toISOString();
+
+        // =====================================================================
+        // FAIL-CLOSED ARCHITECTURE ENFORCEMENT:
+        // Must write to RECORD_ACCESS_LOG in Project B before returning ANY data!
+        // If the audit log write fails, abort immediately without decrypting.
+        // =====================================================================
+        let auditLogDoc: any;
+        try {
+          auditLogDoc = await appwrite.databases.createDocument(
+            'medical_records_db',
+            'RECORD_ACCESS_LOG',
+            logId,
+            {
+              log_id: logId,
+              record_id: normalizedRecordId,
+              patient_id: normalizedPatientId,
+              hospital_id: normalizedHospitalId,
+              accessor_id: accessorId,
+              accessor_role: accessorRole,
+              action: 'READ',
+              purpose: accessPurpose,
+              ip_address: ipAddress,
+              user_agent: userAgent,
+              status: 'RECORDED',
+              created_at: accessTimestamp,
+            }
+          );
+        } catch (auditErr: unknown) {
+          console.error(
+            '[CRITICAL AUDIT FAILURE] Failed to write RECORD_ACCESS_LOG:',
+            auditErr
+          );
+          // FAIL CLOSED: Deny access, do not decrypt clinical data!
+          return new Response(
+            JSON.stringify({
+              error: 'AUDIT_LOG_FAILED',
+              message:
+                'FAIL-CLOSED POLICY ENFORCED: Clinical data access denied because audit logging failed.',
+              detail:
+                auditErr instanceof Error ? auditErr.message : 'Database error',
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Only after the audit log has succeeded, proceed to decrypt
         const envelopeStr = (doc.envelope || doc.encryptedPayload) as string;
         const envelope = JSON.parse(envelopeStr) as EncryptedPayload;
 
         // Verify AAD if present or reconstruct from record
         const aad: MedicalRecordAAD | undefined = isMedicalRecordSchema
           ? {
-              hospital_id: (doc.hospital_id as string) || 'hosp_default_01',
-              patient_id: doc.patient_id as string,
-              record_id: (doc.record_id as string) || recordId,
+              hospital_id: normalizedHospitalId,
+              patient_id: normalizedPatientId,
+              record_id: normalizedRecordId,
               field: 'clinical_data',
               kek_id: (doc.kek_id as string) || 'kek-2026-09',
             }
@@ -286,15 +376,17 @@ export default {
 
         return new Response(
           JSON.stringify({
-            record_id: doc.record_id || doc.$id || recordId,
-            patient_id: doc.patient_id || doc.patientId,
-            hospital_id: doc.hospital_id || 'hosp_default_01',
+            record_id: normalizedRecordId,
+            patient_id: normalizedPatientId,
+            hospital_id: normalizedHospitalId,
             record_class: doc.record_class || 'EHR_NOTE',
             retention_until: doc.retention_until,
             legal_hold: doc.legal_hold ?? false,
             kek_id: doc.kek_id || doc.kekId || 'kek-2026-09',
             alg: doc.alg || 'AES-256-GCM',
             created_at: doc.created_at || doc.createdAt,
+            audit_log_id: auditLogDoc.$id || logId,
+            audit_status: 'RECORDED',
             data: decryptedRecord,
           }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
