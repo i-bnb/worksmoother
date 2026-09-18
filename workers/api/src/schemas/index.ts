@@ -115,6 +115,29 @@ export const CreatePaymentOrderSchema = z
 
 export type CreatePaymentOrderDto = z.infer<typeof CreatePaymentOrderSchema>;
 
+// 6. DPDP Act 2023 Consent Logging Schemas (.strict() enforced)
+export const GrantConsentSchema = z
+  .object({
+    patient_id: z.string().min(1, 'patient_id is required'),
+    purpose: z.string().min(1, 'purpose is required'),
+    notice_version: z.string().min(1, 'notice_version is required'),
+    language: z.string().min(2, 'language code is required').max(10),
+    ip_address: z.string().optional(),
+    user_agent: z.string().optional(),
+  })
+  .strict();
+
+export const WithdrawConsentSchema = z
+  .object({
+    patient_id: z.string().min(1, 'patient_id is required'),
+    purpose: z.string().min(1, 'purpose is required'),
+    consent_id: z.string().optional(),
+  })
+  .strict();
+
+export type GrantConsentDto = z.infer<typeof GrantConsentSchema>;
+export type WithdrawConsentDto = z.infer<typeof WithdrawConsentSchema>;
+
 export type HoldSlotDto = z.infer<typeof HoldSlotSchema>;
 export type ConfirmSlotDto = z.infer<typeof ConfirmSlotSchema>;
 export type ReleaseSlotDto = z.infer<typeof ReleaseSlotSchema>;

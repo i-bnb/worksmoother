@@ -1,9 +1,10 @@
-import { Client, Databases, Users, Storage } from 'node-appwrite';
+import { Client, Databases, Users, Storage, Messaging } from 'node-appwrite';
 
 export interface AppwriteOperationalServices {
   client: Client;
   databases: Databases;
   users: Users;
+  messaging: Messaging;
 }
 
 export interface AppwriteMedicalServices {
@@ -33,6 +34,7 @@ export function createOperationalClient(
     client,
     databases: new Databases(client),
     users: new Users(client),
+    messaging: new Messaging(client),
   };
 }
 

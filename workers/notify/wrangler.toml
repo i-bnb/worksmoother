@@ -10,6 +10,17 @@ ENVIRONMENT = "production"
 APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
 APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
 
+# Meta WhatsApp Cloud API (Graph API v20.0)
+WHATSAPP_PHONE_NUMBER_ID = "phone_id_doctorcare_prod"
+WHATSAPP_API_VERSION = "v20.0"
+
+# Appwrite Messaging & Transactional Email (Amazon SES Mumbai ap-south-1)
+SMTP_PROVIDER_ID = "smtp-amazon-ses"
+SMTP_HOST = "email-smtp.ap-south-1.amazonaws.com"
+SMTP_PORT = "587"
+SMTP_FROM_EMAIL = "notifications@yourhospital.com"
+SMTP_FROM_NAME = "DoctorCare Healthcare"
+
 # Cloudflare Queue Consumer with Designated Dead-Letter Queue (DLQ)
 [[queues.consumers]]
 queue = "doctorcare-tasks"

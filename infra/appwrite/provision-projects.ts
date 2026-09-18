@@ -52,6 +52,18 @@ interface ProjectDefinition {
       supportedFactors: string[];
     };
   };
+  messaging?: {
+    provider: {
+      id: string;
+      name: string;
+      type: string;
+      host: string;
+      port: number;
+      encryption: string;
+      fromName: string;
+      fromEmail: string;
+    };
+  };
 }
 
 interface Config {
@@ -98,6 +110,13 @@ async function runProvisioning() {
       console.log(`      * Personal Data Check: ${config.projectA.authSecurity.passwordPolicy.personalDataCheck ? 'ENABLED' : 'DISABLED'}`);
       console.log(`      * Disposable Email Blocking: ${config.projectA.authSecurity.emailSecurity.blockDisposableEmails ? 'ENABLED' : 'DISABLED'} (${config.projectA.authSecurity.emailSecurity.disposableEmailBlocklist.length} domains blocked)`);
       console.log(`      * Staff MFA Enforcement: ${config.projectA.authSecurity.mfa.enabled ? 'ENABLED' : 'DISABLED'} for [${config.projectA.authSecurity.mfa.enforceForRoles.join(', ')}]`);
+    }
+    if (config.projectA.messaging) {
+      const p = config.projectA.messaging.provider;
+      console.log('    - Appwrite Messaging Provider (Project A Bound):');
+      console.log(`      * Provider ID: ${p.id} ("${p.name}")`);
+      console.log(`      * Type: ${p.type.toUpperCase()} -> Host: ${p.host}:${p.port} (Encryption: ${p.encryption})`);
+      console.log(`      * From: ${p.fromName} <${p.fromEmail}>`);
     }
 
     console.log('\n--- Project B: Medical Records (STRICTLY ISOLATED) ---');

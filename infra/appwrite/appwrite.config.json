@@ -132,6 +132,26 @@
             "indexes": [
               { "key": "idx_event_id_unique", "type": "unique", "attributes": ["event_id"] }
             ]
+          },
+          {
+            "id": "CONSENT_LOG",
+            "name": "DPDP Patient Consent Audit Trail",
+            "attributes": [
+              { "key": "consent_id", "type": "string", "size": 128, "required": true },
+              { "key": "patient_id", "type": "string", "size": 128, "required": true },
+              { "key": "purpose", "type": "string", "size": 128, "required": true },
+              { "key": "notice_version", "type": "string", "size": 64, "required": true },
+              { "key": "language", "type": "string", "size": 32, "required": true },
+              { "key": "granted_at", "type": "string", "size": 64, "required": true },
+              { "key": "withdrawn_at", "type": "string", "size": 64, "required": false },
+              { "key": "status", "type": "string", "size": 32, "required": true },
+              { "key": "ip_address", "type": "string", "size": 64, "required": false },
+              { "key": "user_agent", "type": "string", "size": 256, "required": false }
+            ],
+            "indexes": [
+              { "key": "idx_consent_id_unique", "type": "unique", "attributes": ["consent_id"] },
+              { "key": "idx_patient_purpose", "type": "key", "attributes": ["patient_id", "purpose"] }
+            ]
           }
         ]
       }
@@ -145,8 +165,24 @@
         "collections.write",
         "documents.read",
         "documents.write",
-        "users.read"
+        "users.read",
+        "messages.read",
+        "messages.write",
+        "providers.read",
+        "providers.write"
       ]
+    },
+    "messaging": {
+      "provider": {
+        "id": "smtp-amazon-ses",
+        "name": "Amazon SES (ap-south-1)",
+        "type": "smtp",
+        "host": "email-smtp.ap-south-1.amazonaws.com",
+        "port": 587,
+        "encryption": "tls",
+        "fromName": "DoctorCare Healthcare",
+        "fromEmail": "notifications@yourhospital.com"
+      }
     },
     "authSecurity": {
       "passwordPolicy": {

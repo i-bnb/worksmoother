@@ -255,10 +255,111 @@ export interface RazorpayOrderResponse {
   breakdown: DerivedFeeBreakdown;
 }
 
+// DPDP Act 2023 Compliant Consent Record
+export interface ConsentLogRecord {
+  $id?: string;
+  consent_id: string;
+  patient_id: string;
+  purpose: string;
+  notice_version: string;
+  language: string;
+  granted_at: string;
+  withdrawn_at?: string | null;
+  status: 'ACTIVE' | 'WITHDRAWN' | 'EXPIRED';
+  ip_address?: string;
+  user_agent?: string;
+}
+
+// Meta WhatsApp Cloud API Types
+export interface WhatsAppConfig {
+  phoneNumberId: string;
+  accessToken: string;
+  businessAccountId?: string;
+  apiVersion?: string;
+}
+
+export interface WhatsAppTemplateComponentParameter {
+  type: 'text' | 'currency' | 'date_time' | 'image' | 'document';
+  text?: string;
+  currency?: { fallback_value: string; code: string; amount_1000: number };
+  date_time?: { fallback_value: string };
+}
+
+export interface WhatsAppTemplateComponent {
+  type: 'header' | 'body' | 'button';
+  sub_type?: string;
+  index?: string;
+  parameters: WhatsAppTemplateComponentParameter[];
+}
+
+export interface WhatsAppMessagePayload {
+  to: string; // E.164 format (e.g., +919876543210 or 919876543210)
+  type: 'template' | 'text';
+  template?: {
+    name: string;
+    language: { code: string };
+    components?: WhatsAppTemplateComponent[];
+  };
+  text?: {
+    body: string;
+    preview_url?: boolean;
+  };
+}
+
+export interface WhatsAppSendResult {
+  success: boolean;
+  messageId?: string;
+  recipient?: string;
+  mock?: boolean;
+  error?: string;
+}
+
+// Transactional Email / SMTP Provider Types
+export interface SmtpProviderConfig {
+  providerId: string;
+  name: string;
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  encryption: 'none' | 'ssl' | 'tls';
+  autoTLS?: boolean;
+  fromName: string;
+  fromEmail: string;
+  replyToEmail?: string;
+  enabled: boolean;
+}
+
+export interface TransactionalEmailPayload {
+  recipientEmail: string;
+  recipientName?: string;
+  subject: string;
+  content: string; // Plain text
+  html?: string; // HTML formatted string
+  cc?: string[];
+  bcc?: string[];
+}
+
+export interface TransactionalEmailResult {
+  success: boolean;
+  messageId?: string;
+  provider: string;
+  recipient: string;
+  mock?: boolean;
+  error?: string;
+}
+
 export interface TaskQueueMessage {
-  type: 'PAYMENT_CONFIRMED' | 'SLOT_RELEASED' | 'APPOINTMENT_ALERT';
+  type:
+    | 'PAYMENT_CONFIRMED'
+    | 'SLOT_RELEASED'
+    | 'APPOINTMENT_ALERT'
+    | 'WHATSAPP_DISPATCH'
+    | 'EMAIL_DISPATCH';
   eventId: string;
   recipientId?: string;
+  recipientPhone?: string;
+  recipientEmail?: string;
   payload: Record<string, unknown>;
   timestamp: string;
 }
@@ -295,6 +396,20 @@ export interface NotifyEnv {
   APPWRITE_PROJECT_A_ID: string;
   APPWRITE_PROJECT_A_KEY: string;
   TASK_QUEUE_DLQ?: Queue<TaskQueueMessage>;
+  // Meta WhatsApp Cloud API Bindings
+  WHATSAPP_PHONE_NUMBER_ID?: string;
+  WHATSAPP_ACCESS_TOKEN?: string;
+  WHATSAPP_BUSINESS_ACCOUNT_ID?: string;
+  WHATSAPP_API_VERSION?: string;
+  // Transactional Email / SMTP Bindings
+  SMTP_PROVIDER_ID?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: number | string;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  SMTP_FROM_EMAIL?: string;
+  SMTP_FROM_NAME?: string;
 }
+
 
 

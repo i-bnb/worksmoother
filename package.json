@@ -22,8 +22,9 @@
     "infra:appwrite": "npm --workspace=@doctorcare/infra run setup:appwrite",
     "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf",
     "infra:queues": "npm --workspace=@doctorcare/infra run setup:queues",
-    "test": "npx tsx tests/payments-queues.test.ts",
-    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts"
+    "test": "npx tsx tests/notify-consent-dpdp.test.ts",
+    "test:notify": "npx tsx tests/notify-consent-dpdp.test.ts",
+    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts && npx tsx tests/notify-consent-dpdp.test.ts"
   },
   "keywords": [
     "healthcare",

@@ -297,7 +297,55 @@ Asynchronous background tasks are processed via Cloudflare Queues:
 
 ---
 
-## 13. Development & Verification
+## 14. Meta WhatsApp Cloud API Integration (`workers/notify`)
+
+The `notify` Worker integrates Meta Graph API `v20.0` for automated clinical notifications:
+- **Appointment Confirmations**:
+  - Sent immediately when `PAYMENT_CONFIRMED` event is consumed from the queue or via `POST /api/v1/notify/whatsapp/confirmation`.
+  - Dispatches template `appointment_confirmation` with patient name, doctor name, scheduled date/time, and booking ID.
+- **Appointment Reminders**:
+  - Sent via `POST /api/v1/notify/whatsapp/reminder` and queue alerts.
+  - Dispatches template `appointment_reminder` advising arrival 15 minutes prior.
+- **Offline / Dev Mock**: Automatic mock fallback when running without production credentials.
+
+---
+
+## 15. Transactional Email & Appwrite Messaging SMTP Provider
+
+Configured to bind an enterprise SMTP provider directly to Appwrite Messaging:
+- **Selected Provider**: **Amazon SES (Mumbai `ap-south-1`)**
+  - Host: `email-smtp.ap-south-1.amazonaws.com`
+  - Port: `587` (TLS / STARTTLS)
+  - Sender: `DoctorCare Healthcare <notifications@yourhospital.com>`
+  - Compliance: Data residency retained in India under Mumbai region to satisfy DPDP rules.
+- **Appwrite Messaging Binding**:
+  - Project A API key provisioned with `messages.read`, `messages.write`, `providers.read`, `providers.write`.
+  - Sends transactional emails via `messaging.createEmail()` with HTML templates and plain text fallbacks.
+  - Endpoint: `POST /api/v1/notify/email/transactional`.
+
+---
+
+## 16. India DPDP Act 2023 Consent Audit Trail (`CONSENT_LOG`)
+
+To comply with Section 6 of India's **Digital Personal Data Protection (DPDP) Act 2023**, all data processing consent is tracked in Project A:
+- **`CONSENT_LOG` Collection**:
+  - `consent_id`: Unique token identifying the consent transaction (`idx_consent_id_unique`).
+  - `patient_id`: Identifier of the Data Principal.
+  - `purpose`: Explicit purpose (e.g. `WHATSAPP_CONFIRMATIONS`, `TRANSACTIONAL_EMAIL`, `HEALTH_RECORDS_ACCESS`).
+  - `notice_version`: Version tag of the privacy notice presented (e.g. `v2026.09.1`).
+  - `language`: Multilingual notice language ISO 639-1 code (`en`, `hi`, `ta`, `te`, `mr`, `bn`, etc.).
+  - `granted_at`: ISO datetime when affirmative consent was provided.
+  - `withdrawn_at`: ISO datetime when consent was withdrawn (nullable).
+  - `status`: `ACTIVE`, `WITHDRAWN`, `EXPIRED`.
+- **Pre-Dispatch Verification**: Before dispatching WhatsApp messages or emails, the `notify` Worker checks `CONSENT_LOG`. If consent has been withdrawn or was never granted for that purpose, communication is blocked (`403 CONSENT_WITHDRAWN_OR_MISSING`).
+- **Endpoints**:
+  - `POST /api/v1/consent`: Grants consent with strict Zod validation (`GrantConsentSchema.strict()`).
+  - `POST /api/v1/consent/withdraw`: Withdraws consent with timestamp.
+  - `GET /api/v1/consent`: Queries active consent status for a patient.
+
+---
+
+## 17. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -319,9 +367,11 @@ npm.cmd run infra:queues     # Cloudflare Queues & Dead-Letter Queue
 
 ### Run Test Suites:
 ```bash
-npm.cmd run test             # Payments, Webhook & Queues Test Suite
-npm.cmd run test:all         # Complete Test Suite (All 4 verification suites)
+npm.cmd run test             # Meta WhatsApp, Email & DPDP Consent Test Suite
+npm.cmd run test:notify      # Notify Worker & DPDP Test Suite
+npm.cmd run test:all         # Complete Test Suite (All 5 verification suites)
 ```
+
 
 
 
