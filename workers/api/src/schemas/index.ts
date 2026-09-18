@@ -103,6 +103,18 @@ export const CreateAppointmentSchema = z
   })
   .strict();
 
+// 5. Razorpay Payments Schemas (Server-side price derivation enforced via .strict())
+export const CreatePaymentOrderSchema = z
+  .object({
+    doctor_id: z.string().min(1, 'doctor_id is required'),
+    slot_key: z.string().min(1, 'slot_key is required'),
+    consultation_type: z.enum(['REGULAR', 'SPECIALIST', 'SURGICAL', 'EMERGENCY']),
+    patient_id: z.string().min(1, 'patient_id is required'),
+  })
+  .strict();
+
+export type CreatePaymentOrderDto = z.infer<typeof CreatePaymentOrderSchema>;
+
 export type HoldSlotDto = z.infer<typeof HoldSlotSchema>;
 export type ConfirmSlotDto = z.infer<typeof ConfirmSlotSchema>;
 export type ReleaseSlotDto = z.infer<typeof ReleaseSlotSchema>;

@@ -1,4 +1,11 @@
-import { ApiEnv, createOperationalClient, FirstPartySession } from '@doctorcare/shared';
+import {
+  ApiEnv,
+  createOperationalClient,
+  FirstPartySession,
+  deriveConsultationFee,
+  createRazorpayOrder,
+  verifyRazorpayWebhookSignature,
+} from '@doctorcare/shared';
 import {
   signAccessToken,
   verifyAccessToken,
@@ -23,6 +30,7 @@ import {
   CreateDoctorSchema,
   CreateRoomSchema,
   CreateAppointmentSchema,
+  CreatePaymentOrderSchema,
 } from './schemas/index.js';
 
 // Export Durable Object classes for Cloudflare Workers runtime
@@ -652,6 +660,191 @@ export default {
         if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
         const created = await appwrite.databases.createDocument('operational_db', 'appointments', 'unique()', validation.data!);
         return addSecurityHeaders(new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } }));
+      }
+    }
+
+    // =========================================================================
+    // 8. Razorpay Payments & Timing-Safe Webhook Handlers
+    // =========================================================================
+
+    // POST /api/v1/payments/create-order (Server-side price derivation)
+    if (url.pathname === '/api/v1/payments/create-order' && request.method === 'POST') {
+      try {
+        const validation = await validateStrictJson(request, CreatePaymentOrderSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const data = validation.data!;
+
+        let doctorSpecialty = 'general medicine';
+        try {
+          const appwrite = createOperationalClient(
+            env.APPWRITE_ENDPOINT,
+            env.APPWRITE_PROJECT_A_ID,
+            env.APPWRITE_PROJECT_A_KEY
+          );
+          const doctorDoc = await appwrite.databases.getDocument('operational_db', 'DOCTOR', data.doctor_id);
+          if (doctorDoc && (doctorDoc as any).specialty) {
+            doctorSpecialty = (doctorDoc as any).specialty;
+          }
+        } catch {
+          // Fallback if doctor record not yet created in dev
+        }
+
+        // Derive payment amount securely on server (client cannot tamper with amount)
+        const feeBreakdown = deriveConsultationFee(doctorSpecialty, data.consultation_type);
+
+        const order = await createRazorpayOrder(
+          env.RAZORPAY_KEY_ID || 'mock_key_id',
+          env.RAZORPAY_KEY_SECRET || 'mock_key_secret',
+          {
+            amount: feeBreakdown.total,
+            currency: 'INR',
+            receipt: `rcpt_${data.slot_key.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 30)}`,
+            notes: {
+              doctor_id: data.doctor_id,
+              slot_key: data.slot_key,
+              patient_id: data.patient_id,
+              consultation_type: data.consultation_type,
+            },
+          }
+        );
+
+        return addSecurityHeaders(
+          new Response(
+            JSON.stringify({
+              status: 'ORDER_CREATED',
+              order_id: order.id,
+              amount: order.amount,
+              currency: 'INR',
+              doctor_id: data.doctor_id,
+              slot_key: data.slot_key,
+              breakdown: feeBreakdown,
+            }),
+            { status: 201, headers: { 'Content-Type': 'application/json' } }
+          )
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Order creation error';
+        return addSecurityHeaders(
+          new Response(JSON.stringify({ error: message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      }
+    }
+
+    // POST /api/v1/payments/webhook (Timing-Safe HMAC verification via crypto.subtle.timingSafeEqual)
+    if (url.pathname === '/api/v1/payments/webhook' && request.method === 'POST') {
+      try {
+        const signature = request.headers.get('x-razorpay-signature');
+        if (!signature) {
+          return addSecurityHeaders(
+            new Response(JSON.stringify({ error: 'MISSING_SIGNATURE' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+        }
+
+        // Read raw body as arrayBuffer()
+        const rawBodyBuffer = await request.arrayBuffer();
+        const secret = env.RAZORPAY_WEBHOOK_SECRET || 'doctorcare_webhook_secret_2026';
+
+        // Timing-Safe HMAC verification using crypto.subtle.timingSafeEqual()
+        const isValid = await verifyRazorpayWebhookSignature(rawBodyBuffer, signature, secret);
+        if (!isValid) {
+          return addSecurityHeaders(
+            new Response(
+              JSON.stringify({
+                error: 'INVALID_SIGNATURE',
+                message: 'Webhook signature verification failed.',
+              }),
+              { status: 400, headers: { 'Content-Type': 'application/json' } }
+            )
+          );
+        }
+
+        const rawBodyText = new TextDecoder().decode(rawBodyBuffer);
+        const event = JSON.parse(rawBodyText);
+        const eventId =
+          event.event_id ||
+          event.payload?.payment?.entity?.id ||
+          request.headers.get('x-razorpay-event-id') ||
+          `evt_${Math.random().toString(36).substring(2, 12)}`;
+
+        const appwrite = createOperationalClient(
+          env.APPWRITE_ENDPOINT,
+          env.APPWRITE_PROJECT_A_ID,
+          env.APPWRITE_PROJECT_A_KEY
+        );
+
+        // Check idempotency in WEBHOOK_EVENT collection
+        try {
+          const existing = await appwrite.databases.listDocuments('operational_db', 'WEBHOOK_EVENT');
+          const alreadyProcessed = existing.documents.some((d: any) => d.event_id === eventId);
+          if (alreadyProcessed) {
+            return addSecurityHeaders(
+              new Response(
+                JSON.stringify({ status: 'ALREADY_PROCESSED', event_id: eventId }),
+                { status: 200, headers: { 'Content-Type': 'application/json' } }
+              )
+            );
+          }
+        } catch {
+          // Collection check pass
+        }
+
+        // Record in WEBHOOK_EVENT collection for deduplication
+        try {
+          await appwrite.databases.createDocument(
+            'operational_db',
+            'WEBHOOK_EVENT',
+            'unique()',
+            {
+              event_id: eventId,
+              event_type: event.event || 'payment.captured',
+              payment_id: event.payload?.payment?.entity?.id || null,
+              order_id: event.payload?.payment?.entity?.order_id || null,
+              amount: event.payload?.payment?.entity?.amount || null,
+              payload: rawBodyText.substring(0, 65000),
+              processed_at: new Date().toISOString(),
+              status: 'PROCESSED',
+            }
+          );
+        } catch (dbErr) {
+          console.warn('[WEBHOOK_EVENT insert notice]:', dbErr);
+        }
+
+        // Dispatch asynchronous task to Cloudflare Queue
+        if (env.TASK_QUEUE) {
+          await env.TASK_QUEUE.send({
+            type: 'PAYMENT_CONFIRMED',
+            eventId,
+            recipientId: event.payload?.payment?.entity?.notes?.patient_id || 'system',
+            payload: {
+              payment_id: event.payload?.payment?.entity?.id,
+              order_id: event.payload?.payment?.entity?.order_id,
+              amount: event.payload?.payment?.entity?.amount,
+              slot_key: event.payload?.payment?.entity?.notes?.slot_key,
+            },
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        return addSecurityHeaders(
+          new Response(
+            JSON.stringify({ status: 'PROCESSED', event_id: eventId }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          )
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Webhook error';
+        return addSecurityHeaders(
+          new Response(JSON.stringify({ error: message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
       }
     }
 

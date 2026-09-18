@@ -6,6 +6,7 @@
     "setup:secrets": "tsx cloudflare/provision-secrets-store.ts",
     "setup:appwrite": "tsx appwrite/provision-projects.ts",
     "setup:waf": "tsx cloudflare/deploy-zone-waf.ts",
+    "setup:queues": "tsx cloudflare/provision-queues.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -221,6 +221,48 @@ export interface SlotHoldResult {
   idempotent_replay?: boolean;
 }
 
+// Webhook & Payment Models
+export interface WebhookEventRecord {
+  event_id: string; // Razorpay x-razorpay-event-id or payload id
+  event_type: string;
+  payment_id?: string | null;
+  order_id?: string | null;
+  amount?: number | null;
+  payload: string;
+  processed_at: string;
+  status: 'PROCESSED' | 'FAILED' | 'PENDING';
+}
+
+export interface RazorpayOrderRequest {
+  doctor_id: string;
+  slot_key: string;
+  consultation_type: 'REGULAR' | 'SPECIALIST' | 'SURGICAL' | 'EMERGENCY';
+  patient_id: string;
+}
+
+export interface DerivedFeeBreakdown {
+  baseFee: number; // in paise
+  gst: number; // 18% in paise
+  total: number; // in paise
+}
+
+export interface RazorpayOrderResponse {
+  order_id: string;
+  amount: number;
+  currency: 'INR';
+  doctor_id: string;
+  slot_key: string;
+  breakdown: DerivedFeeBreakdown;
+}
+
+export interface TaskQueueMessage {
+  type: 'PAYMENT_CONFIRMED' | 'SLOT_RELEASED' | 'APPOINTMENT_ALERT';
+  eventId: string;
+  recipientId?: string;
+  payload: Record<string, unknown>;
+  timestamp: string;
+}
+
 // Cloudflare Worker Environment Bindings
 export interface ApiEnv {
   ENVIRONMENT: string;
@@ -230,6 +272,10 @@ export interface ApiEnv {
   SESSION_SECRET?: string;
   SESSION_DO: DurableObjectNamespace;
   SLOT_DO: DurableObjectNamespace;
+  TASK_QUEUE: Queue<TaskQueueMessage>;
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
   RECORDS_SERVICE: Fetcher;
   NOTIFY_SERVICE: Fetcher;
 }
@@ -248,6 +294,7 @@ export interface NotifyEnv {
   APPWRITE_ENDPOINT: string;
   APPWRITE_PROJECT_A_ID: string;
   APPWRITE_PROJECT_A_KEY: string;
+  TASK_QUEUE_DLQ?: Queue<TaskQueueMessage>;
 }
 
 

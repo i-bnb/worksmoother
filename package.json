@@ -20,7 +20,10 @@
     "deploy:all": "npm run deploy:records && npm run deploy:notify && npm run deploy:api",
     "infra:secrets": "npm --workspace=@doctorcare/infra run setup:secrets",
     "infra:appwrite": "npm --workspace=@doctorcare/infra run setup:appwrite",
-    "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf"
+    "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf",
+    "infra:queues": "npm --workspace=@doctorcare/infra run setup:queues",
+    "test": "npx tsx tests/payments-queues.test.ts",
+    "test:all": "npx tsx tests/architecture.test.ts && npx tsx tests/auth-session.test.ts && npx tsx tests/directory-slots.test.ts && npx tsx tests/payments-queues.test.ts"
   },
   "keywords": [
     "healthcare",

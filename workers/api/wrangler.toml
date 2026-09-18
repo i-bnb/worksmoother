@@ -41,4 +41,10 @@ new_classes = ["SessionDurableObject"]
 tag = "v2"
 new_classes = ["SlotDurableObject"]
 
+# Cloudflare Queue Producer for asynchronous tasks
+[[queues.producers]]
+binding = "TASK_QUEUE"
+queue = "doctorcare-tasks"
+
+
 

@@ -9,3 +9,12 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "production"
 APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
 APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
+
+# Cloudflare Queue Consumer with Designated Dead-Letter Queue (DLQ)
+[[queues.consumers]]
+queue = "doctorcare-tasks"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+dead_letter_queue = "doctorcare-tasks-dlq"
+

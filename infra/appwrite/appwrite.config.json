@@ -115,6 +115,23 @@
             "indexes": [
               { "key": "idx_idempotency_key_unique", "type": "unique", "attributes": ["idempotency_key"] }
             ]
+          },
+          {
+            "id": "WEBHOOK_EVENT",
+            "name": "Payment Webhook Events",
+            "attributes": [
+              { "key": "event_id", "type": "string", "size": 128, "required": true },
+              { "key": "event_type", "type": "string", "size": 64, "required": true },
+              { "key": "payment_id", "type": "string", "size": 128, "required": false },
+              { "key": "order_id", "type": "string", "size": 128, "required": false },
+              { "key": "amount", "type": "integer", "required": false },
+              { "key": "payload", "type": "string", "size": 65535, "required": true },
+              { "key": "processed_at", "type": "string", "size": 64, "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true }
+            ],
+            "indexes": [
+              { "key": "idx_event_id_unique", "type": "unique", "attributes": ["event_id"] }
+            ]
           }
         ]
       }

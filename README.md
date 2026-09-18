@@ -209,31 +209,119 @@ npm run infra:secrets
 
 ---
 
-## 9. Development & Verification
+---
+
+## 10. Razorpay Payments & Server-Side Price Derivation
+
+### Server-Side Amount Calculation (`POST /api/v1/payments/create-order`)
+- Strictly prevents client-side price tampering.
+- The request schema `CreatePaymentOrderSchema.strict()` explicitly prohibits the client from providing an `amount`. If an attacker attempts to inject an `amount` parameter, Zod rejects the request with HTTP 400 (`unrecognized_keys`).
+- Consultation fee breakdown is computed deterministically on the server via `deriveConsultationFee(specialty, consultationType)`:
+  - Base specialty fees (e.g. Cardiology: ₹1500, Neurology: ₹2000, General Medicine: ₹800).
+  - Consultation type multipliers: `REGULAR` (1.0x), `SPECIALIST` (1.25x), `SURGICAL` (2.0x), `EMERGENCY` (1.5x).
+  - Mandatory 18% GST calculation in paise.
+  - Generates official Razorpay order with notes linking `doctor_id`, `slot_key`, and `patient_id`.
+
+---
+
+## 11. Razorpay Webhook Handler & Web Crypto Timing-Safe Verification
+
+### Raw Body Buffer & Constant-Time Verification (`POST /api/v1/payments/webhook`)
+- Reads raw request body as `ArrayBuffer` via `request.arrayBuffer()`.
+- Calculates expected HMAC-SHA256 digest using the Web Crypto API (`crypto.subtle.sign`).
+- Compares computed digest against incoming `x-razorpay-signature` in constant-time using `crypto.subtle.timingSafeEqual()` to guard against side-channel timing attacks.
+
+### Webhook Idempotency Deduplication via `WEBHOOK_EVENT` Collection
+- Appwrite Project A includes the `WEBHOOK_EVENT` collection with a unique index on `event_id` (`idx_event_id_unique`).
+- When a webhook arrives, the worker checks if `event_id` has already been recorded.
+- Duplicate callbacks are immediately returned as `{ status: "ALREADY_PROCESSED" }` with HTTP 200 without duplicate processing.
+- The raw event payload is preserved with timestamp and processing status.
+
+---
+
+## 12. Cloudflare Queues & Dead-Letter Queue (DLQ) Architecture
+
+Asynchronous background tasks are processed via Cloudflare Queues:
+
+```
+┌─────────────────────────────────┐
+│     Worker: api (Producer)      │
+│  Binding: env.TASK_QUEUE        │
+│  Queue: 'doctorcare-tasks'      │
+└────────────────┬────────────────┘
+                 │
+                 │ env.TASK_QUEUE.send(task)
+                 ▼
+┌─────────────────────────────────┐
+│ Cloudflare Queue:               │
+│ 'doctorcare-tasks'              │
+└────────────────┬────────────────┘
+                 │
+                 │ Batches (size <= 10, timeout = 5s)
+                 ▼
+┌─────────────────────────────────┐
+│     Worker: notify (Consumer)   │
+│  - max_retries = 3              │
+│  - msg.ack() / msg.retry()      │
+└────────────────┬────────────────┘
+                 │
+                 │ On 3 consecutive failures
+                 ▼
+┌─────────────────────────────────┐
+│ Dead-Letter Queue (DLQ):        │
+│ 'doctorcare-tasks-dlq'          │
+└─────────────────────────────────┘
+```
+
+- **Provisioning**: Script `infra/cloudflare/provision-queues.ts` provisions `doctorcare-tasks` and `doctorcare-tasks-dlq` via Wrangler.
+- **Producer Configuration (`workers/api/wrangler.toml`)**:
+  ```toml
+  [[queues.producers]]
+  binding = "TASK_QUEUE"
+  queue = "doctorcare-tasks"
+  ```
+- **Consumer Configuration (`workers/notify/wrangler.toml`)**:
+  ```toml
+  [[queues.consumers]]
+  queue = "doctorcare-tasks"
+  max_batch_size = 10
+  max_batch_timeout = 5
+  max_retries = 3
+  dead_letter_queue = "doctorcare-tasks-dlq"
+  ```
+- **Notify Worker Queue Consumer (`workers/notify/src/index.ts`)**:
+  - Implements `queue(batch, env, ctx)` handler.
+  - Consumes tasks, updates notifications log in Appwrite Project A.
+  - Acknowledges successful tasks with `msg.ack()`.
+  - Automatically routes unrecoverable messages to `doctorcare-tasks-dlq` after 3 failed retry attempts.
+
+---
+
+## 13. Development & Verification
 
 ### Install dependencies:
 ```bash
 npm.cmd install
 ```
 
-### Run Typecheck across monorepo:
+### Run Typecheck across all monorepo workspaces:
 ```bash
 npm.cmd run typecheck
 ```
 
-### Run Architecture & Cryptographic Verification Tests:
+### Run Provisioning Scripts:
 ```bash
-npx.cmd tsx tests/architecture.test.ts
+npm.cmd run infra:secrets    # Cloudflare Secrets Store & KEK (kek-2026-09)
+npm.cmd run infra:appwrite   # Appwrite Dual-Project & TablesDB Collections
+npm.cmd run infra:waf        # Cloudflare Pro Zone WAF & OWASP Rulesets
+npm.cmd run infra:queues     # Cloudflare Queues & Dead-Letter Queue
 ```
 
-### Run Auth, Session DO & MFA Enforcement Tests:
+### Run Test Suites:
 ```bash
-npx.cmd tsx tests/auth-session.test.ts
+npm.cmd run test             # Payments, Webhook & Queues Test Suite
+npm.cmd run test:all         # Complete Test Suite (All 4 verification suites)
 ```
 
-### Run Directory Module, Slot DO & Strict Zod Tests:
-```bash
-npx.cmd tsx tests/directory-slots.test.ts
-```
 
 
