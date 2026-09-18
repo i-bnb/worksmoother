@@ -30,6 +30,23 @@ interface ProjectDefinition {
     name: string;
     scopes: string[];
   };
+  authSecurity?: {
+    passwordPolicy: {
+      hashingAlgorithm: string;
+      passwordDictionary: boolean;
+      personalDataCheck: boolean;
+      minLength: number;
+    };
+    emailSecurity: {
+      blockDisposableEmails: boolean;
+      disposableEmailBlocklist: string[];
+    };
+    mfa: {
+      enabled: boolean;
+      enforceForRoles: string[];
+      supportedFactors: string[];
+    };
+  };
 }
 
 interface Config {
@@ -62,6 +79,14 @@ async function runProvisioning() {
     console.log(`    - Scoped API Key: "${config.projectA.scopedApiKey.name}"`);
     console.log(`    - Scopes: [${config.projectA.scopedApiKey.scopes.join(', ')}]`);
     console.log(`    - Databases: ${config.projectA.databases.map((d) => d.name).join(', ')}`);
+    if (config.projectA.authSecurity) {
+      console.log('    - Auth Security Policies (Project A Enforced):');
+      console.log(`      * Password Hashing: ${config.projectA.authSecurity.passwordPolicy.hashingAlgorithm.toUpperCase()}`);
+      console.log(`      * 10,000-Common-Password Dictionary Check: ${config.projectA.authSecurity.passwordPolicy.passwordDictionary ? 'ENABLED' : 'DISABLED'}`);
+      console.log(`      * Personal Data Check: ${config.projectA.authSecurity.passwordPolicy.personalDataCheck ? 'ENABLED' : 'DISABLED'}`);
+      console.log(`      * Disposable Email Blocking: ${config.projectA.authSecurity.emailSecurity.blockDisposableEmails ? 'ENABLED' : 'DISABLED'} (${config.projectA.authSecurity.emailSecurity.disposableEmailBlocklist.length} domains blocked)`);
+      console.log(`      * Staff MFA Enforcement: ${config.projectA.authSecurity.mfa.enabled ? 'ENABLED' : 'DISABLED'} for [${config.projectA.authSecurity.mfa.enforceForRoles.join(', ')}]`);
+    }
 
     console.log('\n--- Project B: Medical Records (STRICTLY ISOLATED) ---');
     console.log(`    - Name: ${config.projectB.name}`);

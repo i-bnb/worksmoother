@@ -120,7 +120,37 @@ npm run infra:secrets
 
 ---
 
-## 5. Development & Verification
+---
+
+## 5. Appwrite Auth Security & First-Party Session Architecture
+
+### Appwrite Auth in Project A
+- **Password Hashing**: Enforces Argon2 algorithm (`Argon2id`).
+- **10,000-Common-Password Dictionary**: Automatically blocks weak, common, and hospital-related dictionary passwords (`passwordDictionary: true`).
+- **Personal Data Check**: Prevents personal identifiers (name, email, username) inside passwords (`personalDataCheck: true`).
+- **Disposable Email Address Blocking**: Rejects sign-ups from temporary and disposable email services (`mailinator.com`, `guerrillamail.com`, `tempmail.com`, etc.).
+
+### Token-Exchange Endpoint (`POST /api/v1/auth/token-exchange`)
+- Accepts a 15-minute Appwrite JWT produced by `account.createJWT()`.
+- Verifies the signature and user profile against Appwrite Project A.
+- Issues a custom first-party session:
+  - **Short-Lived Access Token**: Signed HMAC-SHA256 JWT (15-minute validity).
+  - **First-Party Cookies**: `__Host-access_token` and `__Host-refresh_token` configured with `HttpOnly; Secure; SameSite=Strict`.
+
+### Session Durable Object (`SessionDurableObject`)
+- Keyed by `userId` using `env.SESSION_DO.idFromName(userId)`.
+- **Refresh Token Families**: Manages active token chains with strict lifecycle states.
+- **Atomic Token Rotation**: Atomically consumes the previous refresh token and issues a new refresh token within the same family upon refresh (`POST /api/v1/auth/refresh`).
+- **Reuse Detection**: If a previously consumed or expired refresh token is presented, the Durable Object immediately detects the breach, revokes the entire token family, and terminates all active sessions for that user ID.
+
+### Staff & Admin MFA Enforcement Middleware
+- Enforces Appwrite Multi-Factor Authentication (TOTP, email, or phone) for all privileged accounts (`admin`, `staff`, `doctor`, `nurse`).
+- Blocks unverified access to sensitive clinical endpoints (`/api/v1/records/*`) and operational mutations with `403 Forbidden` (`MFA_VERIFICATION_REQUIRED`).
+- Verification endpoint `POST /api/v1/auth/mfa/verify` validates the factor and marks the session as `mfaVerified: true` in the Session Durable Object.
+
+---
+
+## 6. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -136,3 +166,9 @@ npm.cmd run typecheck
 ```bash
 npx.cmd tsx tests/architecture.test.ts
 ```
+
+### Run Auth, Session DO & MFA Enforcement Tests:
+```bash
+npx.cmd tsx tests/auth-session.test.ts
+```
+

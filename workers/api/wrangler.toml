@@ -25,3 +25,14 @@ APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
 
 # Note: APPWRITE_PROJECT_A_KEY is managed via `wrangler secret put APPWRITE_PROJECT_A_KEY`
 # to ensure credentials are never committed in plaintext.
+
+# Session Durable Object keyed by user ID to manage refresh token families
+[durable_objects]
+bindings = [
+  { name = "SESSION_DO", class_name = "SessionDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["SessionDurableObject"]
+

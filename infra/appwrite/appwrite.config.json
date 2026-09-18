@@ -55,6 +55,33 @@
         "documents.write",
         "users.read"
       ]
+    },
+    "authSecurity": {
+      "passwordPolicy": {
+        "hashingAlgorithm": "argon2",
+        "passwordDictionary": true,
+        "personalDataCheck": true,
+        "minLength": 10
+      },
+      "emailSecurity": {
+        "blockDisposableEmails": true,
+        "disposableEmailBlocklist": [
+          "mailinator.com",
+          "guerrillamail.com",
+          "tempmail.com",
+          "10minutemail.com",
+          "throwawaymail.com",
+          "trashmail.com",
+          "yopmail.com",
+          "sharklasers.com",
+          "dispostable.com"
+        ]
+      },
+      "mfa": {
+        "enabled": true,
+        "enforceForRoles": ["admin", "staff", "doctor", "nurse"],
+        "supportedFactors": ["totp", "email", "phone"]
+      }
     }
   },
   "projectB": {

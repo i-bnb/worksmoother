@@ -87,12 +87,66 @@ export interface NotificationEvent {
   metadata?: Record<string, unknown>;
 }
 
+// Appwrite Auth & MFA User Profile
+export interface AppwriteUser {
+  $id: string;
+  name: string;
+  email: string;
+  emailVerification: boolean;
+  status: boolean;
+  labels: string[];
+  mfa: boolean;
+  targets?: Array<{
+    $id: string;
+    providerType: 'email' | 'sms' | 'push';
+    identifier: string;
+  }>;
+}
+
+// First-Party Custom Session & Token Family Management
+export interface FirstPartySession {
+  sessionId: string;
+  familyId: string;
+  userId: string;
+  email: string;
+  roles: string[];
+  mfaVerified: boolean;
+  mfaFactors: string[];
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface TokenFamilyState {
+  familyId: string;
+  userId: string;
+  currentRefreshTokenHash: string;
+  status: 'ACTIVE' | 'REVOKED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TokenRotationResult {
+  success: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+  error?: string;
+  familyRevoked?: boolean;
+}
+
+export interface SessionValidationResult {
+  valid: boolean;
+  session?: FirstPartySession;
+  error?: string;
+}
+
 // Cloudflare Worker Environment Bindings
 export interface ApiEnv {
   ENVIRONMENT: string;
   APPWRITE_ENDPOINT: string;
   APPWRITE_PROJECT_A_ID: string;
   APPWRITE_PROJECT_A_KEY: string;
+  SESSION_SECRET?: string;
+  SESSION_DO: DurableObjectNamespace;
   RECORDS_SERVICE: Fetcher;
   NOTIFY_SERVICE: Fetcher;
 }
@@ -112,3 +166,4 @@ export interface NotifyEnv {
   APPWRITE_PROJECT_A_ID: string;
   APPWRITE_PROJECT_A_KEY: string;
 }
+
