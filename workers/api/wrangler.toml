@@ -26,11 +26,12 @@ APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
 # Note: APPWRITE_PROJECT_A_KEY is managed via `wrangler secret put APPWRITE_PROJECT_A_KEY`
 # to ensure credentials are never committed in plaintext.
 
-# Durable Objects: SESSION_DO (user ID) and SLOT_DO (doctor-day sharded)
+# Durable Objects: SESSION_DO (user ID), SLOT_DO (doctor-day sharded), and RATE_LIMITER_DO (exact sliding window)
 [durable_objects]
 bindings = [
   { name = "SESSION_DO", class_name = "SessionDurableObject" },
-  { name = "SLOT_DO", class_name = "SlotDurableObject" }
+  { name = "SLOT_DO", class_name = "SlotDurableObject" },
+  { name = "RATE_LIMITER_DO", class_name = "RateLimiterDurableObject" }
 ]
 
 [[migrations]]
@@ -41,10 +42,26 @@ new_classes = ["SessionDurableObject"]
 tag = "v2"
 new_classes = ["SlotDurableObject"]
 
+[[migrations]]
+tag = "v3"
+new_classes = ["RateLimiterDurableObject"]
+
 # Cloudflare Queue Producer for asynchronous tasks
 [[queues.producers]]
 binding = "TASK_QUEUE"
 queue = "doctorcare-tasks"
+
+# Layer 2: Cloudflare Workers RateLimit Bindings
+[[ratelimits]]
+binding = "API_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 120, period = 60 }
+
+[[ratelimits]]
+binding = "AUTH_RATE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 15, period = 60 }
+
 
 
 

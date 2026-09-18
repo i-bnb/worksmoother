@@ -464,6 +464,34 @@ export interface TaskQueueMessage {
   timestamp: string;
 }
 
+// Rate Limiting Types across 4 Architecture Layers
+export interface RateLimitBinding {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
+export interface DoRateLimitConsumeRequest {
+  key: string;
+  limit: number;
+  windowSeconds: number;
+}
+
+export interface DoRateLimitResult {
+  allowed: boolean;
+  current: number;
+  limit: number;
+  remaining: number;
+  resetInSeconds: number;
+}
+
+export interface BusinessCapViolation {
+  allowed: boolean;
+  quota: string;
+  limit: number;
+  current: number;
+  message?: string;
+  actionRequired?: string;
+}
+
 // Cloudflare Worker Environment Bindings
 export interface ApiEnv {
   ENVIRONMENT: string;
@@ -479,6 +507,11 @@ export interface ApiEnv {
   RAZORPAY_WEBHOOK_SECRET?: string;
   RECORDS_SERVICE: Fetcher;
   NOTIFY_SERVICE: Fetcher;
+  // Layer 2: Cloudflare Workers RateLimit Bindings
+  API_RATE_LIMITER?: RateLimitBinding;
+  AUTH_RATE_LIMITER?: RateLimitBinding;
+  // Layer 3: Exact Durable Object Counter Binding
+  RATE_LIMITER_DO?: DurableObjectNamespace;
 }
 
 export interface RecordsEnv {

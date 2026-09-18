@@ -447,7 +447,52 @@ To guarantee mathematical tamper evidence and non-repudiation for clinical acces
 
 ---
 
-## 23. Development & Verification
+## 23. Four-Layer Defense-in-Depth Rate Limiting Architecture
+
+The DoctorCare platform implements four distinct architectural layers of rate limiting to ensure volumetric attack resistance, low-latency edge protection, zero-race distributed consistency, and compliance with clinical governance:
+
+```
+                  ┌─────────────────────────────────────────────────────────┐
+  LAYER 1         │       Cloudflare Zone WAF Rate Limiting (Edge)          │
+  Global Edge     │ - Auth & Token Exchange: 30 req/60s per IP (Block)       │
+  DDoS Shield     │ - Clinical Records: 60 req/60s per IP (Block)           │
+                  │ - General Volumetric: 600 req/60s per IP (Block)        │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                               ▼
+                  ┌─────────────────────────────────────────────────────────┐
+  LAYER 2         │      Cloudflare Workers RateLimit Bindings (In-Worker)  │
+  In-Worker Edge  │ - AUTH_RATE_LIMITER: 15 req/60s per IP                   │
+  Low-Latency     │ - API_RATE_LIMITER: 120 req/60s per IP                  │
+  Throttling      │ Returns HTTP 429 (X-RateLimit-Layer: WORKERS_RATELIMIT)  │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                               ▼
+                  ┌─────────────────────────────────────────────────────────┐
+  LAYER 3         │      Exact Durable Object Counters (RATE_LIMITER_DO)    │
+  Strong          │ - Atomic, single-threaded sliding-window counters       │
+  Consistency     │ - Eliminates eventual consistency edge race conditions  │
+  Zero Races      │ - Enforced on payment orders, slot reservations, and MFA│
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                               ▼
+                  ┌─────────────────────────────────────────────────────────┐
+  LAYER 4         │          Business-Logic Caps (Healthcare Quotas)        │
+  Domain Quotas   │ - Slot Hoarding Cap: Max 3 active unconfirmed holds/pt   │
+  & Anti-Abuse    │ - Doctor Exfiltration: Max 50 decryptions/hr (ER bypass)│
+                  │ - File Uploads: Max 10 presigned URLs / 24 hours / pt    │
+                  │ - Payment Attempts: Max 5 orders per appointment        │
+                  └─────────────────────────────────────────────────────────┘
+```
+
+- **Layer 1: Zone WAF Rules (`infra/cloudflare/waf-rulesets.json`)**: Configured under Cloudflare Rulesets API phase `http_ratelimit`, mitigating volumetric burst attacks before requests consume Worker compute.
+- **Layer 2: Workers RateLimit Bindings (`workers/api/wrangler.toml`)**: Cloudflare native `[[ratelimits]]` bindings executed as the earliest middleware in `api` worker (`enforceWorkersRateLimit`).
+- **Layer 3: Exact Durable Object Counters (`RateLimiterDurableObject`)**: Keyed per actor/patient/doctor (`RATE_LIMITER_DO`), maintaining exact millisecond-precision timestamps in storage to guarantee zero concurrency race conditions.
+- **Layer 4: Business-Logic Caps (`@doctorcare/shared`)**: Policy-level quotas preventing appointment hoarding (HTTP 422 `BUSINESS_QUOTA_EXCEEDED`), mass PHI record harvesting (HTTP 429 with `X-Emergency-Override` support), and file/payment spam.
+
+---
+
+## 24. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -463,7 +508,7 @@ npm.cmd run typecheck
 ```bash
 npm.cmd run infra:secrets      # Cloudflare Secrets Store & KEK (kek-2026-09)
 npm.cmd run infra:appwrite     # Appwrite Dual-Project & TablesDB Collections
-npm.cmd run infra:waf          # Cloudflare Pro Zone WAF & OWASP Rulesets
+npm.cmd run infra:waf          # Cloudflare Pro Zone WAF, OWASP & Layer 1 Rate Limiting
 npm.cmd run infra:queues       # Cloudflare Queues & Dead-Letter Queue
 npm.cmd run infra:r2           # Cloudflare Patient Files R2 Bucket
 npm.cmd run infra:audit-vault  # Cloudflare Write-Only R2 Audit Vault & Scoped Token
@@ -476,7 +521,8 @@ npm.cmd run test:access-log    # Fail-Closed Audit Log Tests
 npm.cmd run test:records       # Medical Records, R2 & AAD Tests
 npm.cmd run test:notify        # Meta WhatsApp, Email & DPDP Consent Tests
 npm.cmd run test:audit-chain   # R2 Write-Only Vault & Cryptographic Hash-Chain Tests
-npm.cmd run test:all           # Complete Test Suite (All 8 verification suites)
+npm.cmd run test:ratelimit     # Four-Layer Defense-in-Depth Rate Limiting Tests
+npm.cmd run test:all           # Complete Test Suite (All 9 verification suites)
 ```
 
 

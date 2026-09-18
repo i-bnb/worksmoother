@@ -37,5 +37,44 @@
       },
       "description": "Enforce OWASP ModSecurity Core Ruleset with anomaly scoring on api.yourhospital.com to protect healthcare endpoints"
     }
+  ],
+  "rate_limiting_phase": "http_ratelimit",
+  "rate_limiting_rules": [
+    {
+      "name": "Zone WAF Layer 1: Auth & Token Rate Limiting",
+      "action": "block",
+      "expression": "http.host eq \"api.yourhospital.com\" and (http.request.uri.path starts_with \"/api/v1/auth\" or http.request.uri.path starts_with \"/api/v1/exchange-token\")",
+      "ratelimit": {
+        "characteristics": ["ip.src"],
+        "period": 60,
+        "requests_per_period": 30,
+        "mitigation_timeout": 60
+      },
+      "description": "Zone WAF Layer 1: Throttle authentication and token exchange endpoints to max 30 req/60s per source IP"
+    },
+    {
+      "name": "Zone WAF Layer 1: Clinical Records Burst Protection",
+      "action": "block",
+      "expression": "http.host eq \"api.yourhospital.com\" and http.request.uri.path starts_with \"/api/v1/records\"",
+      "ratelimit": {
+        "characteristics": ["ip.src"],
+        "period": 60,
+        "requests_per_period": 60,
+        "mitigation_timeout": 60
+      },
+      "description": "Zone WAF Layer 1: Throttle clinical record access and upload requests to max 60 req/60s per source IP"
+    },
+    {
+      "name": "Zone WAF Layer 1: General API Volumetric Protection",
+      "action": "block",
+      "expression": "http.host eq \"api.yourhospital.com\"",
+      "ratelimit": {
+        "characteristics": ["ip.src"],
+        "period": 60,
+        "requests_per_period": 600,
+        "mitigation_timeout": 60
+      },
+      "description": "Zone WAF Layer 1: Protect api.yourhospital.com against volumetric DDoS and scraping with 600 req/60s per source IP cap"
+    }
   ]
 }

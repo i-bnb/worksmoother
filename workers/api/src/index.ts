@@ -5,6 +5,10 @@ import {
   deriveConsultationFee,
   createRazorpayOrder,
   verifyRazorpayWebhookSignature,
+  assertActiveSlotHoldCap,
+  assertDoctorDecryptionVelocityCap,
+  assertPatientFileUploadCap,
+  assertPaymentOrderCap,
 } from '@doctorcare/shared';
 import {
   signAccessToken,
@@ -15,8 +19,13 @@ import {
   enforceStaffMfaMiddleware,
   extractAccessToken,
 } from './middleware/mfaMiddleware.js';
+import {
+  enforceWorkersRateLimit,
+  enforceExactDoRateLimit,
+} from './middleware/rateLimitMiddleware.js';
 import { SessionDurableObject } from './durable-objects/SessionDurableObject.js';
 import { SlotDurableObject } from './durable-objects/SlotDurableObject.js';
+import { RateLimiterDurableObject } from './durable-objects/RateLimiterDurableObject.js';
 import {
   validateStrictJson,
   HoldSlotSchema,
@@ -39,7 +48,7 @@ import {
 } from './schemas/index.js';
 
 // Export Durable Object classes for Cloudflare Workers runtime
-export { SessionDurableObject, SlotDurableObject };
+export { SessionDurableObject, SlotDurableObject, RateLimiterDurableObject };
 
 function addSecurityHeaders(response: Response): Response {
   const newHeaders = new Headers(response.headers);
@@ -91,6 +100,15 @@ export default {
           }
         )
       );
+    }
+
+    // =========================================================================
+    // LAYER 2: Cloudflare Workers RateLimit Binding Enforcement
+    // Ultra-low latency edge throttling before executing any CPU or database operations
+    // =========================================================================
+    const workersRateLimitRes = await enforceWorkersRateLimit(request, env);
+    if (workersRateLimitRes) {
+      return addSecurityHeaders(workersRateLimitRes);
     }
 
     // =========================================================================
@@ -411,6 +429,54 @@ export default {
         }
         const data = validation.data!;
 
+        // LAYER 3: Exact Durable Object Counter on patient hold velocity (max 10 / 60s)
+        const holdDoLimit = await enforceExactDoRateLimit(
+          env,
+          `patient_holds:${data.patient_id}`,
+          10,
+          60
+        );
+        if (holdDoLimit) {
+          return addSecurityHeaders(holdDoLimit);
+        }
+
+        // LAYER 4: Business-Logic Cap: Max 3 active concurrent slot holds per patient
+        try {
+          const appwrite = createOperationalClient(
+            env.APPWRITE_ENDPOINT,
+            env.APPWRITE_PROJECT_A_ID,
+            env.APPWRITE_PROJECT_A_KEY
+          );
+          const bookingList = await appwrite.databases.listDocuments('operational_db', 'BOOKING');
+          const nowMs = Date.now();
+          const activeHolds = (bookingList.documents || []).filter(
+            (b: any) =>
+              b.patient_id === data.patient_id &&
+              b.status === 'HELD' &&
+              (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() > nowMs)
+          ).length;
+
+          const capViolation = assertActiveSlotHoldCap(data.patient_id, activeHolds, 3);
+          if (capViolation) {
+            return addSecurityHeaders(
+              new Response(
+                JSON.stringify({
+                  error: 'BUSINESS_QUOTA_EXCEEDED',
+                  layer: 'BUSINESS_LOGIC_CAP',
+                  quota: capViolation.quota,
+                  limit: capViolation.limit,
+                  current: capViolation.current,
+                  message: capViolation.message,
+                  actionRequired: capViolation.actionRequired,
+                }),
+                { status: 422, headers: { 'Content-Type': 'application/json' } }
+              )
+            );
+          }
+        } catch (capErr) {
+          console.warn('[Business Cap Check Warning]:', capErr);
+        }
+
         // Shard per doctor-day: {doctorId}:{dateUtc}
         const dateUtc = data.start_time_utc.split('T')[0];
         const shardKey = `${data.doctor_id}:${dateUtc}`;
@@ -641,6 +707,33 @@ export default {
       if (url.pathname === '/api/v1/records/files/upload-url' && request.method === 'POST') {
         const validation = await validateStrictJson(request, GenerateUploadUrlSchema);
         if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+
+        const patientId = validation.data?.patient_id || mfaCheck.authContext?.tokenPayload?.sub || 'default_patient';
+        // LAYER 3 & 4: Daily Patient File Upload Cap (max 10 files / 24h)
+        const uploadDoLimit = await enforceExactDoRateLimit(
+          env,
+          `patient_uploads:${patientId}`,
+          10,
+          86400
+        );
+        if (uploadDoLimit) {
+          const capViolation = assertPatientFileUploadCap(patientId, 10, 10);
+          return addSecurityHeaders(
+            new Response(
+              JSON.stringify({
+                error: 'BUSINESS_QUOTA_EXCEEDED',
+                layer: 'BUSINESS_LOGIC_CAP',
+                quota: capViolation?.quota || 'DAILY_FILE_UPLOADS',
+                limit: 10,
+                current: 10,
+                message: capViolation?.message || 'Daily patient file upload limit (10/day) exceeded.',
+                actionRequired: 'CONTACT_HOSPITAL_ADMIN',
+              }),
+              { status: 422, headers: { 'Content-Type': 'application/json' } }
+            )
+          );
+        }
+
         const recordsReq = new Request(request.url, {
           method: 'POST',
           headers: forwardedHeaders,
@@ -663,6 +756,46 @@ export default {
           });
           const recordsResponse = await env.RECORDS_SERVICE.fetch(recordsReq);
           return addSecurityHeaders(recordsResponse);
+        }
+      }
+
+      // LAYER 3 & 4: Doctor Record Decryption Velocity Cap (Max 50/hour unless emergency override)
+      const isRecordRead = url.pathname.match(/\/api\/v1\/records\/(?:patient-records\/)?([^/]+)$/) && request.method === 'GET';
+      if (isRecordRead) {
+        const doctorId = mfaCheck.authContext?.tokenPayload?.sub || request.headers.get('x-actor-id') || 'doctor_unknown';
+        const hasEmergency = request.headers.get('x-emergency-override') === 'true' || request.headers.get('x-access-purpose') === 'EMERGENCY_TREATMENT';
+
+        if (!hasEmergency) {
+          const exfilLimitRes = await enforceExactDoRateLimit(
+            env,
+            `doctor_decryptions:${doctorId}`,
+            50,
+            3600
+          );
+          if (exfilLimitRes) {
+            const capViolation = assertDoctorDecryptionVelocityCap(doctorId, 50, 50, false);
+            return addSecurityHeaders(
+              new Response(
+                JSON.stringify({
+                  error: 'BUSINESS_QUOTA_EXCEEDED',
+                  layer: 'BUSINESS_LOGIC_CAP',
+                  quota: capViolation?.quota || 'DOCTOR_DECRYPTION_HOURLY',
+                  limit: 50,
+                  current: 50,
+                  message: capViolation?.message || 'Hourly clinical record decryption quota (50/hr) exceeded.',
+                  actionRequired: 'PROVIDE_EMERGENCY_OVERRIDE_HEADER',
+                }),
+                {
+                  status: 429,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Retry-After': '3600',
+                    'X-RateLimit-Layer': 'BUSINESS_LOGIC_CAP',
+                  },
+                }
+              )
+            );
+          }
         }
       }
 
@@ -724,6 +857,47 @@ export default {
         const validation = await validateStrictJson(request, CreatePaymentOrderSchema);
         if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
         const data = validation.data!;
+
+        // LAYER 3: Exact Durable Object Counter on payment order creation (max 5 / 60s per patient)
+        const orderDoLimit = await enforceExactDoRateLimit(
+          env,
+          `payment_order:${data.patient_id}`,
+          5,
+          60
+        );
+        if (orderDoLimit) {
+          return addSecurityHeaders(orderDoLimit);
+        }
+
+        // LAYER 4: Business Cap: Max 5 payment orders per appointment/slot
+        try {
+          const appwrite = createOperationalClient(
+            env.APPWRITE_ENDPOINT,
+            env.APPWRITE_PROJECT_A_ID,
+            env.APPWRITE_PROJECT_A_KEY
+          );
+          const events = await appwrite.databases.listDocuments('operational_db', 'WEBHOOK_EVENT');
+          const slotOrders = (events.documents || []).filter((d: any) => d.payload?.includes(data.slot_key)).length;
+          const capViolation = assertPaymentOrderCap(data.slot_key, slotOrders, 5);
+          if (capViolation) {
+            return addSecurityHeaders(
+              new Response(
+                JSON.stringify({
+                  error: 'BUSINESS_QUOTA_EXCEEDED',
+                  layer: 'BUSINESS_LOGIC_CAP',
+                  quota: capViolation.quota,
+                  limit: capViolation.limit,
+                  current: capViolation.current,
+                  message: capViolation.message,
+                  actionRequired: capViolation.actionRequired,
+                }),
+                { status: 422, headers: { 'Content-Type': 'application/json' } }
+              )
+            );
+          }
+        } catch {
+          // pass
+        }
 
         let doctorSpecialty = 'general medicine';
         try {
