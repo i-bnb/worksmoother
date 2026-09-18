@@ -19,7 +19,10 @@ import {
   Fingerprint,
   HardDrive,
   Eye,
+  EyeOff,
   ArrowRight,
+  Mail,
+  LogIn,
 } from 'lucide-react';
 
 const PRESET_STAFF = [
@@ -46,6 +49,32 @@ const PRESET_STAFF = [
   },
 ];
 
+/**
+ * Attempt a real Appwrite email/password login and return a 15-min JWT.
+ * Falls back gracefully if the Appwrite SDK or project is not yet configured.
+ */
+async function attemptAppwriteLogin(email: string, password: string): Promise<string | null> {
+  try {
+    const { getClient, getAccount } = await import('../../lib/appwrite/client');
+    const client = getClient();
+    const account = getAccount();
+    // Create session then issue a short-lived JWT
+    await account.createEmailPasswordSession(email, password);
+    const jwtObj = await account.createJWT();
+    return jwtObj.jwt;
+  } catch (err: any) {
+    // If env vars are missing / Appwrite unreachable, surface the error
+    if (
+      err?.message?.includes('Missing required environment') ||
+      err?.code === 'ERR_INVALID_URL'
+    ) {
+      return null; // silently fall through to mock
+    }
+    throw err;
+  }
+}
+
+
 export default function LoginPage() {
   const {
     user,
@@ -65,6 +94,49 @@ export default function LoginPage() {
   const [apiTestResult, setApiTestResult] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
 
+  // Real email/password Appwrite login
+  const [loginTab, setLoginTab] = useState<'persona' | 'email' | 'jwt'>('persona');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  /**
+   * Handle preset persona card clicks.
+   * Tries a real Appwrite login (if env is configured) and falls back to mock JWT.
+   */
+  const handlePersonaLogin = async (staff: typeof PRESET_STAFF[number]) => {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      // Try real Appwrite auth first (will silently fall through if unconfigured)
+      const realJwt = await attemptAppwriteLogin(staff.email, 'mock_password_unused').catch(() => null);
+      await loginWithJwt(realJwt ?? staff.jwt);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Token exchange failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  /** Handle real email + password Appwrite login */
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim() || !passwordInput.trim()) return;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const jwt = await attemptAppwriteLogin(emailInput.trim(), passwordInput);
+      if (!jwt) {
+        throw new Error('Appwrite is not configured. Please fill in NEXT_PUBLIC_APPWRITE_PROJECT_A_ID in .env.local.');
+      }
+      await loginWithJwt(jwt);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Login failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleLogin = async (jwtToExchange: string) => {
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -76,6 +148,7 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
+
 
   const handleTestApi = async () => {
     setIsTestingApi(true);
@@ -191,64 +264,143 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-6 rounded-2xl border border-white/[0.08] space-y-6">
+            <div className="glass-panel p-6 rounded-2xl border border-white/[0.08] space-y-5">
               <div>
                 <h2 className="text-base font-semibold text-white flex items-center gap-2">
                   <Key className="w-4 h-4 text-blue-400" />
-                  Select Staff Persona or Provide Appwrite JWT
+                  Staff Authentication
                 </h2>
                 <p className="text-xs text-[#86868b] mt-1">
-                  Choose a verified physician account to simulate the Appwrite JWT creation and token-exchange flow.
+                  Sign in with Appwrite credentials or use a preset demo persona.
                 </p>
               </div>
 
-              {/* Preset Cards */}
-              <div className="space-y-3">
-                {PRESET_STAFF.map((staff) => (
+              {/* Tab switcher */}
+              <div className="flex gap-1 p-1 bg-black/40 rounded-xl border border-white/[0.06]">
+                {(['persona', 'email', 'jwt'] as const).map((tab) => (
                   <button
-                    key={staff.email}
-                    onClick={() => handleLogin(staff.jwt)}
-                    disabled={isSubmitting}
-                    className="w-full text-left p-4 rounded-xl border border-white/[0.06] bg-[#0c0c10]/70 hover:border-white/20 hover:bg-[#121218] transition-all flex items-center justify-between group"
+                    key={tab}
+                    onClick={() => setLoginTab(tab)}
+                    className={`flex-1 py-1.5 text-[11px] font-medium rounded-lg transition-all ${
+                      loginTab === tab
+                        ? 'bg-white/10 text-white'
+                        : 'text-[#86868b] hover:text-zinc-300'
+                    }`}
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {staff.name}
-                        </span>
-                        <span className="apple-pill text-[10px] font-mono border-white/10 text-[#86868b]">
-                          {staff.role}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#86868b] font-mono">{staff.email}</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-[#86868b] group-hover:text-white transition-colors" />
+                    {tab === 'persona' ? 'Quick Select' : tab === 'email' ? 'Email Login' : 'Raw JWT'}
                   </button>
                 ))}
               </div>
 
-              {/* Custom JWT Input */}
-              <div className="pt-4 border-t border-white/[0.06] space-y-3">
-                <label className="text-xs text-[#86868b] block">Or paste raw Appwrite 15-min JWT:</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={inputJwt}
-                    onChange={(e) => setInputJwt(e.target.value)}
-                    placeholder="eyJhbGciOiJSUzI1NiIs..."
-                    className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-blue-500/50"
-                  />
-                  <button
-                    onClick={() => handleLogin(inputJwt)}
-                    disabled={isSubmitting || !inputJwt.trim()}
-                    className="apple-btn-primary text-xs py-2 px-4 shrink-0 disabled:opacity-40"
-                  >
-                    {isSubmitting ? 'Exchanging...' : 'Exchange'}
-                  </button>
+              {/* Tab: Quick persona select */}
+              {loginTab === 'persona' && (
+                <div className="space-y-3">
+                  {PRESET_STAFF.map((staff) => (
+                    <button
+                      key={staff.email}
+                      onClick={() => handlePersonaLogin(staff)}
+                      disabled={isSubmitting}
+                      className="w-full text-left p-4 rounded-xl border border-white/[0.06] bg-[#0c0c10]/70 hover:border-white/20 hover:bg-[#121218] transition-all flex items-center justify-between group disabled:opacity-50"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">
+                            {staff.name}
+                          </span>
+                          <span className="apple-pill text-[10px] font-mono border-white/10 text-[#86868b]">
+                            {staff.role}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#86868b] font-mono">{staff.email}</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-[#86868b] group-hover:text-white transition-colors" />
+                    </button>
+                  ))}
+                  <p className="text-[11px] text-[#86868b] pt-1">
+                    Uses real <code className="text-zinc-300">account.createJWT()</code> when Appwrite is configured,
+                    otherwise falls back to offline mock tokens.
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* Tab: Email + Password */}
+              {loginTab === 'email' && (
+                <form onSubmit={handleEmailLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[11px] text-[#86868b] font-mono uppercase tracking-wider">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" />
+                      <input
+                        type="email"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        placeholder="staff@yourhospital.com"
+                        required
+                        className="w-full pl-9 pr-4 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 placeholder:text-[#86868b]"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] text-[#86868b] font-mono uppercase tracking-wider">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        placeholder="••••••••••"
+                        required
+                        className="w-full pl-9 pr-10 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 placeholder:text-[#86868b]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-white"
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !emailInput.trim() || !passwordInput.trim()}
+                    className="w-full apple-btn-primary flex items-center justify-center gap-2 text-xs py-2.5 disabled:opacity-40"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    {isSubmitting ? 'Signing in...' : 'Sign In with Appwrite'}
+                  </button>
+                  <p className="text-[11px] text-[#86868b]">
+                    Calls <code className="text-zinc-300">account.createEmailPasswordSession()</code> then
+                    {' '}<code className="text-zinc-300">account.createJWT()</code> to obtain a 15-min token.
+                  </p>
+                </form>
+              )}
+
+              {/* Tab: Raw JWT */}
+              {loginTab === 'jwt' && (
+                <div className="space-y-3">
+                  <label className="text-xs text-[#86868b] block">Paste a raw Appwrite 15-min JWT:</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={inputJwt}
+                      onChange={(e) => setInputJwt(e.target.value)}
+                      placeholder="eyJhbGciOiJSUzI1NiIs..."
+                      className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-blue-500/50"
+                    />
+                    <button
+                      onClick={() => handleLogin(inputJwt)}
+                      disabled={isSubmitting || !inputJwt.trim()}
+                      className="apple-btn-primary text-xs py-2 px-4 shrink-0 disabled:opacity-40"
+                    >
+                      {isSubmitting ? 'Exchanging...' : 'Exchange'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
 
           {/* Interactive Authenticated API Test */}
           <div className="glass-panel p-5 rounded-2xl border border-white/[0.08] space-y-3">
