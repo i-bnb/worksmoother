@@ -24,3 +24,8 @@ APPWRITE_PROJECT_B_ID = "doctorcare-medical-records-prod"
 [[r2_buckets]]
 binding = "PATIENT_FILES_BUCKET"
 bucket_name = "doctorcare-patient-files"
+
+# Cloudflare Write-Only R2 Audit Vault Bucket for Tamper-Evident Hash-Chained Access Logs
+[[r2_buckets]]
+binding = "AUDIT_VAULT_BUCKET"
+bucket_name = "doctorcare-audit-vault"

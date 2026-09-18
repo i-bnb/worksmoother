@@ -426,7 +426,28 @@ To strictly comply with HIPAA § 164.312(b) and India DPDP Act 2023 audit standa
 
 ---
 
-## 22. Development & Verification
+## 22. Write-Only R2 Audit Vault & Cryptographic Hash-Chaining (`doctorcare-audit-vault`)
+
+To guarantee mathematical tamper evidence and non-repudiation for clinical access logs:
+- **Write-Only R2 Bucket (`doctorcare-audit-vault`)**:
+  - Bound to `doctorcare-records` worker as `AUDIT_VAULT_BUCKET`.
+  - Provisioned with an append/put-only scoped Cloudflare API token (`workers_r2_bucket_object_write`).
+  - Ingestion credentials have zero read, list, or delete privileges, preventing any modification or deletion of existing audit objects.
+- **Cryptographic Hash-Chained Ledger**:
+  - **Genesis Block**: Root block (`sequence_number: 1`) links to `GENESIS_HASH` (`0000000000000000000000000000000000000000000000000000000000000000`).
+  - **Sequential Chaining**: Each subsequent block (`sequence_number: N`) contains `previous_hash` strictly equal to the SHA-256 digest of block `N - 1`.
+  - **Deterministic Canonical Digest**: All block attributes are canonicalized with strictly sorted keys prior to SHA-256 hashing via WebCrypto `crypto.subtle.digest('SHA-256', ...)`.
+  - **Storage Keying**: Stored as `chain/${record_id}/${sequence_number.padStart(6, '0')}.json`.
+- **Live Mirroring on Record Access**:
+  - Upon every successful `RECORD_ACCESS_LOG` write in `GET /api/v1/records/:recordId`, the `records` Worker mirrors the log into `AUDIT_VAULT_BUCKET` as a newly sealed block.
+  - Returns `audit_vault_mirrored: true` and `hash_chain: { sequence_number, current_hash, previous_hash }` in the response payload.
+- **Tamper Verification Endpoint**:
+  - `GET /api/v1/records/:recordId/audit-chain/verify`: Fetches and verifies the entire cryptographic chain for the given record, checking Genesis linkage, sequential ordering, previous hash pointers, and canonical content digests.
+  - Automatically identifies exact tampered block index, broken block, and reason (`CONTENT_HASH_MISMATCH`, `SEQUENCE_GAP`, `BROKEN_HASH_LINK`).
+
+---
+
+## 23. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -440,20 +461,22 @@ npm.cmd run typecheck
 
 ### Run Provisioning Scripts:
 ```bash
-npm.cmd run infra:secrets    # Cloudflare Secrets Store & KEK (kek-2026-09)
-npm.cmd run infra:appwrite   # Appwrite Dual-Project & TablesDB Collections
-npm.cmd run infra:waf        # Cloudflare Pro Zone WAF & OWASP Rulesets
-npm.cmd run infra:queues     # Cloudflare Queues & Dead-Letter Queue
-npm.cmd run infra:r2         # Cloudflare R2 Bucket & Isolation Audit
+npm.cmd run infra:secrets      # Cloudflare Secrets Store & KEK (kek-2026-09)
+npm.cmd run infra:appwrite     # Appwrite Dual-Project & TablesDB Collections
+npm.cmd run infra:waf          # Cloudflare Pro Zone WAF & OWASP Rulesets
+npm.cmd run infra:queues       # Cloudflare Queues & Dead-Letter Queue
+npm.cmd run infra:r2           # Cloudflare Patient Files R2 Bucket
+npm.cmd run infra:audit-vault  # Cloudflare Write-Only R2 Audit Vault & Scoped Token
 ```
 
 ### Run Test Suites:
 ```bash
-npm.cmd run test             # Record Access Log & Fail-Closed Test Suite
-npm.cmd run test:access-log  # Fail-Closed Audit Log Tests
-npm.cmd run test:records     # Medical Records, R2 & AAD Tests
-npm.cmd run test:notify      # Meta WhatsApp, Email & DPDP Consent Tests
-npm.cmd run test:all         # Complete Test Suite (All 7 verification suites)
+npm.cmd run test               # Record Access Log & Fail-Closed Test Suite
+npm.cmd run test:access-log    # Fail-Closed Audit Log Tests
+npm.cmd run test:records       # Medical Records, R2 & AAD Tests
+npm.cmd run test:notify        # Meta WhatsApp, Email & DPDP Consent Tests
+npm.cmd run test:audit-chain   # R2 Write-Only Vault & Cryptographic Hash-Chain Tests
+npm.cmd run test:all           # Complete Test Suite (All 8 verification suites)
 ```
 
 

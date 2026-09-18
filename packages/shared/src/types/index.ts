@@ -118,6 +118,36 @@ export interface RecordAccessLog {
   created_at: string;
 }
 
+// Cryptographic Hash-Chained Audit Block (for Write-Only R2 Audit Vault)
+export interface HashChainedAuditBlock {
+  sequence_number: number;
+  timestamp: string;
+  previous_hash: string;
+  log_id: string;
+  record_id: string;
+  patient_id: string;
+  hospital_id: string;
+  accessor_id: string;
+  accessor_role: string;
+  action: string;
+  purpose: string;
+  ip_address: string;
+  user_agent: string;
+  status: string;
+  current_hash: string;
+}
+
+export interface AuditChainVerificationResult {
+  valid: boolean;
+  totalBlocks: number;
+  genesisHash: string;
+  latestHash?: string;
+  latestSequenceNumber?: number;
+  error?: string;
+  tamperedIndex?: number;
+  brokenBlock?: HashChainedAuditBlock;
+}
+
 // R2 Presigned URL & File Validation Types
 export interface R2PresignedUrlRequest {
   fileName: string;
@@ -460,9 +490,13 @@ export interface RecordsEnv {
   KEK_2026_09: string;
   // Cloudflare R2 Bucket for Patient Files
   PATIENT_FILES_BUCKET?: R2Bucket;
+  // Cloudflare Write-Only R2 Audit Vault Bucket
+  AUDIT_VAULT_BUCKET?: R2Bucket;
   R2_ACCOUNT_ID?: string;
   R2_ACCESS_KEY_ID?: string;
   R2_SECRET_ACCESS_KEY?: string;
+  R2_AUDIT_ACCESS_KEY_ID?: string;
+  R2_AUDIT_SECRET_ACCESS_KEY?: string;
 }
 
 export interface NotifyEnv {

@@ -8,6 +8,10 @@ import {
   MedicalRecordAAD,
   generateR2PresignedPutUrl,
   validateFileMagicBytes,
+  createAuditBlock,
+  verifyAuditChain,
+  GENESIS_HASH,
+  HashChainedAuditBlock,
 } from '@doctorcare/shared';
 
 export default {
@@ -25,6 +29,7 @@ export default {
           kekName: 'kek-2026-09',
           isolatedProject: env.APPWRITE_PROJECT_B_ID,
           r2BucketBound: Boolean(env.PATIENT_FILES_BUCKET),
+          auditVaultBound: Boolean(env.AUDIT_VAULT_BUCKET),
           timestamp: new Date().toISOString(),
         }),
         {
@@ -255,6 +260,48 @@ export default {
         );
       }
 
+      // =======================================================================
+      // 5. Audit Chain Verification Endpoint (Mathematical Tamper Evidence)
+      // =======================================================================
+      const chainVerifyMatch = url.pathname.match(/\/api\/v1\/records\/([^/]+)\/audit-chain(?:\/verify)?$/);
+      if (chainVerifyMatch && request.method === 'GET') {
+        const targetRecordId = chainVerifyMatch[1];
+        if (!env.AUDIT_VAULT_BUCKET) {
+          return new Response(
+            JSON.stringify({
+              error: 'AUDIT_VAULT_NOT_CONFIGURED',
+              message: 'AUDIT_VAULT_BUCKET binding is not configured on this records worker',
+            }),
+            { status: 503, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const prefix = `chain/${targetRecordId}/`;
+        const listed = await env.AUDIT_VAULT_BUCKET.list({ prefix });
+        const sortedObjects = [...(listed.objects || [])].sort((a, b) => a.key.localeCompare(b.key));
+
+        const blocks: HashChainedAuditBlock[] = [];
+        for (const item of sortedObjects) {
+          const obj = await env.AUDIT_VAULT_BUCKET.get(item.key);
+          if (obj) {
+            const block = (await obj.json()) as HashChainedAuditBlock;
+            blocks.push(block);
+          }
+        }
+
+        const verification = await verifyAuditChain(blocks);
+        return new Response(
+          JSON.stringify({
+            record_id: targetRecordId,
+            verified: verification.valid,
+            total_blocks: blocks.length,
+            verification,
+            blocks,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       const match = url.pathname.match(/\/api\/v1\/records\/(?:patient-records\/)?([^/]+)$/);
       if (match && request.method === 'GET') {
         const recordId = match[1];
@@ -356,6 +403,72 @@ export default {
           );
         }
 
+        // =====================================================================
+        // MIRROR ACCESS LOG TO WRITE-ONLY R2 AUDIT VAULT (HASH-CHAINED OBJECTS)
+        // =====================================================================
+        let chainedBlock: HashChainedAuditBlock | null = null;
+        if (env.AUDIT_VAULT_BUCKET) {
+          try {
+            const prefix = `chain/${normalizedRecordId}/`;
+            const listed = await env.AUDIT_VAULT_BUCKET.list({ prefix });
+
+            let sequenceNumber = 1;
+            let previousHash = GENESIS_HASH;
+
+            if (listed.objects && listed.objects.length > 0) {
+              const sortedObjects = [...listed.objects].sort((a, b) => a.key.localeCompare(b.key));
+              const latestObjMeta = sortedObjects[sortedObjects.length - 1];
+              const latestObj = await env.AUDIT_VAULT_BUCKET.get(latestObjMeta.key);
+              if (latestObj) {
+                const latestData = (await latestObj.json()) as HashChainedAuditBlock;
+                sequenceNumber = (latestData.sequence_number || sortedObjects.length) + 1;
+                previousHash = latestData.current_hash;
+              } else {
+                sequenceNumber = sortedObjects.length + 1;
+              }
+            }
+
+            chainedBlock = await createAuditBlock({
+              entry: {
+                log_id: auditLogDoc.$id || logId,
+                record_id: normalizedRecordId,
+                patient_id: normalizedPatientId,
+                hospital_id: normalizedHospitalId,
+                accessor_id: accessorId,
+                accessor_role: accessorRole,
+                action: 'READ',
+                purpose: accessPurpose,
+                ip_address: ipAddress,
+                user_agent: userAgent,
+                status: 'RECORDED',
+                created_at: accessTimestamp,
+              },
+              previousHash,
+              sequenceNumber,
+            });
+
+            const paddedSeq = String(sequenceNumber).padStart(6, '0');
+            const blockKey = `${prefix}${paddedSeq}.json`;
+
+            await env.AUDIT_VAULT_BUCKET.put(
+              blockKey,
+              JSON.stringify(chainedBlock, null, 2),
+              {
+                httpMetadata: { contentType: 'application/json' },
+                customMetadata: {
+                  sequence_number: String(sequenceNumber),
+                  current_hash: chainedBlock.current_hash,
+                  previous_hash: chainedBlock.previous_hash,
+                  record_id: normalizedRecordId,
+                  timestamp: chainedBlock.timestamp,
+                },
+              }
+            );
+          } catch (r2MirrorErr) {
+            console.error('[AUDIT VAULT WARNING] Failed to mirror access log to R2:', r2MirrorErr);
+          }
+        }
+
         // Only after the audit log has succeeded, proceed to decrypt
         const envelopeStr = (doc.envelope || doc.encryptedPayload) as string;
         const envelope = JSON.parse(envelopeStr) as EncryptedPayload;
@@ -387,6 +500,14 @@ export default {
             created_at: doc.created_at || doc.createdAt,
             audit_log_id: auditLogDoc.$id || logId,
             audit_status: 'RECORDED',
+            audit_vault_mirrored: Boolean(chainedBlock),
+            hash_chain: chainedBlock
+              ? {
+                  sequence_number: chainedBlock.sequence_number,
+                  current_hash: chainedBlock.current_hash,
+                  previous_hash: chainedBlock.previous_hash,
+                }
+              : undefined,
             data: decryptedRecord,
           }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }

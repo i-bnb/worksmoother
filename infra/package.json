@@ -8,6 +8,7 @@
     "setup:waf": "tsx cloudflare/deploy-zone-waf.ts",
     "setup:queues": "tsx cloudflare/provision-queues.ts",
     "setup:r2": "tsx cloudflare/provision-r2.ts",
+    "setup:audit-vault": "tsx cloudflare/provision-audit-vault.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
