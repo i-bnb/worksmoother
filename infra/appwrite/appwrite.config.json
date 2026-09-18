@@ -40,6 +40,81 @@
               { "key": "dispatchedAt", "type": "string", "size": 64, "required": true },
               { "key": "status", "type": "string", "size": 32, "required": true }
             ]
+          },
+          {
+            "id": "HOSPITAL",
+            "name": "Hospital Directory",
+            "attributes": [
+              { "key": "name", "type": "string", "size": 255, "required": true },
+              { "key": "address", "type": "string", "size": 500, "required": true },
+              { "key": "phone", "type": "string", "size": 32, "required": true },
+              { "key": "timezone", "type": "string", "size": 64, "required": true }
+            ]
+          },
+          {
+            "id": "DEPARTMENT",
+            "name": "Hospital Departments",
+            "attributes": [
+              { "key": "hospital_id", "type": "string", "size": 128, "required": true },
+              { "key": "name", "type": "string", "size": 255, "required": true },
+              { "key": "description", "type": "string", "size": 1000, "required": false }
+            ]
+          },
+          {
+            "id": "DOCTOR",
+            "name": "Doctor Directory",
+            "attributes": [
+              { "key": "hospital_id", "type": "string", "size": 128, "required": true },
+              { "key": "department_id", "type": "string", "size": 128, "required": true },
+              { "key": "name", "type": "string", "size": 255, "required": true },
+              { "key": "email", "type": "string", "size": 255, "required": true },
+              { "key": "specialty", "type": "string", "size": 128, "required": true },
+              { "key": "active", "type": "boolean", "required": true }
+            ]
+          },
+          {
+            "id": "ROOM",
+            "name": "Room Directory",
+            "attributes": [
+              { "key": "hospital_id", "type": "string", "size": 128, "required": true },
+              { "key": "department_id", "type": "string", "size": 128, "required": true },
+              { "key": "room_number", "type": "string", "size": 64, "required": true },
+              { "key": "floor", "type": "integer", "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true }
+            ]
+          },
+          {
+            "id": "AVAILABILITY_SLOT",
+            "name": "Doctor Availability Slots",
+            "attributes": [
+              { "key": "slot_key", "type": "string", "size": 255, "required": true },
+              { "key": "doctor_id", "type": "string", "size": 128, "required": true },
+              { "key": "start_time_utc", "type": "string", "size": 64, "required": true },
+              { "key": "end_time_utc", "type": "string", "size": 64, "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true },
+              { "key": "hold_expires_at", "type": "string", "size": 64, "required": false },
+              { "key": "room_id", "type": "string", "size": 128, "required": false }
+            ],
+            "indexes": [
+              { "key": "idx_slot_key_unique", "type": "unique", "attributes": ["slot_key"] }
+            ]
+          },
+          {
+            "id": "BOOKING",
+            "name": "Patient Bookings",
+            "attributes": [
+              { "key": "booking_id", "type": "string", "size": 128, "required": true },
+              { "key": "slot_key", "type": "string", "size": 255, "required": true },
+              { "key": "doctor_id", "type": "string", "size": 128, "required": true },
+              { "key": "patient_id", "type": "string", "size": 128, "required": true },
+              { "key": "status", "type": "string", "size": 32, "required": true },
+              { "key": "idempotency_key", "type": "string", "size": 128, "required": true },
+              { "key": "hold_expires_at", "type": "string", "size": 64, "required": true },
+              { "key": "created_at", "type": "string", "size": 64, "required": true }
+            ],
+            "indexes": [
+              { "key": "idx_idempotency_key_unique", "type": "unique", "attributes": ["idempotency_key"] }
+            ]
           }
         ]
       }

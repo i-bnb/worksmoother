@@ -139,6 +139,88 @@ export interface SessionValidationResult {
   error?: string;
 }
 
+// Directory Module Models (Appwrite TablesDB in Project A)
+export interface Hospital {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  timezone: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Department {
+  id: string;
+  hospital_id: string;
+  name: string;
+  description?: string;
+  created_at?: string;
+}
+
+export interface Doctor {
+  id: string;
+  hospital_id: string;
+  department_id: string;
+  name: string;
+  email: string;
+  specialty: string;
+  active: boolean;
+  created_at?: string;
+}
+
+export interface Room {
+  id: string;
+  hospital_id: string;
+  department_id: string;
+  room_number: string;
+  floor: number;
+  status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
+  created_at?: string;
+}
+
+// Availability Slot & Booking Models
+export interface AvailabilitySlot {
+  slot_key: string; // Formatted as {doctor_id}:{start_time_utc}
+  doctor_id: string;
+  start_time_utc: string;
+  end_time_utc: string;
+  status: 'AVAILABLE' | 'HELD' | 'BOOKED';
+  hold_expires_at?: string | null;
+  room_id?: string | null;
+}
+
+export interface BookingRecord {
+  booking_id: string;
+  slot_key: string;
+  doctor_id: string;
+  patient_id: string;
+  status: 'HELD' | 'CONFIRMED' | 'CANCELLED' | 'RELEASED';
+  idempotency_key: string;
+  hold_expires_at: string;
+  created_at: string;
+}
+
+export interface SlotHoldRequest {
+  doctor_id: string;
+  start_time_utc: string;
+  end_time_utc: string;
+  patient_id: string;
+  idempotency_key: string;
+}
+
+export interface SlotHoldResult {
+  success: boolean;
+  slot_key: string;
+  doctor_id: string;
+  patient_id: string;
+  status: 'HELD';
+  hold_expires_at: string;
+  hold_expires_timestamp_ms: number;
+  idempotency_key: string;
+  idempotent_replay?: boolean;
+}
+
 // Cloudflare Worker Environment Bindings
 export interface ApiEnv {
   ENVIRONMENT: string;
@@ -147,6 +229,7 @@ export interface ApiEnv {
   APPWRITE_PROJECT_A_KEY: string;
   SESSION_SECRET?: string;
   SESSION_DO: DurableObjectNamespace;
+  SLOT_DO: DurableObjectNamespace;
   RECORDS_SERVICE: Fetcher;
   NOTIFY_SERVICE: Fetcher;
 }
@@ -166,4 +249,5 @@ export interface NotifyEnv {
   APPWRITE_PROJECT_A_ID: string;
   APPWRITE_PROJECT_A_KEY: string;
 }
+
 

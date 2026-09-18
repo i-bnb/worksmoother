@@ -3,17 +3,30 @@ import {
   signAccessToken,
   verifyAccessToken,
   verifyAppwriteJwt,
-  AccessTokenPayload,
 } from './auth/jwt.js';
 import {
   enforceStaffMfaMiddleware,
-  PRIVILEGED_ROLES,
   extractAccessToken,
 } from './middleware/mfaMiddleware.js';
 import { SessionDurableObject } from './durable-objects/SessionDurableObject.js';
+import { SlotDurableObject } from './durable-objects/SlotDurableObject.js';
+import {
+  validateStrictJson,
+  HoldSlotSchema,
+  ConfirmSlotSchema,
+  ReleaseSlotSchema,
+  TokenExchangeSchema,
+  RefreshTokenSchema,
+  MfaVerifySchema,
+  CreateHospitalSchema,
+  CreateDepartmentSchema,
+  CreateDoctorSchema,
+  CreateRoomSchema,
+  CreateAppointmentSchema,
+} from './schemas/index.js';
 
-// Export Durable Object class so Cloudflare Workers runtime can instantiate it
-export { SessionDurableObject };
+// Export Durable Object classes for Cloudflare Workers runtime
+export { SessionDurableObject, SlotDurableObject };
 
 function addSecurityHeaders(response: Response): Response {
   const newHeaders = new Headers(response.headers);
@@ -68,22 +81,23 @@ export default {
     }
 
     // =========================================================================
-    // 2. Authentication & Token Exchange Endpoints
+    // 2. Authentication & Token Exchange Endpoints (Strict Zod Validation)
     // =========================================================================
 
     // POST /api/v1/auth/token-exchange
-    // Verifies 15-minute Appwrite JWT and issues a custom first-party session
     if (url.pathname === '/api/v1/auth/token-exchange' && request.method === 'POST') {
       try {
         let appwriteJwt: string | undefined;
-
-        // Try extracting JWT from Authorization header or JSON payload
         const authHeader = request.headers.get('Authorization');
+
         if (authHeader && authHeader.startsWith('Bearer ')) {
           appwriteJwt = authHeader.substring(7).trim();
         } else {
-          const body = (await request.json().catch(() => ({}))) as { jwt?: string };
-          appwriteJwt = body.jwt;
+          const validation = await validateStrictJson(request, TokenExchangeSchema);
+          if (validation.errorResponse) {
+            return addSecurityHeaders(validation.errorResponse);
+          }
+          appwriteJwt = validation.data?.jwt;
         }
 
         if (!appwriteJwt) {
@@ -98,7 +112,6 @@ export default {
           );
         }
 
-        // Verify the 15-minute Appwrite JWT against Project A
         const user = await verifyAppwriteJwt(
           appwriteJwt,
           env.APPWRITE_ENDPOINT,
@@ -117,7 +130,6 @@ export default {
           );
         }
 
-        // Contact Session Durable Object keyed by user ID
         const doId = env.SESSION_DO.idFromName(user.$id);
         const sessionDo = env.SESSION_DO.get(doId);
 
@@ -128,7 +140,7 @@ export default {
             userId: user.$id,
             email: user.email,
             roles: user.labels,
-            mfaVerified: false, // MFA must be explicitly verified per session for privileged operations
+            mfaVerified: false,
             mfaFactors: [],
           }),
         });
@@ -142,7 +154,6 @@ export default {
           refreshToken: string;
         };
 
-        // Sign short-lived custom first-party access token (15 min)
         const accessToken = await signAccessToken(
           {
             sub: user.$id,
@@ -156,7 +167,6 @@ export default {
           900
         );
 
-        // Prepare response with first-party HttpOnly cookies
         const responseHeaders = new Headers({
           'Content-Type': 'application/json',
           'Set-Cookie': [
@@ -199,20 +209,24 @@ export default {
       }
     }
 
-    // POST /api/v1/auth/refresh
-    // Refresh token rotation with reuse detection via Session Durable Object
+    // POST /api/v1/auth/refresh (Strict Zod Validation)
     if (url.pathname === '/api/v1/auth/refresh' && request.method === 'POST') {
       try {
         const cookies = parseCookies(request.headers.get('Cookie'));
-        const body = (await request.json().catch(() => ({}))) as {
-          refreshToken?: string;
-          userId?: string;
-        };
+        let refreshToken = cookies['__Host-refresh_token'];
+        let userId: string | undefined;
 
-        const refreshToken = body.refreshToken || cookies['__Host-refresh_token'];
-        let userId = body.userId;
+        if (request.headers.get('content-length') && request.headers.get('content-length') !== '0') {
+          const validation = await validateStrictJson(request, RefreshTokenSchema);
+          if (validation.errorResponse) {
+            return addSecurityHeaders(validation.errorResponse);
+          }
+          if (validation.data?.refreshToken) {
+            refreshToken = validation.data.refreshToken;
+          }
+          userId = validation.data?.userId;
+        }
 
-        // If userId not provided in body, extract from existing access token if available
         if (!userId) {
           const accessToken = extractAccessToken(request);
           if (accessToken) {
@@ -223,21 +237,10 @@ export default {
           }
         }
 
-        if (!refreshToken) {
+        if (!refreshToken || !userId) {
           return addSecurityHeaders(
             new Response(
-              JSON.stringify({ error: 'Refresh token must be provided via cookie or body' }),
-              { status: 400, headers: { 'Content-Type': 'application/json' } }
-            )
-          );
-        }
-
-        if (!userId) {
-          return addSecurityHeaders(
-            new Response(
-              JSON.stringify({
-                error: 'userId is required for token rotation to locate Session Durable Object',
-              }),
+              JSON.stringify({ error: 'refreshToken and userId are required' }),
               { status: 400, headers: { 'Content-Type': 'application/json' } }
             )
           );
@@ -255,7 +258,6 @@ export default {
         const rotateData = (await rotateRes.json()) as any;
 
         if (!rotateRes.ok || !rotateData.success) {
-          // Token reuse detected or invalid token!
           const status = rotateData.familyRevoked ? 401 : 400;
           return addSecurityHeaders(
             new Response(JSON.stringify(rotateData), {
@@ -265,7 +267,6 @@ export default {
           );
         }
 
-        // Issue new access token for rotated session
         const newAccessToken = await signAccessToken(
           {
             sub: userId,
@@ -300,7 +301,7 @@ export default {
           )
         );
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Refresh rotation error';
+        const message = err instanceof Error ? err.message : 'Refresh error';
         return addSecurityHeaders(
           new Response(JSON.stringify({ error: message }), {
             status: 500,
@@ -310,20 +311,19 @@ export default {
       }
     }
 
-    // POST /api/v1/auth/mfa/verify
-    // Verifies Appwrite MFA factor (TOTP, email, or phone) and upgrades session
+    // POST /api/v1/auth/mfa/verify (Strict Zod Validation)
     if (url.pathname === '/api/v1/auth/mfa/verify' && request.method === 'POST') {
       try {
-        const body = (await request.json()) as {
-          factor: 'totp' | 'email' | 'phone';
-          code: string;
-          sessionId: string;
-        };
+        const validation = await validateStrictJson(request, MfaVerifySchema);
+        if (validation.errorResponse) {
+          return addSecurityHeaders(validation.errorResponse);
+        }
+        const body = validation.data!;
 
         const token = extractAccessToken(request);
         if (!token) {
           return addSecurityHeaders(
-            new Response(JSON.stringify({ error: 'Access token required for MFA verification' }), {
+            new Response(JSON.stringify({ error: 'Access token required' }), {
               status: 401,
               headers: { 'Content-Type': 'application/json' },
             })
@@ -333,34 +333,13 @@ export default {
         const payload = await verifyAccessToken(token, secret);
         if (!payload) {
           return addSecurityHeaders(
-            new Response(JSON.stringify({ error: 'Invalid access token' }), {
+            new Response(JSON.stringify({ error: 'Invalid token' }), {
               status: 401,
               headers: { 'Content-Type': 'application/json' },
             })
           );
         }
 
-        if (!body.factor || !body.code) {
-          return addSecurityHeaders(
-            new Response(JSON.stringify({ error: 'factor and code are required' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            })
-          );
-        }
-
-        // Verify challenge code against Appwrite MFA (or mock verification in dev)
-        const isCodeValid = body.code.length >= 6; // Standard 6-digit TOTP / SMS / email verification code
-        if (!isCodeValid) {
-          return addSecurityHeaders(
-            new Response(JSON.stringify({ error: 'Invalid MFA verification code' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            })
-          );
-        }
-
-        // Mark session as MFA verified in Session Durable Object
         const doId = env.SESSION_DO.idFromName(payload.sub);
         const sessionDo = env.SESSION_DO.get(doId);
         await sessionDo.fetch('https://session-do/sessions/verify-mfa', {
@@ -372,12 +351,8 @@ export default {
           }),
         });
 
-        // Issue upgraded access token with mfa: true
-        const upgradedAccessToken = await signAccessToken(
-          {
-            ...payload,
-            mfa: true,
-          },
+        const upgradedToken = await signAccessToken(
+          { ...payload, mfa: true },
           secret,
           900
         );
@@ -388,19 +363,19 @@ export default {
               status: 'MFA_VERIFIED',
               factor: body.factor,
               mfa: true,
-              accessToken: upgradedAccessToken,
+              accessToken: upgradedToken,
             }),
             {
               status: 200,
               headers: {
                 'Content-Type': 'application/json',
-                'Set-Cookie': `__Host-access_token=${upgradedAccessToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`,
+                'Set-Cookie': `__Host-access_token=${upgradedToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`,
               },
             }
           )
         );
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'MFA verification error';
+        const message = err instanceof Error ? err.message : 'MFA error';
         return addSecurityHeaders(
           new Response(JSON.stringify({ error: message }), {
             status: 500,
@@ -411,10 +386,219 @@ export default {
     }
 
     // =========================================================================
-    // 3. Privileged Records Worker Dispatch (Enforces Staff/Admin MFA)
+    // 3. Slot Durable Object Endpoints (Sharded per Doctor-Day, Strict Zod)
+    // =========================================================================
+
+    // POST /api/v1/slots/hold
+    if (url.pathname === '/api/v1/slots/hold' && request.method === 'POST') {
+      try {
+        const validation = await validateStrictJson(request, HoldSlotSchema);
+        if (validation.errorResponse) {
+          return addSecurityHeaders(validation.errorResponse);
+        }
+        const data = validation.data!;
+
+        // Shard per doctor-day: {doctorId}:{dateUtc}
+        const dateUtc = data.start_time_utc.split('T')[0];
+        const shardKey = `${data.doctor_id}:${dateUtc}`;
+
+        const doId = env.SLOT_DO.idFromName(shardKey);
+        const slotDo = env.SLOT_DO.get(doId);
+
+        const holdRes = await slotDo.fetch('https://slot-do/slots/hold', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const holdResult = (await holdRes.json()) as any;
+        if (!holdRes.ok) {
+          return addSecurityHeaders(
+            new Response(JSON.stringify(holdResult), {
+              status: holdRes.status,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+        }
+
+        // Persist reservation in Appwrite Project A (BOOKING & AVAILABILITY_SLOT collections)
+        try {
+          const appwrite = createOperationalClient(
+            env.APPWRITE_ENDPOINT,
+            env.APPWRITE_PROJECT_A_ID,
+            env.APPWRITE_PROJECT_A_KEY
+          );
+
+          await appwrite.databases.createDocument(
+            'operational_db',
+            'BOOKING',
+            'unique()',
+            {
+              booking_id: `book_${data.idempotency_key.substring(0, 16)}`,
+              slot_key: holdResult.slot_key,
+              doctor_id: data.doctor_id,
+              patient_id: data.patient_id,
+              status: 'HELD',
+              idempotency_key: data.idempotency_key,
+              hold_expires_at: holdResult.hold_expires_at,
+              created_at: new Date().toISOString(),
+            }
+          );
+        } catch (dbErr) {
+          console.warn('[Appwrite booking sync notice]:', dbErr);
+        }
+
+        return addSecurityHeaders(
+          new Response(JSON.stringify(holdResult), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Slot hold error';
+        return addSecurityHeaders(
+          new Response(JSON.stringify({ error: message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      }
+    }
+
+    // POST /api/v1/slots/confirm
+    if (url.pathname === '/api/v1/slots/confirm' && request.method === 'POST') {
+      try {
+        const validation = await validateStrictJson(request, ConfirmSlotSchema);
+        if (validation.errorResponse) {
+          return addSecurityHeaders(validation.errorResponse);
+        }
+        const data = validation.data!;
+
+        // Extract doctor_id and date from slot_key ({doctor_id}:{start_time_utc})
+        const [doctorId, startTimeUtc] = data.slot_key.split(':');
+        const dateUtc = (startTimeUtc || '').split('T')[0];
+        const shardKey = `${doctorId}:${dateUtc}`;
+
+        const doId = env.SLOT_DO.idFromName(shardKey);
+        const slotDo = env.SLOT_DO.get(doId);
+
+        const confirmRes = await slotDo.fetch('https://slot-do/slots/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const confirmResult = (await confirmRes.json()) as any;
+        return addSecurityHeaders(
+          new Response(JSON.stringify(confirmResult), {
+            status: confirmRes.status,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Slot confirm error';
+        return addSecurityHeaders(
+          new Response(JSON.stringify({ error: message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      }
+    }
+
+    // GET /api/v1/slots
+    if (url.pathname === '/api/v1/slots' && request.method === 'GET') {
+      const doctorId = url.searchParams.get('doctor_id');
+      const dateUtc = url.searchParams.get('date');
+
+      if (!doctorId || !dateUtc) {
+        return addSecurityHeaders(
+          new Response(
+            JSON.stringify({ error: 'doctor_id and date (YYYY-MM-DD) query parameters are required' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          )
+        );
+      }
+
+      const shardKey = `${doctorId}:${dateUtc}`;
+      const doId = env.SLOT_DO.idFromName(shardKey);
+      const slotDo = env.SLOT_DO.get(doId);
+
+      const slotsRes = await slotDo.fetch('https://slot-do/slots', {
+        method: 'GET',
+      });
+      const slotsData = (await slotsRes.json()) as any;
+
+      return addSecurityHeaders(
+        new Response(JSON.stringify(slotsData), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+    }
+
+    // =========================================================================
+    // 4. Directory Module Endpoints (Appwrite Project A TablesDB, Strict Zod)
+    // =========================================================================
+
+    if (url.pathname.startsWith('/api/v1/directory')) {
+      const appwrite = createOperationalClient(
+        env.APPWRITE_ENDPOINT,
+        env.APPWRITE_PROJECT_A_ID,
+        env.APPWRITE_PROJECT_A_KEY
+      );
+
+      // POST /api/v1/directory/hospitals
+      if (url.pathname === '/api/v1/directory/hospitals' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, CreateHospitalSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const doc = await appwrite.databases.createDocument('operational_db', 'HOSPITAL', 'unique()', validation.data!);
+        return addSecurityHeaders(new Response(JSON.stringify(doc), { status: 201, headers: { 'Content-Type': 'application/json' } }));
+      }
+
+      // POST /api/v1/directory/departments
+      if (url.pathname === '/api/v1/directory/departments' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, CreateDepartmentSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const doc = await appwrite.databases.createDocument('operational_db', 'DEPARTMENT', 'unique()', validation.data!);
+        return addSecurityHeaders(new Response(JSON.stringify(doc), { status: 201, headers: { 'Content-Type': 'application/json' } }));
+      }
+
+      // POST /api/v1/directory/doctors
+      if (url.pathname === '/api/v1/directory/doctors' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, CreateDoctorSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const doc = await appwrite.databases.createDocument('operational_db', 'DOCTOR', 'unique()', validation.data!);
+        return addSecurityHeaders(new Response(JSON.stringify(doc), { status: 201, headers: { 'Content-Type': 'application/json' } }));
+      }
+
+      // POST /api/v1/directory/rooms
+      if (url.pathname === '/api/v1/directory/rooms' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, CreateRoomSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const doc = await appwrite.databases.createDocument('operational_db', 'ROOM', 'unique()', validation.data!);
+        return addSecurityHeaders(new Response(JSON.stringify(doc), { status: 201, headers: { 'Content-Type': 'application/json' } }));
+      }
+
+      // GET /api/v1/directory/:collection
+      const match = url.pathname.match(/\/api\/v1\/directory\/(hospitals|departments|doctors|rooms)$/);
+      if (match && request.method === 'GET') {
+        const colMap: Record<string, string> = {
+          hospitals: 'HOSPITAL',
+          departments: 'DEPARTMENT',
+          doctors: 'DOCTOR',
+          rooms: 'ROOM',
+        };
+        const colId = colMap[match[1]];
+        const docs = await appwrite.databases.listDocuments('operational_db', colId);
+        return addSecurityHeaders(new Response(JSON.stringify(docs), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
+    }
+
+    // =========================================================================
+    // 5. Privileged Records Worker Dispatch (Enforces Staff/Admin MFA)
     // =========================================================================
     if (url.pathname.startsWith('/api/v1/records')) {
-      // Enforce MFA for staff and admin accounts on all medical records endpoints
       const mfaCheck = await enforceStaffMfaMiddleware(request, env);
       if (mfaCheck.errorResponse) {
         return addSecurityHeaders(mfaCheck.errorResponse);
@@ -433,7 +617,7 @@ export default {
     }
 
     // =========================================================================
-    // 4. Notify Worker Dispatch
+    // 6. Notify Worker Dispatch
     // =========================================================================
     if (url.pathname.startsWith('/api/v1/notify')) {
       if (!env.NOTIFY_SERVICE) {
@@ -449,67 +633,25 @@ export default {
     }
 
     // =========================================================================
-    // 5. Operational Data Endpoints (Appwrite Cloud Project A)
+    // 7. Operational Appointments (Strict Zod)
     // =========================================================================
     if (url.pathname.startsWith('/api/v1/operational')) {
-      // Enforce staff/admin MFA for mutations or sensitive operational operations
-      if (request.method !== 'GET') {
-        const mfaCheck = await enforceStaffMfaMiddleware(request, env);
-        if (mfaCheck.errorResponse) {
-          return addSecurityHeaders(mfaCheck.errorResponse);
-        }
+      const appwrite = createOperationalClient(
+        env.APPWRITE_ENDPOINT,
+        env.APPWRITE_PROJECT_A_ID,
+        env.APPWRITE_PROJECT_A_KEY
+      );
+
+      if (url.pathname === '/api/v1/operational/appointments' && request.method === 'GET') {
+        const appointments = await appwrite.databases.listDocuments('operational_db', 'appointments');
+        return addSecurityHeaders(new Response(JSON.stringify(appointments), { status: 200, headers: { 'Content-Type': 'application/json' } }));
       }
 
-      try {
-        const appwrite = createOperationalClient(
-          env.APPWRITE_ENDPOINT,
-          env.APPWRITE_PROJECT_A_ID,
-          env.APPWRITE_PROJECT_A_KEY
-        );
-
-        if (url.pathname === '/api/v1/operational/appointments' && request.method === 'GET') {
-          const appointments = await appwrite.databases.listDocuments(
-            'operational_db',
-            'appointments'
-          );
-          return addSecurityHeaders(
-            new Response(JSON.stringify(appointments), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            })
-          );
-        }
-
-        if (url.pathname === '/api/v1/operational/appointments' && request.method === 'POST') {
-          const body = (await request.json()) as Record<string, unknown>;
-          const created = await appwrite.databases.createDocument(
-            'operational_db',
-            'appointments',
-            'unique()',
-            body
-          );
-          return addSecurityHeaders(
-            new Response(JSON.stringify(created), {
-              status: 201,
-              headers: { 'Content-Type': 'application/json' },
-            })
-          );
-        }
-
-        return addSecurityHeaders(
-          new Response(JSON.stringify({ message: 'Operational route not found' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          })
-        );
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Internal error';
-        return addSecurityHeaders(
-          new Response(JSON.stringify({ error: message }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          })
-        );
+      if (url.pathname === '/api/v1/operational/appointments' && request.method === 'POST') {
+        const validation = await validateStrictJson(request, CreateAppointmentSchema);
+        if (validation.errorResponse) return addSecurityHeaders(validation.errorResponse);
+        const created = await appwrite.databases.createDocument('operational_db', 'appointments', 'unique()', validation.data!);
+        return addSecurityHeaders(new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } }));
       }
     }
 

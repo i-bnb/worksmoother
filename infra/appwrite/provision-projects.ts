@@ -24,6 +24,11 @@ interface ProjectDefinition {
         size?: number;
         required: boolean;
       }>;
+      indexes?: Array<{
+        key: string;
+        type: string;
+        attributes: string[];
+      }>;
     }>;
   }>;
   scopedApiKey: {
@@ -79,6 +84,13 @@ async function runProvisioning() {
     console.log(`    - Scoped API Key: "${config.projectA.scopedApiKey.name}"`);
     console.log(`    - Scopes: [${config.projectA.scopedApiKey.scopes.join(', ')}]`);
     console.log(`    - Databases: ${config.projectA.databases.map((d) => d.name).join(', ')}`);
+    for (const db of config.projectA.databases) {
+      console.log(`      * Database "${db.id}": ${db.collections.length} Collections:`);
+      for (const col of db.collections) {
+        const idxStr = col.indexes ? ` [Indexed: ${col.indexes.map((i) => `${i.key} (${i.type})`).join(', ')}]` : '';
+        console.log(`        - ${col.id} (${col.name})${idxStr}`);
+      }
+    }
     if (config.projectA.authSecurity) {
       console.log('    - Auth Security Policies (Project A Enforced):');
       console.log(`      * Password Hashing: ${config.projectA.authSecurity.passwordPolicy.hashingAlgorithm.toUpperCase()}`);

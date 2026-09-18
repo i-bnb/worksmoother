@@ -150,7 +150,66 @@ npm run infra:secrets
 
 ---
 
-## 6. Development & Verification
+## 6. Directory Module & Availability Slot Architecture
+
+### Relational TablesDB Collections in Project A
+- **`HOSPITAL`**: Master hospital directory (`name`, `address`, `phone`, `timezone`).
+- **`DEPARTMENT`**: Clinical departments linked to hospital (`hospital_id`, `name`, `description`).
+- **`DOCTOR`**: Medical practitioners (`hospital_id`, `department_id`, `name`, `email`, `specialty`, `active`).
+- **`ROOM`**: Physical examination/consultation rooms (`hospital_id`, `department_id`, `room_number`, `floor`, `status`).
+
+### Availability Slots & Booking Schema
+- **`AVAILABILITY_SLOT`**:
+  - `slot_key`: Plaintext composite key formatted as `{doctor_id}:{start_time_utc}`.
+  - **Plaintext Unique Index**: Enforces absolute slot uniqueness at the database layer (`idx_slot_key_unique`).
+  - Attributes: `doctor_id`, `start_time_utc`, `end_time_utc`, `status` (`AVAILABLE`, `HELD`, `BOOKED`), `hold_expires_at`, `room_id`.
+- **`BOOKING`**:
+  - `booking_id`: Unique booking reference.
+  - `slot_key`: Associated availability slot key.
+  - `idempotency_key`: Client-supplied unique token preventing duplicate submissions (`idx_idempotency_key_unique`).
+  - `hold_expires_at`: ISO timestamp indicating hold timeout.
+  - `status`: `HELD`, `CONFIRMED`, `CANCELLED`, `RELEASED`.
+
+---
+
+## 7. Slot Durable Object (`SlotDurableObject`)
+
+### Doctor-Day Sharding Architecture
+- Keyed per doctor-day: `env.SLOT_DO.idFromName(`${doctorId}:${dateUtc}`)`.
+- **Zero Race Conditions**: Single-threads all booking mutations for a doctor on any given date, completely preventing database double-booking anomalies.
+
+### SQLite Timeslot Locking & Automatic Alarm Release
+- **`hold()` Method**:
+  - Queries local SQLite table `slots`.
+  - Rejects if `status === 'BOOKED'` (`409 Conflict`).
+  - Rejects if `status === 'HELD'` and hold has not expired (`409 Conflict`).
+  - Idempotent replay: if matching `idempotency_key` and `patient_id` is supplied, returns existing active hold.
+  - Atomically locks timeslot in SQLite with `status = 'HELD'`, `hold_expires_at = Date.now() + 10 * 60 * 1000`.
+  - Schedules **Cloudflare Workers Alarm** via `ctx.storage.setAlarm(holdExpiresAt)` to automatically release the hold after 10 minutes.
+- **`alarm()` Method**:
+  - Invoked automatically by the Workers runtime at the 10-minute timeout.
+  - Releases all expired holds back to `status = 'AVAILABLE'`.
+  - Automatically re-schedules the alarm for subsequent pending holds.
+
+---
+
+## 8. Strict Zod Routing Layer
+
+- Every request schema in `workers/api/src/schemas/index.ts` enforces `.strict()`.
+- Automatically rejects any request with unexpected, unknown, or extraneous payload fields with `400 Bad Request` (`unrecognized_keys`).
+- Enforced on:
+  - `HoldSlotSchema.strict()`
+  - `ConfirmSlotSchema.strict()`
+  - `ReleaseSlotSchema.strict()`
+  - `TokenExchangeSchema.strict()`
+  - `RefreshTokenSchema.strict()`
+  - `MfaVerifySchema.strict()`
+  - `CreateHospitalSchema.strict()`, `CreateDepartmentSchema.strict()`, `CreateDoctorSchema.strict()`, `CreateRoomSchema.strict()`
+  - `CreateAppointmentSchema.strict()`
+
+---
+
+## 9. Development & Verification
 
 ### Install dependencies:
 ```bash
@@ -171,4 +230,10 @@ npx.cmd tsx tests/architecture.test.ts
 ```bash
 npx.cmd tsx tests/auth-session.test.ts
 ```
+
+### Run Directory Module, Slot DO & Strict Zod Tests:
+```bash
+npx.cmd tsx tests/directory-slots.test.ts
+```
+
 
