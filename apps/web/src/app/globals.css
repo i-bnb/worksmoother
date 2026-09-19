@@ -116,3 +116,571 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* Typography utilities */
+.serif {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Button text roll */
+.roll {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  height: 1.3em;
+  line-height: 1.3em;
+}
+.roll > span {
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.roll > span + span {
+  position: absolute;
+  left: 0;
+  top: 100%;
+}
+.btn {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:hover .roll > span {
+  transform: translateY(-100%);
+}
+.btn .arrow {
+  transition: transform 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.btn:hover .arrow {
+  transform: translateX(3px) rotate(-45deg);
+}
+.btn:focus-visible,
+.navlink:focus-visible,
+.chip:focus-visible,
+.faq-q:focus-visible {
+  outline: 2px solid #2b59ff;
+  outline-offset: 3px;
+}
+
+/* Typing pill */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 0.22em;
+  border-radius: 0.2em;
+  color: #fff;
+  vertical-align: bottom;
+  transition: width 0.55s cubic-bezier(0.7, 0, 0.2, 1), background-color 0.55s ease;
+  box-shadow: 0 0.12em 0.4em -0.12em rgba(11, 21, 51, 0.35);
+}
+.caret {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.8em;
+  margin-left: 0.04em;
+  background: currentColor;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Load-in */
+.rise {
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.d1 {
+  animation-delay: 0.05s;
+}
+.d2 {
+  animation-delay: 0.15s;
+}
+.d3 {
+  animation-delay: 0.28s;
+}
+.d4 {
+  animation-delay: 0.4s;
+}
+.d5 {
+  animation-delay: 0.55s;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.bar {
+  transform-origin: bottom;
+  animation: barUp 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes barUp {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.live {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.drain {
+  animation: drain 14s linear infinite;
+  transform-origin: left;
+}
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.06);
+  }
+}
+
+/* Marquee */
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+.marquee-wrap:hover .marquee {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-wrap {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* Cards */
+.card {
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.45s ease;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 50px -24px rgba(11, 21, 51, 0.35);
+}
+.card .go {
+  transition: transform 0.4s ease;
+}
+.card:hover .go {
+  transform: rotate(-45deg);
+}
+.navlink {
+  position: relative;
+  padding: 8px 2px;
+}
+.navlink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s ease;
+}
+.navlink:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.chip {
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.chip:active {
+  transform: scale(0.97);
+}
+.faq-q {
+  transition: background 0.25s ease;
+}
+.faq-q:hover {
+  background: #f4f6fb;
+}
+.faq-body {
+  display: grid;
+  transition: grid-template-rows 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.faq-plus {
+  transition: transform 0.35s ease;
+}
+.progress {
+  transition: width 0.6s cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+/* AI assistant */
+.bubble {
+  animation: bubbleIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) 1.6s both;
+}
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.bot {
+  animation: botBob 3.2s ease-in-out infinite;
+}
+@keyframes botBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.pop {
+  animation: pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  transform-origin: bottom right;
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8c95b3;
+  display: inline-block;
+  animation: typing 1.2s ease-in-out infinite;
+}
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* Big stat numbers */
+@property --n1 {
+  syntax: '<integer>';
+  initial-value: 256;
+  inherits: false;
+}
+@property --n2 {
+  syntax: '<integer>';
+  initial-value: 10;
+  inherits: false;
+}
+@property --n3 {
+  syntax: '<integer>';
+  initial-value: 4;
+  inherits: false;
+}
+.num1 {
+  counter-reset: n1 var(--n1);
+}
+.num1::before {
+  content: counter(n1);
+}
+.num2 {
+  counter-reset: n2 var(--n2);
+}
+.num2::before {
+  content: counter(n2);
+}
+.num3 {
+  counter-reset: n3 var(--n3);
+}
+.num3::before {
+  content: counter(n3);
+}
+
+/* Scroll-driven motion */
+@supports (animation-timeline: view()) {
+  .nav {
+    animation: navPill linear both;
+    animation-timeline: scroll(nearest);
+    animation-range: 0px 220px;
+  }
+  @keyframes navPill {
+    from {
+      max-width: 1320px;
+      background: rgba(255, 255, 255, 0);
+      box-shadow: 0 0 0 rgba(11, 21, 51, 0);
+      border-color: rgba(11, 21, 51, 0);
+      margin-top: 0;
+    }
+    to {
+      max-width: 1040px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 34px -14px rgba(11, 21, 51, 0.28);
+      border-color: rgba(11, 21, 51, 0.08);
+      margin-top: 6px;
+    }
+  }
+  .hero-copy {
+    animation: blurOut linear both;
+    animation-timeline: scroll(nearest);
+    animation-range: 40px 560px;
+  }
+  @keyframes blurOut {
+    to {
+      opacity: 0;
+      filter: blur(14px);
+      transform: translateY(-70px) scale(0.96);
+    }
+  }
+  .dash {
+    animation: flatten linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 42%;
+  }
+  @keyframes flatten {
+    from {
+      transform: rotateX(34deg) scale(0.84) translateY(40px);
+    }
+    to {
+      transform: none;
+    }
+  }
+  .fly {
+    animation: flyIn linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+  }
+  .fa {
+    --fx: -70px;
+    --fy: 50px;
+    --fr: -7deg;
+  }
+  .fb {
+    --fx: 70px;
+    --fy: 40px;
+    --fr: 6deg;
+  }
+  .fc {
+    --fx: -50px;
+    --fy: 90px;
+    --fr: 4deg;
+  }
+  .fd {
+    --fx: 60px;
+    --fy: 100px;
+    --fr: -5deg;
+  }
+  @keyframes flyIn {
+    from {
+      transform: translate(var(--fx), var(--fy)) rotate(var(--fr));
+    }
+    to {
+      transform: none;
+    }
+  }
+  .stats {
+    view-timeline-name: --stats;
+  }
+  .wipe2 {
+    animation: wipe linear both;
+    animation-timeline: --stats;
+    animation-range: contain 24% contain 46%;
+  }
+  .wipe3 {
+    animation: wipe linear both;
+    animation-timeline: --stats;
+    animation-range: contain 58% contain 80%;
+  }
+  @keyframes wipe {
+    from {
+      clip-path: circle(0% at 50% 100%);
+    }
+    to {
+      clip-path: circle(150% at 50% 100%);
+    }
+  }
+  .lift2 {
+    animation: lift linear both;
+    animation-timeline: --stats;
+    animation-range: contain 30% contain 50%;
+  }
+  .lift3 {
+    animation: lift linear both;
+    animation-timeline: --stats;
+    animation-range: contain 64% contain 84%;
+  }
+  @keyframes lift {
+    from {
+      transform: translateY(90px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .num1 {
+    animation: c1 linear both;
+    animation-timeline: --stats;
+    animation-range: entry 55% contain 12%;
+  }
+  .num2 {
+    animation: c2 linear both;
+    animation-timeline: --stats;
+    animation-range: contain 38% contain 52%;
+  }
+  .num3 {
+    animation: c3 linear both;
+    animation-timeline: --stats;
+    animation-range: contain 72% contain 86%;
+  }
+  @keyframes c1 {
+    from {
+      --n1: 0;
+    }
+    to {
+      --n1: 256;
+    }
+  }
+  @keyframes c2 {
+    from {
+      --n2: 0;
+    }
+    to {
+      --n2: 10;
+    }
+  }
+  @keyframes c3 {
+    from {
+      --n3: 0;
+    }
+    to {
+      --n3: 4;
+    }
+  }
+  .grow {
+    animation: grow linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 42%;
+  }
+  @keyframes grow {
+    from {
+      transform: scale(0.76);
+      border-radius: 72px;
+      opacity: 0.5;
+    }
+    to {
+      transform: none;
+      border-radius: 32px;
+      opacity: 1;
+    }
+  }
+  .phone {
+    animation: phoneUp linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 45%;
+  }
+  @keyframes phoneUp {
+    from {
+      transform: translateY(160px) rotate(6deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 28%;
+  }
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(46px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .letter {
+    animation: letterUp linear both;
+    animation-timeline: view();
+  }
+  @keyframes letterUp {
+    from {
+      transform: translateY(70%);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

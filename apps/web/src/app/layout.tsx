@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
+import { ClientShell } from '@/components/ClientShell';
 import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
@@ -19,16 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-black text-zinc-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <html lang="en">
+      <body className="min-h-screen">
         <AuthProvider>
-          <div className="relative flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
-              {children}
-            </main>
-            <Footer />
-          </div>
+          <ClientShell>{children}</ClientShell>
         </AuthProvider>
       </body>
     </html>
