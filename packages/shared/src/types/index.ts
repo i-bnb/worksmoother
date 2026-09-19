@@ -495,9 +495,11 @@ export interface BusinessCapViolation {
 // Cloudflare Worker Environment Bindings
 export interface ApiEnv {
   ENVIRONMENT: string;
-  APPWRITE_ENDPOINT: string;
-  APPWRITE_PROJECT_A_ID: string;
-  APPWRITE_PROJECT_A_KEY: string;
+  // Cloudflare D1 Operational Database (users, sessions, hospitals, slots, bookings)
+  DB: D1Database;
+  APPWRITE_ENDPOINT?: string;
+  APPWRITE_PROJECT_A_ID?: string;
+  APPWRITE_PROJECT_A_KEY?: string;
   SESSION_SECRET?: string;
   SESSION_DO: DurableObjectNamespace;
   SLOT_DO: DurableObjectNamespace;
@@ -516,9 +518,11 @@ export interface ApiEnv {
 
 export interface RecordsEnv {
   ENVIRONMENT: string;
-  APPWRITE_ENDPOINT: string;
-  APPWRITE_PROJECT_B_ID: string;
-  APPWRITE_PROJECT_B_KEY: string;
+  // Cloudflare D1 Isolated Medical Records Database (strictly PHI / ciphertext only)
+  RECORDS_DB: D1Database;
+  APPWRITE_ENDPOINT?: string;
+  APPWRITE_PROJECT_B_ID?: string;
+  APPWRITE_PROJECT_B_KEY?: string;
   // Cloudflare Secrets Store key binding
   KEK_2026_09: string;
   // Cloudflare R2 Bucket for Patient Files
@@ -534,9 +538,11 @@ export interface RecordsEnv {
 
 export interface NotifyEnv {
   ENVIRONMENT: string;
-  APPWRITE_ENDPOINT: string;
-  APPWRITE_PROJECT_A_ID: string;
-  APPWRITE_PROJECT_A_KEY: string;
+  // Cloudflare D1 Operational Database (consent verification & audit log)
+  DB?: D1Database;
+  APPWRITE_ENDPOINT?: string;
+  APPWRITE_PROJECT_A_ID?: string;
+  APPWRITE_PROJECT_A_KEY?: string;
   TASK_QUEUE_DLQ?: Queue<TaskQueueMessage>;
   // Meta WhatsApp Cloud API Bindings
   WHATSAPP_PHONE_NUMBER_ID?: string;

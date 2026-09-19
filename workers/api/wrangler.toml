@@ -17,14 +17,15 @@ service = "doctorcare-records"
 binding = "NOTIFY_SERVICE"
 service = "doctorcare-notify"
 
-# Operational Data (Appwrite Cloud Project A) Environment Variables
+# Cloudflare D1 Operational Database (Identity, Clinical Directory, Slots, Bookings)
+[[d1_databases]]
+binding = "DB"
+database_name = "doctorcare-ops-db"
+database_id = "doctorcare-ops-db-id"
+
 [vars]
 ENVIRONMENT = "production"
-APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
-APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
 
-# Note: APPWRITE_PROJECT_A_KEY is managed via `wrangler secret put APPWRITE_PROJECT_A_KEY`
-# to ensure credentials are never committed in plaintext.
 
 # Durable Objects: SESSION_DO (user ID), SLOT_DO (doctor-day sharded), and RATE_LIMITER_DO (exact sliding window)
 [durable_objects]

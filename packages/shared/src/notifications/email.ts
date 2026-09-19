@@ -3,7 +3,21 @@ import {
   TransactionalEmailResult,
   SmtpProviderConfig,
 } from '../types/index.js';
-import { Messaging, ID } from 'node-appwrite';
+export interface EmailMessagingClient {
+  createEmail(
+    messageId: string,
+    subject: string,
+    content: string,
+    topics?: string[],
+    users?: string[],
+    targets?: string[],
+    cc?: string[],
+    bcc?: string[],
+    attachments?: any[],
+    draft?: boolean,
+    html?: boolean
+  ): Promise<{ $id: string }>;
+}
 
 export const DEFAULT_SMTP_CONFIG: SmtpProviderConfig = {
   providerId: 'smtp-amazon-ses',
@@ -23,7 +37,7 @@ export const DEFAULT_SMTP_CONFIG: SmtpProviderConfig = {
  * Binds to Amazon SES SMTP Provider (ap-south-1 Mumbai region) for DPDP data residency.
  */
 export async function sendTransactionalEmail(
-  messaging: Messaging | null,
+  messaging: EmailMessagingClient | null,
   payload: TransactionalEmailPayload,
   smtpConfig: Partial<SmtpProviderConfig> = {}
 ): Promise<TransactionalEmailResult> {
@@ -44,7 +58,7 @@ export async function sendTransactionalEmail(
   }
 
   try {
-    const messageId = ID.unique();
+    const messageId = `msg_${crypto.randomUUID()}`;
     const bodyContent = payload.html || payload.content;
     const isHtml = Boolean(payload.html);
     const message = await messaging.createEmail(

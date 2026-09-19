@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Databases } from 'node-appwrite';
 import {
   encryptMedicalRecord,
   MedicalRecordAAD,
   RecordsEnv,
 } from '../packages/shared/src/index.js';
-import recordsWorker from '../workers/records/src/index.js';
+import recordsWorker, { mockRecordsStore, mockLogsStore } from '../workers/records/src/index.js';
 
 async function runRecordAccessLogTests() {
   console.log('================================================================');
@@ -71,60 +70,9 @@ async function runRecordAccessLogTests() {
   // ---------------------------------------------------------------------------
   // Setup Mock In-Memory Store for Project B Database Emulation
   // ---------------------------------------------------------------------------
-  const inMemoryRecords = new Map<string, any>();
+  const inMemoryRecords = mockRecordsStore;
   const inMemoryAccessLogs: any[] = [];
   let shouldFailAuditLogWrite = false;
-
-  const originalCreateDocument = Databases.prototype.createDocument;
-  const originalGetDocument = Databases.prototype.getDocument;
-  const originalListDocuments = Databases.prototype.listDocuments;
-
-  Databases.prototype.createDocument = async function (
-    databaseId: string,
-    collectionId: string,
-    documentId: string,
-    data: any
-  ) {
-    if (collectionId === 'RECORD_ACCESS_LOG') {
-      if (shouldFailAuditLogWrite) {
-        throw new Error('SIMULATED_DATABASE_ERROR: Project B audit log storage unavailable or timeout');
-      }
-      const saved = { $id: documentId, ...data };
-      inMemoryAccessLogs.push(saved);
-      return saved as any;
-    }
-    if (collectionId === 'MEDICAL_RECORD') {
-      const saved = { $id: documentId, ...data };
-      inMemoryRecords.set(documentId, saved);
-      return saved as any;
-    }
-    return { $id: documentId, ...data } as any;
-  };
-
-  Databases.prototype.getDocument = async function (
-    databaseId: string,
-    collectionId: string,
-    documentId: string
-  ) {
-    if (collectionId === 'MEDICAL_RECORD' || collectionId === 'patient_charts') {
-      const doc = inMemoryRecords.get(documentId);
-      if (!doc) {
-        throw new Error(`Document with ID ${documentId} not found`);
-      }
-      return doc as any;
-    }
-    throw new Error(`Collection ${collectionId} not found in mock`);
-  };
-
-  Databases.prototype.listDocuments = async function (
-    databaseId: string,
-    collectionId: string
-  ) {
-    if (collectionId === 'RECORD_ACCESS_LOG') {
-      return { documents: inMemoryAccessLogs, total: inMemoryAccessLogs.length } as any;
-    }
-    return { documents: [], total: 0 } as any;
-  };
 
   const testRecordId = 'rec_audit_test_901';
   const testPatientId = 'pat_priya_sharma_303';
@@ -168,6 +116,7 @@ async function runRecordAccessLogTests() {
     APPWRITE_PROJECT_B_KEY: 'mock_key_project_b',
     KEK_2026_09: testKekSecret,
   };
+  (mockEnv as any).__IN_MEMORY_ACCESS_LOGS = inMemoryAccessLogs;
 
   try {
     // -------------------------------------------------------------------------
@@ -175,6 +124,7 @@ async function runRecordAccessLogTests() {
     // -------------------------------------------------------------------------
     console.log('\n[Test 2] Testing Success Path: Access log is written before clinical data is decrypted...');
     shouldFailAuditLogWrite = false;
+    (mockEnv as any).__SIMULATE_AUDIT_FAILURE = false;
     inMemoryAccessLogs.length = 0;
 
     const readReq = new Request(`https://records.internal/api/v1/records/${testRecordId}`, {
@@ -238,6 +188,7 @@ async function runRecordAccessLogTests() {
     // -------------------------------------------------------------------------
     console.log('\n[Test 3] Testing FAIL-CLOSED Enforcement: When RECORD_ACCESS_LOG write fails...');
     shouldFailAuditLogWrite = true; // Trigger database error on RECORD_ACCESS_LOG write
+    (mockEnv as any).__SIMULATE_AUDIT_FAILURE = true;
 
     const blockedReq = new Request(`https://records.internal/api/v1/records/${testRecordId}`, {
       method: 'GET',
@@ -283,6 +234,7 @@ async function runRecordAccessLogTests() {
     // -------------------------------------------------------------------------
     console.log('\n[Test 4] Testing Access Log Query Endpoint (/api/v1/records/:recordId/access-logs)...');
     shouldFailAuditLogWrite = false;
+    (mockEnv as any).__SIMULATE_AUDIT_FAILURE = false;
 
     const logsReq = new Request(`https://records.internal/api/v1/records/${testRecordId}/access-logs`, {
       method: 'GET',
@@ -302,9 +254,7 @@ async function runRecordAccessLogTests() {
     console.log('   ALL RECORD_ACCESS_LOG & FAIL-CLOSED TESTS PASSED!            ');
     console.log('================================================================\n');
   } finally {
-    Databases.prototype.createDocument = originalCreateDocument;
-    Databases.prototype.getDocument = originalGetDocument;
-    Databases.prototype.listDocuments = originalListDocuments;
+    // Teardown cleanup
   }
 }
 

@@ -12,10 +12,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "node-appwrite": "^14.1.0",
+    "drizzle-orm": "^0.45.2",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",
     "@types/node": "^22.7.5"

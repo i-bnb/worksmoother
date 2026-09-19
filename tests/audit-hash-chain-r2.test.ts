@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Databases } from 'node-appwrite';
 import {
   GENESIS_HASH,
   computeAuditBlockHash,
@@ -11,7 +10,7 @@ import {
   encryptMedicalRecord,
   MedicalRecordAAD,
 } from '../packages/shared/src/index.js';
-import recordsWorker from '../workers/records/src/index.js';
+import recordsWorker, { mockRecordsStore } from '../workers/records/src/index.js';
 
 // In-Memory R2 Bucket Emulation for testing
 class MockR2Bucket {
@@ -218,55 +217,9 @@ async function runAuditHashChainTests() {
   console.log('\n[Test 6] Testing Records Worker live mirroring to R2 audit vault & /audit-chain/verify endpoint...');
   const mockAuditVault = new MockR2Bucket();
 
-  // Emulate Appwrite Project B databases
-  const inMemoryRecords = new Map<string, any>();
+  // Emulate Appwrite Project B databases / records store
+  const inMemoryRecords = mockRecordsStore;
   const inMemoryLogs: any[] = [];
-
-  const originalCreateDocument = Databases.prototype.createDocument;
-  const originalGetDocument = Databases.prototype.getDocument;
-  const originalListDocuments = Databases.prototype.listDocuments;
-
-  Databases.prototype.createDocument = async function (
-    databaseId: string,
-    collectionId: string,
-    documentId: string,
-    data: any
-  ) {
-    if (collectionId === 'RECORD_ACCESS_LOG') {
-      const saved = { $id: documentId, ...data };
-      inMemoryLogs.push(saved);
-      return saved as any;
-    }
-    if (collectionId === 'MEDICAL_RECORD') {
-      const saved = { $id: documentId, ...data };
-      inMemoryRecords.set(documentId, saved);
-      return saved as any;
-    }
-    return originalCreateDocument.apply(this, [databaseId, collectionId, documentId, data]);
-  };
-
-  Databases.prototype.getDocument = async function (
-    databaseId: string,
-    collectionId: string,
-    documentId: string
-  ) {
-    if (collectionId === 'MEDICAL_RECORD') {
-      const rec = inMemoryRecords.get(documentId);
-      if (!rec) throw new Error(`Document with ID ${documentId} not found`);
-      return rec as any;
-    }
-    return originalGetDocument.apply(this, [databaseId, collectionId, documentId]);
-  };
-
-  Databases.prototype.listDocuments = async function (
-    databaseId: string,
-    collectionId: string
-  ) {
-    if (collectionId === 'RECORD_ACCESS_LOG') {
-      return { total: inMemoryLogs.length, documents: inMemoryLogs } as any;
-    }
-    return originalListDocuments.apply(this, [databaseId, collectionId]);
-  };
 
   try {
     const e2eRecordId = 'rec_cardio_scan_999';
@@ -374,10 +327,7 @@ async function runAuditHashChainTests() {
     console.log(`  -> PASSED: Worker verification successfully detected tampering in R2: "${verifyTamperedBody.verification?.error}"`);
 
   } finally {
-    // Restore prototype methods
-    Databases.prototype.createDocument = originalCreateDocument;
-    Databases.prototype.getDocument = originalGetDocument;
-    Databases.prototype.listDocuments = originalListDocuments;
+    // Teardown
   }
 
   console.log('\n================================================================');

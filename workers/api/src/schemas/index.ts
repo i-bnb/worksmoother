@@ -31,6 +31,22 @@ export const ReleaseSlotSchema = z
   .strict();
 
 // 2. Auth Schemas
+export const SignupSchema = z
+  .object({
+    email: z.string().email('valid email required'),
+    password: z.string().min(8, 'password must be at least 8 characters'),
+    name: z.string().min(1, 'name is required'),
+    role: z.enum(['admin', 'doctor', 'nurse', 'staff', 'patient']).default('patient'),
+  })
+  .strict();
+
+export const LoginSchema = z
+  .object({
+    email: z.string().email('valid email required'),
+    password: z.string().min(1, 'password is required'),
+  })
+  .strict();
+
 export const TokenExchangeSchema = z
   .object({
     jwt: z.string().min(1, 'jwt token is required'),
@@ -46,9 +62,10 @@ export const RefreshTokenSchema = z
 
 export const MfaVerifySchema = z
   .object({
-    factor: z.enum(['totp', 'email', 'phone']),
+    factor: z.enum(['totp', 'email', 'phone']).optional().default('totp'),
     code: z.string().min(6, 'code must be at least 6 digits'),
-    sessionId: z.string().min(1, 'sessionId is required'),
+    sessionId: z.string().optional(),
+    userId: z.string().optional(),
   })
   .strict();
 

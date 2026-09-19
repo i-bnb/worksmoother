@@ -24,9 +24,7 @@
     "deploy:records": "npm --workspace=@doctorcare/worker-records run deploy",
     "deploy:notify": "npm --workspace=@doctorcare/worker-notify run deploy",
     "deploy:all": "npm run deploy:records && npm run deploy:notify && npm run deploy:api && npm run deploy:web",
-    "infra:scaffold": "npx tsx infra/appwrite/scaffold-dual-projects.ts",
     "infra:secrets": "npm --workspace=@doctorcare/infra run setup:secrets",
-    "infra:appwrite": "npm --workspace=@doctorcare/infra run setup:appwrite",
     "infra:waf": "npm --workspace=@doctorcare/infra run setup:waf",
     "infra:queues": "npm --workspace=@doctorcare/infra run setup:queues",
     "infra:r2": "npm --workspace=@doctorcare/infra run setup:r2",
@@ -47,7 +45,8 @@
   "keywords": [
     "healthcare",
     "cloudflare-workers",
-    "appwrite",
+    "cloudflare-d1",
+    "drizzle-orm",
     "hipaa",
     "ehr",
     "secrets-store"

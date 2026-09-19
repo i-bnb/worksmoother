@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Databases } from 'node-appwrite';
 import {
   ApiEnv,
   RateLimitBinding,
@@ -9,6 +8,7 @@ import {
   assertPatientFileUploadCap,
   assertPaymentOrderCap,
   BUSINESS_CAP_LIMITS,
+  mockOpsStore,
 } from '../packages/shared/src/index.js';
 import apiWorker, {
   RateLimiterDurableObject,
@@ -321,14 +321,8 @@ async function runRateLimiting4LayersTests() {
   // ---------------------------------------------------------------------------
   console.log('\n[Test 5] Testing End-to-End multi-layer pipeline in API Worker...');
 
-  const originalListDocuments = Databases.prototype.listDocuments;
   const inMemoryBookings: any[] = [];
-  Databases.prototype.listDocuments = async function (databaseId: string, collectionId: string) {
-    if (collectionId === 'BOOKING') {
-      return { total: inMemoryBookings.length, documents: inMemoryBookings } as any;
-    }
-    return originalListDocuments.apply(this, [databaseId, collectionId]);
-  };
+  mockOpsStore.set('BOOKING', inMemoryBookings);
 
   try {
     const doRateLimiterNamespace = new MockRateLimiterNamespace();
@@ -388,7 +382,7 @@ async function runRateLimiting4LayersTests() {
     console.log('  -> PASSED: End-to-end API worker rejected 4th slot hold under Layer 4 Business Cap (HTTP 422).');
 
   } finally {
-    Databases.prototype.listDocuments = originalListDocuments;
+    mockOpsStore.clear();
   }
 
   console.log('\n================================================================');

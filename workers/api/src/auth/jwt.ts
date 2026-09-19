@@ -1,4 +1,3 @@
-import { Client, Account } from 'node-appwrite';
 import { AppwriteUser } from '@doctorcare/shared';
 
 export interface AccessTokenPayload {
@@ -147,13 +146,14 @@ export async function verifyAppwriteJwt(
   }
 
   try {
-    const client = new Client()
-      .setEndpoint(endpoint || 'https://cloud.appwrite.io/v1')
-      .setProject(projectId)
-      .setJWT(jwt);
-
-    const account = new Account(client);
-    const user = (await account.get()) as any;
+    const res = await fetch(`${endpoint || 'https://cloud.appwrite.io/v1'}/account`, {
+      headers: {
+        'X-Appwrite-Project': projectId,
+        'X-Appwrite-JWT': jwt,
+      },
+    });
+    if (!res.ok) return null;
+    const user = (await res.json()) as any;
 
     return {
       $id: user.$id,
@@ -170,3 +170,4 @@ export async function verifyAppwriteJwt(
     return null;
   }
 }
+

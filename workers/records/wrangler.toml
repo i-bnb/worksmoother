@@ -11,14 +11,16 @@ binding = "KEK_2026_09"
 store_id = "doctorcare_vault_store"
 secret_name = "kek-2026-09"
 
-# Medical Records (Appwrite Cloud Project B strictly for PHI)
+# Cloudflare D1 Isolated Medical Records Database (strictly PHI / ciphertext only)
+# Bound EXCLUSIVELY to this records Worker. Neither api nor notify has access.
+[[d1_databases]]
+binding = "RECORDS_DB"
+database_name = "doctorcare-records-db"
+database_id = "doctorcare-records-db-id"
+
 [vars]
 ENVIRONMENT = "production"
-APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
-APPWRITE_PROJECT_B_ID = "doctorcare-medical-records-prod"
 
-# Note: APPWRITE_PROJECT_B_KEY is provisioned separately and scoped strictly
-# to Project B medical databases, ensuring credential isolation.
 
 # Cloudflare R2 Bucket exclusively for patient file uploads
 [[r2_buckets]]

@@ -131,6 +131,27 @@ async function runFinalValidation() {
   assert.strictEqual(wafConfig.rate_limiting_rules.length, 3, 'Must define 3 Zone WAF rate limiting rules');
   console.log('  ✓ Verified infra/cloudflare/waf-rulesets.json (Cloudflare Managed, OWASP CRS, Layer 1 WAF Rate Limiting)');
 
+  // 1.7 Cloudflare D1 Dual Database & Drizzle ORM Schema Validation
+  const opsSchemaPath = path.join(rootDir, 'packages', 'shared', 'src', 'db', 'schema-ops.ts');
+  const recordsSchemaPath = path.join(rootDir, 'packages', 'shared', 'src', 'db', 'schema-records.ts');
+  const opsMigrationPath = path.join(rootDir, 'infra', 'd1', 'migrations', '0001_ops_schema.sql');
+  const recordsMigrationPath = path.join(rootDir, 'infra', 'd1', 'migrations', '0002_records_schema.sql');
+
+  assert.ok(fs.existsSync(opsSchemaPath), 'schema-ops.ts must exist');
+  assert.ok(fs.existsSync(recordsSchemaPath), 'schema-records.ts must exist');
+  assert.ok(fs.existsSync(opsMigrationPath), '0001_ops_schema.sql must exist');
+  assert.ok(fs.existsSync(recordsMigrationPath), '0002_records_schema.sql must exist');
+
+  const recordsSchemaContent = fs.readFileSync(recordsSchemaPath, 'utf8');
+  assert.ok(apiWrangler.includes('database_name = "doctorcare-ops-db"'), 'API worker must bind doctorcare-ops-db');
+  assert.ok(recordsWrangler.includes('database_name = "doctorcare-records-db"'), 'Records worker must bind doctorcare-records-db');
+  assert.ok(!apiWrangler.includes('doctorcare-records-db'), 'API worker must NEVER bind doctorcare-records-db directly');
+  assert.ok(recordsSchemaContent.includes('export const medicalRecord = sqliteTable'), 'Must define medicalRecord table in records schema');
+  assert.ok(recordsSchemaContent.includes('envelope'), 'medicalRecord must store ciphertext envelope');
+  assert.ok(recordsSchemaContent.includes('kekId'), 'medicalRecord must record kekId');
+  assert.ok(recordsSchemaContent.includes('retentionUntil'), 'medicalRecord must record retentionUntil');
+  console.log('  ✓ Verified Cloudflare D1 & Drizzle schemas (doctorcare-ops-db & doctorcare-records-db physical boundary)');
+
   // -------------------------------------------------------------------------
   // Part 2: Strict Zod Request Schema Validation
   // -------------------------------------------------------------------------
