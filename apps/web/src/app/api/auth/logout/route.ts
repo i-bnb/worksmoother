@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+// runtime = 'edge' (native Cloudflare Workers edge runtime via @opennextjs/cloudflare)
 
 export async function POST(req: NextRequest) {
   try {
