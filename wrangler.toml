@@ -8,12 +8,10 @@ directory = "apps/web/.open-next/assets"
 binding = "ASSETS"
 
 # Service Binding to internal API Worker
-# Uncomment once doctorcare-api is deployed:
-# [[services]]
-# binding = "API_SERVICE"
-# service = "doctorcare-api"
-
+[[services]]
+binding = "API_SERVICE"
+service = "doctorcare-api"
 
 [vars]
 NEXT_PUBLIC_APP_NAME = "DoctorCare"
-NEXT_PUBLIC_API_URL = "https://api.yourhospital.com"
+NEXT_PUBLIC_API_URL = "https://doctorcare-api.syam18official.workers.dev"

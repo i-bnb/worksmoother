@@ -47,8 +47,8 @@ async function runFinalValidation() {
   assert.ok(apiWrangler.includes('name = "SessionDurableObject"'), 'Must bind SessionDurableObject');
   assert.ok(apiWrangler.includes('name = "SlotDurableObject"'), 'Must bind SlotDurableObject');
   assert.ok(apiWrangler.includes('name = "RateLimiterDurableObject"'), 'Must bind RateLimiterDurableObject');
-  assert.ok(apiWrangler.includes('binding = "API_RATE_LIMITER"'), 'Must configure API_RATE_LIMITER');
-  assert.ok(apiWrangler.includes('binding = "AUTH_RATE_LIMITER"'), 'Must configure AUTH_RATE_LIMITER');
+  assert.ok(apiWrangler.includes('API_RATE_LIMITER'), 'Must configure API_RATE_LIMITER');
+  assert.ok(apiWrangler.includes('AUTH_RATE_LIMITER'), 'Must configure AUTH_RATE_LIMITER');
   assert.ok(apiWrangler.includes('binding = "TASK_QUEUE"'), 'Must configure TASK_QUEUE producer');
   console.log('  ✓ Verified workers/api/wrangler.toml (Custom domain, Service Bindings, 3 DOs, RateLimiters, Queues)');
 

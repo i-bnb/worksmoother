@@ -123,7 +123,9 @@ async function runRateLimiting4LayersTests() {
   const wranglerPath = path.join(rootDir, 'workers/api/wrangler.toml');
   const wranglerContent = fs.readFileSync(wranglerPath, 'utf8');
 
-  if (!wranglerContent.includes('binding = "API_RATE_LIMITER"') || !wranglerContent.includes('binding = "AUTH_RATE_LIMITER"')) {
+  const hasApiLimiter = wranglerContent.includes('name = "API_RATE_LIMITER"') || wranglerContent.includes('binding = "API_RATE_LIMITER"');
+  const hasAuthLimiter = wranglerContent.includes('name = "AUTH_RATE_LIMITER"') || wranglerContent.includes('binding = "AUTH_RATE_LIMITER"');
+  if (!hasApiLimiter || !hasAuthLimiter) {
     throw new Error('wrangler.toml missing API_RATE_LIMITER or AUTH_RATE_LIMITER bindings');
   }
   console.log('  -> PASSED: workers/api/wrangler.toml has API_RATE_LIMITER & AUTH_RATE_LIMITER configured.');

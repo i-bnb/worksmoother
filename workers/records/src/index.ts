@@ -20,13 +20,27 @@ import { eq } from 'drizzle-orm';
 export const mockRecordsStore = new Map<string, any>();
 export const mockLogsStore = new Map<string, any[]>();
 
+async function resolveKek(kekBinding: unknown): Promise<string> {
+  if (!kekBinding) return '';
+  if (typeof kekBinding === 'string') return kekBinding;
+  if (typeof (kekBinding as any).get === 'function') {
+    try {
+      return await (kekBinding as any).get();
+    } catch {
+      return '';
+    }
+  }
+  return String(kekBinding);
+}
+
 export default {
   async fetch(request: Request, env: RecordsEnv, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // KEK Verification Health Check
     if (url.pathname === '/api/v1/records/health') {
-      const kekConfigured = Boolean(env.KEK_2026_09 && env.KEK_2026_09.length > 0);
+      const kekVal = await resolveKek(env.KEK_2026_09);
+      const kekConfigured = Boolean(kekVal && kekVal.length > 0);
       return new Response(
         JSON.stringify({
           status: 'HEALTHY',
@@ -233,7 +247,8 @@ export default {
           );
         }
 
-        if (!env.KEK_2026_09) {
+        const rawKek = await resolveKek(env.KEK_2026_09);
+        if (!rawKek) {
           return new Response(
             JSON.stringify({
               error: 'KEK_NOT_CONFIGURED',
@@ -253,7 +268,7 @@ export default {
         };
 
         // Perform envelope encryption: fresh 32-byte DEK, AES-256-GCM + AAD, wrapped under KEK
-        const encryptedEnvelope = await encryptMedicalRecord(clinicalData, env.KEK_2026_09, aad);
+        const encryptedEnvelope = await encryptMedicalRecord(clinicalData, rawKek, aad);
         const createdAt = new Date().toISOString();
 
         // Save strictly in Cloudflare D1 doctorcare-records-db
@@ -567,7 +582,17 @@ export default {
         };
 
         // Decrypt using non-extractable Secrets Store KEK kek-2026-09
-        const decryptedRecord = await decryptMedicalRecord(envelope, env.KEK_2026_09, aad);
+        const rawKek = await resolveKek(env.KEK_2026_09);
+        if (!rawKek) {
+          return new Response(
+            JSON.stringify({
+              error: 'KEK_NOT_CONFIGURED',
+              message: 'Secrets Store KEK KEK_2026_09 is not configured in environment',
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        const decryptedRecord = await decryptMedicalRecord(envelope, rawKek, aad);
 
         return new Response(
           JSON.stringify({

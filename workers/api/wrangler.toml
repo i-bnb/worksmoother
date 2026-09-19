@@ -3,10 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-09-18"
 compatibility_flags = ["nodejs_compat"]
 
-# Point api.yourhospital.com to a Cloudflare Pro zone to enable Managed WAF and OWASP Core rulesets
-routes = [
-  { pattern = "api.yourhospital.com", custom_domain = true }
-]
+# Point your custom domain to a Cloudflare zone once configured:
+# routes = [
+#   { pattern = "api.yourhospital.com", custom_domain = true }
+# ]
 
 # Service Bindings to internal Workers
 [[services]]
@@ -21,7 +21,7 @@ service = "doctorcare-notify"
 [[d1_databases]]
 binding = "DB"
 database_name = "doctorcare-ops-db"
-database_id = "doctorcare-ops-db-id"
+database_id = "2dc1309c-f9b5-4613-bbbb-5a9eac3a004e"
 
 [vars]
 ENVIRONMENT = "production"
@@ -37,15 +37,15 @@ bindings = [
 
 [[migrations]]
 tag = "v1"
-new_classes = ["SessionDurableObject"]
+new_sqlite_classes = ["SessionDurableObject"]
 
 [[migrations]]
 tag = "v2"
-new_classes = ["SlotDurableObject"]
+new_sqlite_classes = ["SlotDurableObject"]
 
 [[migrations]]
 tag = "v3"
-new_classes = ["RateLimiterDurableObject"]
+new_sqlite_classes = ["RateLimiterDurableObject"]
 
 # Cloudflare Queue Producer for asynchronous tasks
 [[queues.producers]]
@@ -54,12 +54,12 @@ queue = "doctorcare-tasks"
 
 # Layer 2: Cloudflare Workers RateLimit Bindings
 [[ratelimits]]
-binding = "API_RATE_LIMITER"
+name = "API_RATE_LIMITER"
 namespace_id = "1001"
 simple = { limit = 120, period = 60 }
 
 [[ratelimits]]
-binding = "AUTH_RATE_LIMITER"
+name = "AUTH_RATE_LIMITER"
 namespace_id = "1002"
 simple = { limit = 15, period = 60 }
 

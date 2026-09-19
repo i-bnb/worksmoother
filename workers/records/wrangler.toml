@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 # Neither api nor notify worker has access to this store or key.
 [[secrets_store_secrets]]
 binding = "KEK_2026_09"
-store_id = "doctorcare_vault_store"
+store_id = "d88f06ff053b41eeb43845d9007659d7"
 secret_name = "kek-2026-09"
 
 # Cloudflare D1 Isolated Medical Records Database (strictly PHI / ciphertext only)
@@ -16,18 +16,17 @@ secret_name = "kek-2026-09"
 [[d1_databases]]
 binding = "RECORDS_DB"
 database_name = "doctorcare-records-db"
-database_id = "doctorcare-records-db-id"
+database_id = "aaea3723-c27a-4a3a-bce7-07f37ae39f55"
 
 [vars]
 ENVIRONMENT = "production"
 
 
-# Cloudflare R2 Bucket exclusively for patient file uploads
-[[r2_buckets]]
-binding = "PATIENT_FILES_BUCKET"
-bucket_name = "doctorcare-patient-files"
-
-# Cloudflare Write-Only R2 Audit Vault Bucket for Tamper-Evident Hash-Chained Access Logs
-[[r2_buckets]]
-binding = "AUDIT_VAULT_BUCKET"
-bucket_name = "doctorcare-audit-vault"
+# Cloudflare R2 Buckets (Enable R2 in Cloudflare dashboard to activate):
+# [[r2_buckets]]
+# binding = "PATIENT_FILES_BUCKET"
+# bucket_name = "doctorcare-patient-files"
+# 
+# [[r2_buckets]]
+# binding = "AUDIT_VAULT_BUCKET"
+# bucket_name = "doctorcare-audit-vault"
