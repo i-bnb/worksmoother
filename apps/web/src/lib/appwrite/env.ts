@@ -3,6 +3,10 @@ import { z } from 'zod';
 /**
  * Centralised, Zod-validated environment configuration for the DoctorCare web app.
  *
+ * Architecture (post storage-layer pivot):
+ * – Auth, scheduling, directory → Cloudflare D1 / Better Auth
+ * – File storage (doctor photos, clinical documents) → Appwrite Storage only
+ *
  * – NEXT_PUBLIC_* vars are available in both browser and server contexts.
  * – Server-only vars (without NEXT_PUBLIC_) are validated only when this module
  *   is imported from a server/edge context (route handlers, scripts).
@@ -12,13 +16,15 @@ import { z } from 'zod';
 // Public schema — safe to access client-side
 // ─────────────────────────────────────────────────────────────────────────────
 const publicEnvSchema = z.object({
+  /** Appwrite cloud endpoint for the sgp-region storage project */
   NEXT_PUBLIC_APPWRITE_ENDPOINT: z
     .string()
     .url('NEXT_PUBLIC_APPWRITE_ENDPOINT must be a valid URL')
-    .default('https://cloud.appwrite.io/v1'),
-  NEXT_PUBLIC_APPWRITE_PROJECT_A_ID: z
+    .default('https://sgp.cloud.appwrite.io/v1'),
+  /** Single Appwrite project ID used exclusively for storage */
+  NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID: z
     .string()
-    .default('doctorcare-operational-prod'),
+    .default('6aae1c62000bebb93adb'),
   NEXT_PUBLIC_API_URL: z
     .string()
     .default('https://api.yourhospital.com'),
@@ -31,13 +37,11 @@ const publicEnvSchema = z.object({
 // Server-only schema — only validated in server/edge contexts
 // ─────────────────────────────────────────────────────────────────────────────
 const serverEnvSchema = z.object({
-  APPWRITE_PROJECT_A_API_KEY: z
-    .string()
-    .default(''),
-  APPWRITE_PROJECT_B_ID: z
-    .string()
-    .default('doctorcare-medical-records-prod'),
-  APPWRITE_PROJECT_B_API_KEY: z
+  /**
+   * Server API key scoped strictly to storage.read and storage.write.
+   * Never used for auth, databases, or user management.
+   */
+  APPWRITE_STORAGE_API_KEY: z
     .string()
     .default(''),
 });
@@ -49,7 +53,7 @@ const serverEnvSchema = z.object({
 function parsePublicEnv() {
   const result = publicEnvSchema.safeParse({
     NEXT_PUBLIC_APPWRITE_ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-    NEXT_PUBLIC_APPWRITE_PROJECT_A_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_A_ID,
+    NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   });
 
@@ -68,9 +72,7 @@ function parseServerEnv() {
   }
 
   const result = serverEnvSchema.safeParse({
-    APPWRITE_PROJECT_A_API_KEY: process.env.APPWRITE_PROJECT_A_API_KEY,
-    APPWRITE_PROJECT_B_ID: process.env.APPWRITE_PROJECT_B_ID,
-    APPWRITE_PROJECT_B_API_KEY: process.env.APPWRITE_PROJECT_B_API_KEY,
+    APPWRITE_STORAGE_API_KEY: process.env.APPWRITE_STORAGE_API_KEY,
   });
 
   if (!result.success) {

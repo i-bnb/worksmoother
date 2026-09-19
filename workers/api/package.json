@@ -10,8 +10,9 @@
   "dependencies": {
     "@doctorcare/shared": "*",
     "drizzle-orm": "^0.45.2",
-    "zod": "^3.23.8",
-    "razorpay": "^2.9.8"
+    "node-appwrite": "^29.0.0",
+    "razorpay": "^2.9.8",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260917.1",

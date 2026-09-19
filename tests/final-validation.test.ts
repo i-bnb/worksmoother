@@ -95,29 +95,24 @@ async function runFinalValidation() {
   assert.ok(openNextContent.includes('defineCloudflareConfig'), 'Must use defineCloudflareConfig');
   console.log('  ✓ Verified apps/web/wrangler.toml and open-next.config.ts (@opennextjs/cloudflare integration)');
 
-  // 1.5 Appwrite Infrastructure Declarative Config
+  // 1.5 Appwrite Infrastructure Declarative Config (Storage-only, single project)
   const appwriteConfigPath = path.join(rootDir, 'infra', 'appwrite', 'appwrite.config.json');
   assert.ok(fs.existsSync(appwriteConfigPath), 'infra/appwrite/appwrite.config.json must exist');
   const appwriteConfig = JSON.parse(fs.readFileSync(appwriteConfigPath, 'utf8'));
 
-  assert.strictEqual(appwriteConfig.projectA.projectId, 'doctorcare-operational-prod');
-  assert.strictEqual(appwriteConfig.projectB.projectId, 'doctorcare-medical-records-prod');
+  // Post-pivot: single Appwrite storage project (auth & DB moved to Cloudflare D1 / Better Auth)
+  assert.ok(appwriteConfig.storage, 'appwrite.config.json must have a "storage" key');
+  assert.strictEqual(appwriteConfig.storage.projectId, '6aae1c62000bebb93adb', 'Storage project ID must match');
+  assert.ok(appwriteConfig.storage.endpoint.includes('sgp.cloud.appwrite.io'), 'Endpoint must be sgp region');
 
-  const projACollections = appwriteConfig.projectA.databases[0].collections.map((c: any) => c.id);
-  assert.ok(projACollections.includes('HOSPITAL'));
-  assert.ok(projACollections.includes('DEPARTMENT'));
-  assert.ok(projACollections.includes('DOCTOR'));
-  assert.ok(projACollections.includes('ROOM'));
-  assert.ok(projACollections.includes('AVAILABILITY_SLOT'));
-  assert.ok(projACollections.includes('BOOKING'));
-  assert.ok(projACollections.includes('WEBHOOK_EVENT'));
-  assert.ok(projACollections.includes('CONSENT_LOG'));
+  const bucketIds = appwriteConfig.storage.buckets.map((b: any) => b.id);
+  assert.ok(bucketIds.includes('public-assets'), 'Must have public-assets bucket for doctor photos');
+  assert.ok(bucketIds.includes('clinical-documents'), 'Must have clinical-documents bucket for patient files');
 
-  const projBCollections = appwriteConfig.projectB.databases[0].collections.map((c: any) => c.id);
-  assert.ok(projBCollections.includes('patient_charts'));
-  assert.ok(projBCollections.includes('MEDICAL_RECORD'));
-  assert.ok(projBCollections.includes('RECORD_ACCESS_LOG'));
-  console.log('  ✓ Verified infra/appwrite/appwrite.config.json (Project A & B dual isolation, 11 total collections)');
+  const clinicalBucket = appwriteConfig.storage.buckets.find((b: any) => b.id === 'clinical-documents');
+  assert.ok(clinicalBucket.encryption === true, 'clinical-documents bucket must enable encryption');
+  assert.ok(clinicalBucket.fileSizeLimit <= 20 * 1024 * 1024, 'clinical-documents fileSizeLimit must not exceed 20 MB');
+  console.log('  ✓ Verified infra/appwrite/appwrite.config.json (single storage project, public-assets & clinical-documents buckets)');
 
   // 1.6 Cloudflare Zone WAF & Rate Limiting Rulesets
   const wafConfigPath = path.join(rootDir, 'infra', 'cloudflare', 'waf-rulesets.json');

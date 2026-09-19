@@ -1,6 +1,15 @@
 /**
- * Records Server Client Factory — Project B (Medical Records / PHI)
- * Self-contained edge implementation without external SDK dependency.
+ * Server-side Appwrite Storage accessor (records context).
+ *
+ * Post-pivot architecture:
+ * – Medical record metadata is stored in Cloudflare D1 (doctorcare-records-db)
+ * – Clinical document files (PDF, images) are stored in Appwrite Storage
+ *
+ * This module provides server-side access to Appwrite Storage for the
+ * clinical-documents bucket using the storage-scoped API key.
+ *
+ * The old Project B (medical records Appwrite DB) has been decommissioned.
+ * All structured PHI data is now in D1 under the records worker.
  */
 import { getServerEnv } from './env';
 
@@ -25,30 +34,11 @@ export class Client {
   }
 }
 
-export class Databases {
-  constructor(private client: Client) {}
-
-  async listDocuments(dbId: string, colId: string) {
-    return { total: 0, documents: [] };
-  }
-
-  async getDocument(dbId: string, colId: string, docId: string) {
-    return { $id: docId };
-  }
-
-  async createDocument(dbId: string, colId: string, docId: string, data: any) {
-    return { $id: docId, ...data };
-  }
-}
-
-export function getServerClientB(): Client {
+/** Returns a server-side Appwrite client for storage access in the records context. */
+export function getServerStorageClientRecords(): Client {
   const env = getServerEnv();
   return new Client()
     .setEndpoint(env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(env.APPWRITE_PROJECT_B_ID)
-    .setKey(env.APPWRITE_PROJECT_B_API_KEY);
-}
-
-export function getServerDatabasesB(): Databases {
-  return new Databases(getServerClientB());
+    .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID)
+    .setKey(env.APPWRITE_STORAGE_API_KEY);
 }

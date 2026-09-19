@@ -30,19 +30,23 @@ async function runVerification() {
   }
   console.log('  -> PASSED: kek-2026-09 bound EXCLUSIVELY to records worker.');
 
-  // Test 3: Appwrite Dual Project Separation
-  console.log('\n[Test 3] Verifying Appwrite Cloud project isolation...');
+  // Test 3: Appwrite Storage Project Verification (post-pivot: single storage project)
+  console.log('\n[Test 3] Verifying Appwrite Cloud storage project...');
   const appwriteConfig = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, '../infra/appwrite/appwrite.config.json'), 'utf8')
   );
 
-  if (appwriteConfig.projectA.projectId === appwriteConfig.projectB.projectId) {
-    throw new Error('FAILED: Project A and Project B share the same project ID!');
+  if (!appwriteConfig.storage || !appwriteConfig.storage.projectId) {
+    throw new Error('FAILED: appwrite.config.json must have a storage.projectId!');
   }
-  if (!appwriteConfig.projectB.name.includes('Medical Records') && !appwriteConfig.projectB.description.includes('Electronic Health Records')) {
-    throw new Error('FAILED: Project B is not strictly designated for medical records!');
+  if (!appwriteConfig.storage.endpoint.includes('sgp.cloud.appwrite.io')) {
+    throw new Error('FAILED: Appwrite storage endpoint must be in the sgp region!');
   }
-  console.log(`  -> PASSED: Project A (${appwriteConfig.projectA.projectId}) and Project B (${appwriteConfig.projectB.projectId}) are completely decoupled.`);
+  const clinicalBucket = appwriteConfig.storage.buckets?.find((b: any) => b.id === 'clinical-documents');
+  if (!clinicalBucket || !clinicalBucket.encryption) {
+    throw new Error('FAILED: clinical-documents bucket must exist and have encryption enabled!');
+  }
+  console.log(`  -> PASSED: Appwrite storage project (${appwriteConfig.storage.projectId}) verified with encrypted clinical-documents bucket.`);
 
   // Test 4: Envelope Encryption & Decryption with KEK kek-2026-09
   console.log('\n[Test 4] Testing WebCrypto Envelope Encryption with KEK kek-2026-09...');

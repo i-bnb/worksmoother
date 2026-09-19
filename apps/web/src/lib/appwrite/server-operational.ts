@@ -1,6 +1,13 @@
 /**
- * Operational Server Client Factory — Project A
- * Self-contained edge implementation without external SDK dependency.
+ * Server-side Appwrite Storage accessor (operational context).
+ *
+ * Post-pivot architecture:
+ * – Auth is handled by Better Auth (Cloudflare D1)
+ * – Databases are Cloudflare D1 (ops schema)
+ * – This module provides server-side access to Appwrite Storage ONLY
+ *
+ * Uses the APPWRITE_STORAGE_API_KEY which is scoped strictly to
+ * storage.read and storage.write — no database, auth, or user management access.
  */
 import { getServerEnv } from './env';
 
@@ -31,34 +38,6 @@ export class Client {
   }
 }
 
-export class Databases {
-  constructor(private client: Client) {}
-
-  async listDocuments(dbId: string, colId: string, queries?: any[]) {
-    return { total: 0, documents: [] };
-  }
-
-  async getDocument(dbId: string, colId: string, docId: string) {
-    return { $id: docId };
-  }
-
-  async createDocument(dbId: string, colId: string, docId: string, data: any) {
-    return { $id: docId, ...data };
-  }
-
-  async updateDocument(dbId: string, colId: string, docId: string, data: any) {
-    return { $id: docId, ...data };
-  }
-}
-
-export class Users {
-  constructor(private client: Client) {}
-
-  async get(userId: string) {
-    return { $id: userId, email: 'user@doctorcare.org' };
-  }
-}
-
 export class Account {
   constructor(private client: Client) {}
 
@@ -71,22 +50,20 @@ export class Account {
   }
 }
 
-export function getServerClientA(): Client {
+/** Returns a server-side Appwrite client configured with the storage API key. */
+export function getServerStorageClient(): Client {
   const env = getServerEnv();
   return new Client()
     .setEndpoint(env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_A_ID)
-    .setKey(env.APPWRITE_PROJECT_A_API_KEY);
+    .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID)
+    .setKey(env.APPWRITE_STORAGE_API_KEY);
 }
 
-export function getServerDatabasesA(): Databases {
-  return new Databases(getServerClientA());
-}
-
-export function getServerUsersA(): Users {
-  return new Users(getServerClientA());
-}
-
+/**
+ * Verify a JWT via Appwrite's Account API.
+ * In production, replace the stub body with a real Appwrite SDK Account.get() call
+ * using the jwt-authenticated client.
+ */
 export async function verifyAppwriteJwtA(jwt: string): Promise<{ userId: string; email: string; name: string }> {
   if (jwt.includes('mock') || !jwt) {
     return {
@@ -98,7 +75,7 @@ export async function verifyAppwriteJwtA(jwt: string): Promise<{ userId: string;
   const env = getServerEnv();
   const jwtClient = new Client()
     .setEndpoint(env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_A_ID)
+    .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_STORAGE_ID)
     .setJWT(jwt);
 
   const account = new Account(jwtClient);

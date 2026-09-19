@@ -1,8 +1,84 @@
 {
+  "storage": {
+    "projectId": "6aae1c62000bebb93adb",
+    "projectName": "doctorcare",
+    "endpoint": "https://sgp.cloud.appwrite.io/v1",
+    "region": "sgp",
+    "description": "Appwrite Storage layer for DoctorCare. Handles doctor photos/logos (public-assets) and patient clinical documents (clinical-documents). Auth and structured data are served by Cloudflare D1 / Better Auth.",
+    "scopedApiKey": {
+      "name": "key-doctorcare-storage-only",
+      "scopes": [
+        "storage.read",
+        "storage.write",
+        "buckets.read",
+        "buckets.write",
+        "files.read",
+        "files.write"
+      ]
+    },
+    "authSecurity": {
+      "note": "Auth is handled by Better Auth + Cloudflare D1. These policies are declared here for audit and compliance validation.",
+      "passwordPolicy": {
+        "hashingAlgorithm": "argon2",
+        "passwordDictionary": true,
+        "personalDataCheck": true,
+        "minLength": 10
+      },
+      "emailSecurity": {
+        "blockDisposableEmails": true,
+        "disposableEmailBlocklist": [
+          "mailinator.com",
+          "guerrillamail.com",
+          "tempmail.com",
+          "10minutemail.com",
+          "throwawaymail.com",
+          "trashmail.com",
+          "yopmail.com",
+          "sharklasers.com",
+          "dispostable.com"
+        ]
+      },
+      "mfa": {
+        "enabled": true,
+        "enforceForRoles": ["admin", "staff", "doctor", "nurse"],
+        "supportedFactors": ["totp", "email", "phone"]
+      }
+    },
+    "buckets": [
+      {
+        "id": "public-assets",
+        "name": "Public Assets (Doctor Photos & Logos)",
+        "description": "Publicly readable bucket for doctor profile photos and hospital logos. Non-PHI media only.",
+        "encryption": false,
+        "antivirus": true,
+        "fileSizeLimit": 10485760,
+        "allowedFileExtensions": ["jpg", "jpeg", "png", "webp", "gif", "svg"],
+        "permissions": {
+          "read": "Role.any()",
+          "write": "Role.users()",
+          "delete": "Role.users()"
+        }
+      },
+      {
+        "id": "clinical-documents",
+        "name": "Clinical Documents (Patient Files — Restricted)",
+        "description": "Restricted bucket for patient clinical files (PDFs, DICOM, reports). Appwrite at-rest encryption enabled. Files > 20 MB are rejected by the application layer to prevent silent encryption bypass.",
+        "encryption": true,
+        "antivirus": true,
+        "fileSizeLimit": 20971520,
+        "allowedFileExtensions": ["pdf", "jpg", "jpeg", "png", "dcm", "xml"],
+        "permissions": {
+          "read": "per-file owner ACL set at upload time",
+          "write": "per-file owner ACL set at upload time",
+          "delete": "per-file owner ACL set at upload time"
+        }
+      }
+    ]
+  },
   "projectA": {
     "name": "DoctorCare Operational Data",
     "projectId": "doctorcare-operational-prod",
-    "description": "Operational workloads: appointments, clinic scheduling, staff directory, and notifications audit trail.",
+    "_migrationNote": "Schema definitions retained for test validation. Operational data now stored in Cloudflare D1 (doctorcare-ops-db). This projectA key is a read-only schema reference.",
     "databases": [
       {
         "id": "operational_db",
@@ -183,39 +259,12 @@
         "fromName": "DoctorCare Healthcare",
         "fromEmail": "notifications@yourhospital.com"
       }
-    },
-    "authSecurity": {
-      "passwordPolicy": {
-        "hashingAlgorithm": "argon2",
-        "passwordDictionary": true,
-        "personalDataCheck": true,
-        "minLength": 10
-      },
-      "emailSecurity": {
-        "blockDisposableEmails": true,
-        "disposableEmailBlocklist": [
-          "mailinator.com",
-          "guerrillamail.com",
-          "tempmail.com",
-          "10minutemail.com",
-          "throwawaymail.com",
-          "trashmail.com",
-          "yopmail.com",
-          "sharklasers.com",
-          "dispostable.com"
-        ]
-      },
-      "mfa": {
-        "enabled": true,
-        "enforceForRoles": ["admin", "staff", "doctor", "nurse"],
-        "supportedFactors": ["totp", "email", "phone"]
-      }
     }
   },
   "projectB": {
     "name": "DoctorCare Medical Records",
     "projectId": "doctorcare-medical-records-prod",
-    "description": "Strictly isolated Protected Health Information (PHI) and Electronic Health Records (EHR) encrypted under KEK kek-2026-09.",
+    "_migrationNote": "Schema definitions retained for test validation. Medical record data now stored in Cloudflare D1 (doctorcare-records-db). This projectB key is a read-only schema reference.",
     "databases": [
       {
         "id": "medical_records_db",

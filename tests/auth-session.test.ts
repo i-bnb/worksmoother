@@ -59,9 +59,9 @@ async function runAuthSessionTests() {
     fs.readFileSync(path.resolve(__dirname, '../infra/appwrite/appwrite.config.json'), 'utf8')
   );
 
-  const authSecurity = config.projectA.authSecurity;
+  const authSecurity = config.storage.authSecurity;
   if (!authSecurity) {
-    throw new Error('FAILED: authSecurity block missing from projectA configuration!');
+    throw new Error('FAILED: authSecurity block missing from storage configuration!');
   }
 
   if (authSecurity.passwordPolicy.hashingAlgorithm !== 'argon2') {
