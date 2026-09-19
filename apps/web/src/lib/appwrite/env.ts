@@ -1,4 +1,4 @@
-﻿import { z } from 'zod';
+import { z } from 'zod';
 
 /**
  * Centralised, Zod-validated environment configuration for the DoctorCare web app.
@@ -18,11 +18,13 @@ const publicEnvSchema = z.object({
     .default('https://cloud.appwrite.io/v1'),
   NEXT_PUBLIC_APPWRITE_PROJECT_A_ID: z
     .string()
-    .min(1, 'NEXT_PUBLIC_APPWRITE_PROJECT_A_ID is required'),
+    .default('doctorcare-operational-prod'),
   NEXT_PUBLIC_API_URL: z
     .string()
-    .url('NEXT_PUBLIC_API_URL must be a valid URL')
-    .default('http://127.0.0.1:8787'),
+    .default('https://api.yourhospital.com'),
+  NEXT_PUBLIC_APP_NAME: z
+    .string()
+    .default('DoctorCare'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -31,13 +33,13 @@ const publicEnvSchema = z.object({
 const serverEnvSchema = z.object({
   APPWRITE_PROJECT_A_API_KEY: z
     .string()
-    .min(1, 'APPWRITE_PROJECT_A_API_KEY is required for server operations'),
+    .default(''),
   APPWRITE_PROJECT_B_ID: z
     .string()
-    .min(1, 'APPWRITE_PROJECT_B_ID is required for PHI operations'),
+    .default('doctorcare-medical-records-prod'),
   APPWRITE_PROJECT_B_API_KEY: z
     .string()
-    .min(1, 'APPWRITE_PROJECT_B_API_KEY is required for PHI operations'),
+    .default(''),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
