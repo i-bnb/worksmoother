@@ -46,6 +46,9 @@ export default function HomePage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [bubbleGone, setBubbleGone] = useState(false);
 
+  // Mobile Navigation Drawer state
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   // Typewriter effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -247,20 +250,20 @@ export default function HomePage() {
   }));
 
   return (
-    <div className="w-full min-w-[1200px] bg-[#F4F6FB] text-[#0B1533]">
+    <div className="w-full max-w-full bg-[#F4F6FB] text-[#0B1533] overflow-x-hidden">
       {/* ================= HEADER / FLOATING NAV ================= */}
-      <header className="sticky top-3 z-50 flex justify-center px-6 pt-3">
+      <header className="sticky top-3 z-50 flex justify-center px-3 sm:px-6 pt-3">
         <nav
           aria-label="Main"
-          className="nav w-full max-w-[1040px] flex items-center justify-between gap-5 p-2 pl-5 border border-[#0B1533]/[0.08] rounded-full bg-white/80 backdrop-blur-xl shadow-lg shadow-[#0B1533]/5"
+          className="nav w-full max-w-[1040px] flex items-center justify-between gap-3 sm:gap-5 p-2 px-3 sm:pl-5 border border-[#0B1533]/[0.08] rounded-full bg-white/80 backdrop-blur-xl shadow-lg shadow-[#0B1533]/5"
         >
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-extrabold text-lg tracking-tight text-[#0B1533]"
+            className="flex items-center gap-2.5 font-extrabold text-base sm:text-lg tracking-tight text-[#0B1533] py-1"
           >
             <span
               style={{ background: primary }}
-              className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white shadow-sm"
+              className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white shadow-sm flex-shrink-0"
             >
               <svg
                 width="17"
@@ -278,7 +281,7 @@ export default function HomePage() {
             DoctorCare
           </Link>
 
-          <div className="flex items-center gap-6 text-sm font-medium text-[#3A4566]">
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-[#3A4566]">
             <Link className="navlink" href="/directory">
               Doctors
             </Link>
@@ -296,39 +299,119 @@ export default function HomePage() {
             </a>
           </div>
 
-          <a
-            className="btn inline-flex items-center gap-2.5 h-11 px-2 pr-5 rounded-full text-white text-sm font-bold shadow-md shadow-blue-500/20"
-            href="#book"
-            style={{ background: primary }}
-          >
-            <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <a
+              className="btn hidden sm:inline-flex items-center gap-2.5 h-11 min-h-[44px] px-2 pr-5 rounded-full text-white text-sm font-bold shadow-md shadow-blue-500/20"
+              href="#book"
+              style={{ background: primary }}
+            >
+              <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                <svg
+                  className="arrow"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+              <span className="roll">
+                <span>Book appointment</span>
+                <span>Book appointment</span>
+              </span>
+            </a>
+
+            {/* Mobile Hamburger Toggle (44x44px touch target) */}
+            <button
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              aria-label={mobileNavOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              className="md:hidden flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full text-[#0B1533] hover:bg-[#F4F6FB] transition-colors cursor-pointer border border-[#0B1533]/[0.08]"
+            >
               <svg
-                className="arrow"
-                width="14"
-                height="14"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#fff"
-                strokeWidth="2.4"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                aria-hidden="true"
               >
-                <path d="M5 12h14M13 6l6 6-6 6" />
+                {mobileNavOpen ? (
+                  <>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                  </>
+                )}
               </svg>
-            </span>
-            <span className="roll">
-              <span>Book appointment</span>
-              <span>Book appointment</span>
-            </span>
-          </a>
+            </button>
+          </div>
         </nav>
+
+        {/* Mobile Navigation Drawer / Popover */}
+        {mobileNavOpen && (
+          <div className="md:hidden fixed inset-0 z-40 flex flex-col justify-end pt-20">
+            <div
+              className="fixed inset-0 bg-[#0B1533]/40 backdrop-blur-sm transition-opacity"
+              onClick={() => setMobileNavOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="relative z-50 mx-3 mb-4 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-[#0B1533]/10 shadow-2xl p-5 max-h-[calc(100vh-6rem)] overflow-y-auto space-y-4 animate-in slide-in-from-bottom-5 duration-200">
+              <div className="flex items-center justify-between pb-3 border-b border-[#0B1533]/[0.08]">
+                <span className="text-xs font-bold uppercase tracking-wider font-mono text-[#0B1533]">
+                  DoctorCare Navigation
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#E8F7EE] text-[#15803D] font-bold">
+                  Zero-Trust Active
+                </span>
+              </div>
+              <div className="space-y-1">
+                {[
+                  { name: 'Doctors Directory', href: '/directory' },
+                  { name: 'Slot Booking', href: '/booking' },
+                  { name: 'Medical Vault', href: '/records' },
+                  { name: 'DPDP Consent', href: '/consent' },
+                  { name: 'Staff Portal', href: '/login' },
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold text-[#0B1533] hover:bg-[#F4F6FB] transition-all"
+                  >
+                    <span>{item.name}</span>
+                    <span className="text-[#2B59FF]">&rarr;</span>
+                  </Link>
+                ))}
+              </div>
+              <a
+                href="#book"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-3.5 min-h-[48px] rounded-2xl bg-[#2B59FF] text-white text-sm font-bold shadow-lg shadow-blue-500/25"
+              >
+                <span>Book appointment</span>
+              </a>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ================= HERO SECTION ================= */}
       <section
         id="top"
-        className="relative flex flex-col items-center px-6 pt-20 pb-4"
+        className="relative flex flex-col items-center px-4 sm:px-6 pt-12 sm:pt-20 pb-4"
       >
         <div
           aria-hidden="true"
@@ -344,13 +427,13 @@ export default function HomePage() {
           }}
         />
 
-        <div className="hero-copy relative flex flex-col items-center gap-6 text-center max-w-[1000px]">
+        <div className="hero-copy relative flex flex-col items-center gap-5 sm:gap-6 text-center max-w-[1000px]">
           <div className="rise d1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] text-xs font-bold tracking-wider uppercase">
             <span className="live" />
             Zero-trust hospital platform &bull; HIPAA &amp; DPDP-ready
           </div>
 
-          <h1 className="rise d2 m-0 text-[76px] leading-[1.08] font-extrabold tracking-tight text-[#0B1533]">
+          <h1 className="rise d2 m-0 text-3xl sm:text-5xl md:text-6xl lg:text-[76px] leading-[1.1] sm:leading-[1.08] font-extrabold tracking-tight text-[#0B1533]">
             The safest way to book
             <br />
             care for your{' '}
@@ -363,14 +446,14 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="rise d3 m-0 max-w-[620px] text-[19px] leading-relaxed text-[#4A5578]">
+          <p className="rise d3 m-0 max-w-[620px] text-base sm:text-lg md:text-[19px] leading-relaxed text-[#4A5578] px-2 sm:px-0">
             Verified doctors, 10-minute slot holds and an encrypted medical vault, in one hospital
             platform. Consent is built in from day one.
           </p>
 
-          <div className="rise d4 flex gap-3 pt-2">
+          <div className="rise d4 flex flex-col sm:flex-row gap-3 pt-2 w-full sm:w-auto items-center justify-center">
             <a
-              className="btn inline-flex items-center gap-3 h-14 px-7 rounded-full text-white text-base font-bold shadow-xl shadow-blue-500/30"
+              className="btn inline-flex items-center justify-center gap-3 h-14 min-h-[48px] px-7 rounded-full text-white text-base font-bold shadow-xl shadow-blue-500/30 w-full sm:w-auto"
               href="#book"
               style={{ background: primary }}
             >
@@ -397,7 +480,7 @@ export default function HomePage() {
             </a>
 
             <Link
-              className="btn inline-flex items-center h-14 px-7 rounded-full bg-white border border-[#0B1533]/[0.12] text-[#0B1533] text-base font-semibold shadow-sm hover:border-[#0B1533]/30"
+              className="btn inline-flex items-center justify-center h-14 min-h-[48px] px-7 rounded-full bg-white border border-[#0B1533]/[0.12] text-[#0B1533] text-base font-semibold shadow-sm hover:border-[#0B1533]/30 w-full sm:w-auto"
               href="/directory"
             >
               <span className="roll">
@@ -409,42 +492,46 @@ export default function HomePage() {
         </div>
 
         {/* 3D Dashboard Perspective Container */}
-        <div className="rise d5 w-full max-w-[1180px] mt-16 [perspective:1600px]">
+        <div className="rise d5 w-full max-w-[1180px] mt-10 sm:mt-16 [perspective:1600px]">
           <div className="dash [transform-origin:50%_0%] rounded-[26px] bg-[#1A2340] p-3 shadow-2xl shadow-[#0B1533]/40">
             {/* Top Bar */}
-            <div className="flex items-center gap-3.5 px-2.5 pt-2 pb-3.5">
-              <div className="flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
+            <div className="flex items-center justify-between gap-3.5 px-2.5 pt-2 pb-3.5 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
+                </div>
+                <span className="text-xs sm:text-sm font-bold text-white">DoctorCare &bull; OPD console</span>
               </div>
-              <span className="text-sm font-bold text-white">DoctorCare &bull; OPD console</span>
-              <span className="ml-auto w-64 h-8 rounded-full bg-white/[0.08] flex items-center gap-2 px-3.5 text-xs text-[#8C95B3]">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#8C95B3"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  aria-hidden="true"
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="hidden md:flex w-60 h-8 rounded-full bg-white/[0.08] items-center gap-2 px-3.5 text-xs text-[#8C95B3]">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#8C95B3"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.5-3.5" />
+                  </svg>
+                  Search patient or doctor
+                </span>
+                <Link
+                  href="/booking"
+                  className="h-8 min-h-[32px] px-3.5 rounded-full bg-white text-[#0B1533] text-xs font-bold flex items-center hover:bg-zinc-100 transition-colors flex-shrink-0"
                 >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M20 20l-3.5-3.5" />
-                </svg>
-                Search patient or doctor
-              </span>
-              <Link
-                href="/booking"
-                className="h-8 px-3.5 rounded-full bg-white text-[#0B1533] text-xs font-bold flex items-center hover:bg-zinc-100 transition-colors"
-              >
-                Open queue
-              </Link>
+                  Open queue
+                </Link>
+              </div>
             </div>
 
             {/* Dashboard 2x2 Grid */}
-            <div className="grid grid-cols-2 gap-3 p-4 rounded-[18px] bg-[#F4F6FB]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 sm:p-4 rounded-[18px] bg-[#F4F6FB]">
               {/* Card 1: Live Telemetry */}
               <div className="fly fa flex flex-col gap-4 p-5 rounded-[18px] bg-white shadow-sm">
                 <div className="flex justify-between items-start">
@@ -642,24 +729,24 @@ export default function HomePage() {
       <section className="stats relative h-[2800px]">
         <div className="sticky top-0 h-[min(100vh,900px)] overflow-hidden">
           {/* Panel 1: Medical Vault 256-bit AES-GCM */}
-          <div className="absolute inset-0 bg-[#F4F6FB] flex flex-col items-center justify-center gap-4 text-center px-6">
+          <div className="absolute inset-0 bg-[#F4F6FB] flex flex-col items-center justify-center gap-3 sm:gap-4 text-center px-4 sm:px-6">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] text-xs font-bold tracking-wider uppercase">
               <span className="live" />
               Medical Vault
             </span>
-            <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
+            <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
               Every record, locked
               <br />
               by default.
             </h2>
-            <div className="flex items-end gap-2 text-[#0B1533]">
-              <span className="num1 text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
-              <span className="text-2xl font-bold pb-3.5">-bit</span>
+            <div className="flex items-end gap-1.5 sm:gap-2 text-[#0B1533]">
+              <span className="num1 text-[80px] sm:text-[120px] md:text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
+              <span className="text-lg sm:text-2xl font-bold pb-2 sm:pb-3.5">-bit</span>
             </div>
-            <span className="text-base font-semibold text-[#3A4566]">
+            <span className="text-sm sm:text-base font-semibold text-[#3A4566] px-2">
               AES-256-GCM encryption, a fresh key per record
             </span>
-            <p className="m-0 max-w-[520px] text-sm leading-relaxed text-[#6B7596]">
+            <p className="m-0 max-w-[520px] text-xs sm:text-sm leading-relaxed text-[#6B7596] px-2 sm:px-0">
               Reports are encrypted before they are stored in D1. Every access is written to the audit
               log first, and if the log fails, zero clinical notes are decrypted.
             </p>
@@ -667,27 +754,27 @@ export default function HomePage() {
 
           {/* Panel 2: Slot Lock 10-Minute Hold */}
           <div
-            className="wipe2 absolute inset-0 text-white flex flex-col items-center justify-center gap-4 text-center px-6"
+            className="wipe2 absolute inset-0 text-white flex flex-col items-center justify-center gap-3 sm:gap-4 text-center px-4 sm:px-6"
             style={{ background: primary }}
           >
-            <div className="lift2 flex flex-col items-center gap-4">
+            <div className="lift2 flex flex-col items-center gap-3 sm:gap-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wider uppercase">
                 <span className="live" />
                 Slot booking
               </span>
-              <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight text-white">
+              <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight text-white">
                 Slots that can&apos;t be
                 <br />
                 double-booked.
               </h2>
-              <div className="flex items-end gap-2 text-white">
-                <span className="num2 text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
-                <span className="text-2xl font-bold pb-3.5">min</span>
+              <div className="flex items-end gap-1.5 sm:gap-2 text-white">
+                <span className="num2 text-[80px] sm:text-[120px] md:text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
+                <span className="text-lg sm:text-2xl font-bold pb-2 sm:pb-3.5">min</span>
               </div>
-              <span className="text-base font-semibold text-[#E3E9FF]">
+              <span className="text-sm sm:text-base font-semibold text-[#E3E9FF] px-2">
                 Your slot is held while you confirm
               </span>
-              <p className="m-0 max-w-[520px] text-sm leading-relaxed text-[#DCE4FF]">
+              <p className="m-0 max-w-[520px] text-xs sm:text-sm leading-relaxed text-[#DCE4FF] px-2 sm:px-0">
                 One booking lock per doctor-day in SQLite Durable Objects. Two patients can never take
                 the same time, and expired holds release automatically.
               </p>
@@ -695,25 +782,25 @@ export default function HomePage() {
           </div>
 
           {/* Panel 3: 4 Layers of Rate Limiting & Cloudflare Pro Zone WAF */}
-          <div className="wipe3 absolute inset-0 bg-[#0B1533] text-white flex flex-col items-center justify-center gap-4 text-center px-6">
-            <div className="lift3 flex flex-col items-center gap-4">
+          <div className="wipe3 absolute inset-0 bg-[#0B1533] text-white flex flex-col items-center justify-center gap-3 sm:gap-4 text-center px-4 sm:px-6">
+            <div className="lift3 flex flex-col items-center gap-3 sm:gap-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold tracking-wider uppercase text-[#C7D3FF]">
                 <span className="live" />
                 All subsystems nominal
               </span>
-              <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight text-white">
+              <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight text-white">
                 Defence in depth,
                 <br />
                 at the edge.
               </h2>
-              <div className="flex items-end gap-2 text-white">
-                <span className="num3 text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
-                <span className="text-2xl font-bold pb-3.5">layers</span>
+              <div className="flex items-end gap-1.5 sm:gap-2 text-white">
+                <span className="num3 text-[80px] sm:text-[120px] md:text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
+                <span className="text-lg sm:text-2xl font-bold pb-2 sm:pb-3.5">layers</span>
               </div>
-              <span className="text-base font-semibold text-[#C7D3FF]">
+              <span className="text-sm sm:text-base font-semibold text-[#C7D3FF] px-2">
                 of rate limiting, from WAF to healthcare business caps
               </span>
-              <p className="m-0 max-w-[560px] text-sm leading-relaxed text-[#AEB8D6]">
+              <p className="m-0 max-w-[560px] text-xs sm:text-sm leading-relaxed text-[#AEB8D6] px-2 sm:px-0">
                 Cloudflare Pro Zone WAF (OWASP CRS v3.3), Worker rate-limit bindings, exact Durable
                 Object sliding-window counters, and hospital business quotas protect clinical operations.
               </p>
@@ -723,31 +810,31 @@ export default function HomePage() {
       </section>
 
       {/* ================= APP PREVIEW (PHONE MOCKUP) ================= */}
-      <section className="flex justify-center px-6 py-28">
+      <section className="flex justify-center px-4 sm:px-6 py-16 sm:py-28">
         <div
-          className="grow w-full max-w-[1200px] h-[560px] rounded-[32px] text-white grid grid-cols-2 gap-10 px-16 overflow-hidden relative"
+          className="grow w-full max-w-[1200px] min-h-[560px] h-auto rounded-[24px] sm:rounded-[32px] text-white grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 px-6 sm:px-10 lg:px-16 py-10 lg:py-0 overflow-hidden relative"
           style={{ background: primary }}
         >
           <div
             aria-hidden="true"
-            className="absolute -right-40 -top-52 w-[620px] h-[620px] rounded-full border border-white/15 pointer-events-none"
+            className="absolute -right-40 -top-52 w-[340px] h-[340px] sm:w-[620px] sm:h-[620px] rounded-full border border-white/15 pointer-events-none"
           />
           <div className="flex flex-col justify-center gap-5 relative z-10">
             <span className="self-start inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wider uppercase">
               <span className="live" />
               Patient app preview
             </span>
-            <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight">
+            <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight">
               Your hospital,
               <br />
               in your pocket.
             </h2>
-            <p className="m-0 max-w-[420px] text-base leading-relaxed text-[#E3E9FF]">
+            <p className="m-0 max-w-[420px] text-sm sm:text-base leading-relaxed text-[#E3E9FF]">
               Book, reschedule and access encrypted health charts from your phone. Zero front-desk
               paperwork.
             </p>
             <Link
-              className="btn self-start inline-flex items-center gap-2.5 h-12 px-2 pr-6 rounded-full bg-white text-[#0B1533] text-sm font-bold shadow-lg"
+              className="btn self-start inline-flex items-center gap-2.5 h-12 min-h-[44px] px-2 pr-6 rounded-full bg-white text-[#0B1533] text-sm font-bold shadow-lg"
               href="/booking"
             >
               <span
@@ -776,8 +863,8 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="flex justify-center items-end relative">
-            <div className="phone w-[290px] h-[510px] -mb-10 rounded-[44px] bg-[#0B1533] p-2.5 shadow-2xl">
+          <div className="flex justify-center items-end relative w-full pt-6 lg:pt-0">
+            <div className="phone w-full max-w-[290px] h-[510px] -mb-10 rounded-[44px] bg-[#0B1533] p-2.5 shadow-2xl mx-auto">
               <div className="w-full h-full rounded-[36px] bg-[#F4F6FB] overflow-hidden flex flex-col">
                 <div className="p-6 pb-4 bg-[#0B1533] text-white flex flex-col gap-1">
                   <span className="text-xs text-[#9FB4FF]">Good morning</span>
@@ -841,26 +928,26 @@ export default function HomePage() {
       </section>
 
       {/* ================= ARCHITECTURE MODULES ================= */}
-      <section className="flex justify-center px-6 pb-28">
-        <div className="w-full max-w-[1200px] flex flex-col gap-12">
-          <div className="reveal flex flex-col items-center gap-3.5 text-center">
+      <section className="flex justify-center px-4 sm:px-6 pb-20 sm:pb-28">
+        <div className="w-full max-w-[1200px] flex flex-col gap-10 sm:gap-12">
+          <div className="reveal flex flex-col items-center gap-3.5 text-center px-2">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] text-xs font-bold tracking-wider uppercase">
               <span className="live" />
               One platform
             </span>
-            <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
+            <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
               Everything a visit needs,
               <br />
               <span className="serif text-[#2B59FF]">in one place.</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {modules.map((m, i) => (
               <Link
                 key={i}
                 href={m.href}
-                className="card reveal flex flex-col justify-between gap-12 min-h-[300px] p-7 rounded-[26px] bg-white border border-[#0B1533]/[0.08] shadow-sm"
+                className="card reveal flex flex-col justify-between gap-8 sm:gap-12 min-h-[260px] sm:min-h-[300px] p-6 sm:p-7 rounded-[26px] bg-white border border-[#0B1533]/[0.08] shadow-sm"
               >
                 <div className="flex justify-between items-start">
                   <span className="mono text-xs font-bold text-[#6B7596]">{m.tag}</span>
@@ -881,7 +968,7 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className="flex flex-col gap-2.5">
-                  <h3 className="m-0 text-xl font-extrabold tracking-tight text-[#0B1533]">
+                  <h3 className="m-0 text-lg sm:text-xl font-extrabold tracking-tight text-[#0B1533]">
                     {m.title}
                   </h3>
                   <p className="m-0 text-sm leading-relaxed text-[#4A5578]">{m.body}</p>
@@ -893,26 +980,26 @@ export default function HomePage() {
       </section>
 
       {/* ================= INTERACTIVE BOOKING WIZARD ================= */}
-      <section id="book" className="flex justify-center px-6 pb-28">
-        <div className="reveal w-full max-w-[1200px] grid grid-cols-2 gap-14 items-start">
+      <section id="book" className="flex justify-center px-4 sm:px-6 pb-20 sm:pb-28">
+        <div className="reveal w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
           {/* Left Column: Context */}
-          <div className="flex flex-col gap-5 pt-4">
+          <div className="flex flex-col gap-5 pt-0 sm:pt-4">
             <span className="self-start inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] text-xs font-bold tracking-wider uppercase">
               <span className="live" />
               Let&apos;s get you seen
             </span>
-            <h2 className="m-0 text-6xl leading-none font-extrabold tracking-tight text-[#0B1533]">
+            <h2 className="m-0 text-3xl sm:text-5xl md:text-6xl leading-tight sm:leading-none font-extrabold tracking-tight text-[#0B1533]">
               Ready for your
               <br />
               <span className="serif text-[#2B59FF]">next visit?</span>
             </h2>
-            <p className="m-0 max-w-[440px] text-base leading-relaxed text-[#4A5578]">
+            <p className="m-0 max-w-[440px] text-sm sm:text-base leading-relaxed text-[#4A5578]">
               Tell us what you need and we will find the right department. It takes under a minute.
             </p>
 
             <div className="flex flex-col gap-3.5 pt-2">
               <div className="flex items-center gap-3.5">
-                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF]">
+                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF] flex-shrink-0">
                   <svg
                     width="18"
                     height="18"
@@ -934,7 +1021,7 @@ export default function HomePage() {
               </div>
 
               <div className="flex items-center gap-3.5">
-                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF]">
+                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF] flex-shrink-0">
                   <svg
                     width="18"
                     height="18"
@@ -952,12 +1039,12 @@ export default function HomePage() {
                 </span>
                 <div className="flex flex-col">
                   <span className="text-xs text-[#6B7596]">Clinical enquiries</span>
-                  <span className="text-sm font-bold text-[#0B1533]">care@doctorcare.health</span>
+                  <span className="text-sm font-bold text-[#0B1533] break-all">care@doctorcare.health</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3.5">
-                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF]">
+                <span className="w-10 h-10 rounded-xl bg-white border border-[#0B1533]/[0.08] flex items-center justify-center text-[#2B59FF] flex-shrink-0">
                   <svg
                     width="18"
                     height="18"
@@ -1002,7 +1089,7 @@ export default function HomePage() {
           </div>
 
           {/* Right Column: Interactive Card Form */}
-          <div className="rounded-[28px] bg-white border border-[#0B1533]/[0.08] shadow-2xl shadow-[#0B1533]/10 p-8 flex flex-col gap-6 min-h-[520px]">
+          <div className="rounded-[28px] bg-white border border-[#0B1533]/[0.08] shadow-2xl shadow-[#0B1533]/10 p-5 sm:p-8 flex flex-col gap-6 min-h-[500px]">
             <div className="flex justify-between items-center">
               <span className="text-sm font-extrabold text-[#0B1533]">DoctorCare</span>
               <span className="mono text-xs text-[#6B7596]">
@@ -1024,10 +1111,10 @@ export default function HomePage() {
             {!isDone && step === 0 && (
               <div className="rise flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <h3 className="m-0 text-2xl font-extrabold text-[#0B1533]">What brings you in?</h3>
-                  <span className="text-sm text-[#6B7596]">Choose everything that applies.</span>
+                  <h3 className="m-0 text-xl sm:text-2xl font-extrabold text-[#0B1533]">What brings you in?</h3>
+                  <span className="text-xs sm:text-sm text-[#6B7596]">Choose everything that applies.</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {reasonList.map((r, i) => {
                     const isSelected = selectedReasons.includes(r);
                     return (
@@ -1035,7 +1122,7 @@ export default function HomePage() {
                         key={i}
                         type="button"
                         onClick={() => toggleReason(r)}
-                        className="chip flex items-center gap-2.5 min-h-[52px] p-3 px-3.5 rounded-xl border text-sm font-semibold text-left cursor-pointer"
+                        className="chip flex items-center gap-2.5 min-h-[48px] p-3 px-3.5 rounded-xl border text-xs sm:text-sm font-semibold text-left cursor-pointer"
                         style={{
                           borderColor: isSelected ? primary : '#DDE2EF',
                           background: isSelected ? '#EEF2FF' : '#ffffff',
@@ -1077,12 +1164,12 @@ export default function HomePage() {
             {!isDone && step === 1 && (
               <div className="rise flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <h3 className="m-0 text-2xl font-extrabold text-[#0B1533]">Which department?</h3>
-                  <span className="text-sm text-[#6B7596]">
+                  <h3 className="m-0 text-xl sm:text-2xl font-extrabold text-[#0B1533]">Which department?</h3>
+                  <span className="text-xs sm:text-sm text-[#6B7596]">
                     Not sure? Pick General Medicine and we will route you.
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {deptList.map((d, i) => {
                     const isSelected = selectedDept === d;
                     return (
@@ -1090,7 +1177,7 @@ export default function HomePage() {
                         key={i}
                         type="button"
                         onClick={() => setSelectedDept(d)}
-                        className="chip flex items-center justify-between min-h-[52px] p-3 px-4 rounded-xl border text-sm font-semibold cursor-pointer"
+                        className="chip flex items-center justify-between min-h-[48px] p-3 px-4 rounded-xl border text-xs sm:text-sm font-semibold cursor-pointer"
                         style={{
                           borderColor: isSelected ? primary : '#DDE2EF',
                           background: isSelected ? '#EEF2FF' : '#ffffff',
@@ -1116,8 +1203,8 @@ export default function HomePage() {
             {!isDone && step === 2 && (
               <div className="rise flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <h3 className="m-0 text-2xl font-extrabold text-[#0B1533]">How do we reach you?</h3>
-                  <span className="text-sm text-[#6B7596]">
+                  <h3 className="m-0 text-xl sm:text-2xl font-extrabold text-[#0B1533]">How do we reach you?</h3>
+                  <span className="text-xs sm:text-sm text-[#6B7596]">
                     We will send your slot options by SMS and WhatsApp.
                   </span>
                 </div>
@@ -1128,7 +1215,7 @@ export default function HomePage() {
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
                     placeholder="e.g. Rahul Menon"
-                    className="h-12 px-4 rounded-xl border border-[#DDE2EF] text-sm text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
+                    className="h-12 min-h-[44px] px-4 rounded-xl border border-[#DDE2EF] text-sm text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
                   />
                 </label>
                 <label className="flex flex-col gap-1.5 text-xs font-semibold text-[#3A4566]">
@@ -1138,7 +1225,7 @@ export default function HomePage() {
                     value={patientPhone}
                     onChange={(e) => setPatientPhone(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className="h-12 px-4 rounded-xl border border-[#DDE2EF] text-sm text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
+                    className="h-12 min-h-[44px] px-4 rounded-xl border border-[#DDE2EF] text-sm text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
                   />
                 </label>
                 <label className="flex items-start gap-2.5 text-xs leading-relaxed text-[#4A5578] cursor-pointer">
@@ -1172,15 +1259,15 @@ export default function HomePage() {
                     <path d="M5 12l5 5 9-10" />
                   </svg>
                 </span>
-                <h3 className="m-0 text-2xl font-extrabold text-[#0B1533]">Request received</h3>
-                <p className="m-0 max-w-[340px] text-sm leading-relaxed text-[#4A5578]">
+                <h3 className="m-0 text-xl sm:text-2xl font-extrabold text-[#0B1533]">Request received</h3>
+                <p className="m-0 max-w-[340px] text-xs sm:text-sm leading-relaxed text-[#4A5578]">
                   We will text you open slots for {selectedDept || 'your department'} shortly. You can
                   also book instantly in our live directory.
                 </p>
                 <button
                   type="button"
                   onClick={handleRestart}
-                  className="btn h-11 px-5 rounded-full border border-[#0B1533]/[0.14] bg-white text-[#0B1533] text-sm font-semibold cursor-pointer"
+                  className="btn h-11 min-h-[44px] px-5 rounded-full border border-[#0B1533]/[0.14] bg-white text-[#0B1533] text-sm font-semibold cursor-pointer"
                 >
                   Start over
                 </button>
@@ -1189,23 +1276,23 @@ export default function HomePage() {
 
             {/* Wizard Nav Controls */}
             {!isDone && (
-              <div className="mt-auto flex justify-between items-center gap-3">
+              <div className="mt-auto flex justify-between items-center gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleBack}
                   disabled={step === 0}
-                  className="h-12 px-5 rounded-full border border-[#0B1533]/[0.14] bg-white text-[#0B1533] text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="h-12 min-h-[44px] px-5 rounded-full border border-[#0B1533]/[0.14] bg-white text-[#0B1533] text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Back
                 </button>
-                <span className="text-xs text-[#6B7596]">
+                <span className="text-xs text-[#6B7596] text-center">
                   {canProceed ? '' : step === 0 ? 'Choose at least one' : 'Complete fields'}
                 </span>
                 <button
                   type="button"
                   onClick={handleNext}
                   disabled={!canProceed}
-                  className="btn h-12 px-6 rounded-full text-white text-sm font-bold cursor-pointer disabled:bg-[#AEB6CF] disabled:cursor-not-allowed transition-colors"
+                  className="btn h-12 min-h-[44px] px-6 rounded-full text-white text-sm font-bold cursor-pointer disabled:bg-[#AEB6CF] disabled:cursor-not-allowed transition-colors"
                   style={{ background: canProceed ? primary : '#AEB6CF' }}
                 >
                   {step === 2 ? 'Send request' : 'Continue'}
@@ -1217,23 +1304,23 @@ export default function HomePage() {
       </section>
 
       {/* ================= FAQ SECTION ================= */}
-      <section id="faq" className="flex justify-center px-6 pb-32">
-        <div className="w-full max-w-[1200px] flex flex-col gap-11">
-          <div className="reveal flex flex-col items-center gap-3.5 text-center">
+      <section id="faq" className="flex justify-center px-4 sm:px-6 pb-20 sm:pb-32">
+        <div className="w-full max-w-[1200px] flex flex-col gap-8 sm:gap-11">
+          <div className="reveal flex flex-col items-center gap-3.5 text-center px-2">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] text-xs font-bold tracking-wider uppercase">
               FAQ
             </span>
-            <h2 className="m-0 text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
+            <h2 className="m-0 text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold tracking-tight text-[#0B1533]">
               More questions about
               <br />
               <span className="serif text-[#2B59FF]">your appointment?</span>
             </h2>
-            <p className="m-0 max-w-[520px] text-base leading-relaxed text-[#4A5578]">
+            <p className="m-0 max-w-[520px] text-sm sm:text-base leading-relaxed text-[#4A5578]">
               If something isn&apos;t clear, call the front desk. We&apos;re happy to help.
             </p>
           </div>
 
-          <div className="reveal grid grid-cols-2 gap-3 items-start">
+          <div className="reveal grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
             {faqs.map((f, i) => {
               const isOpen = openFaq === i;
               return (
@@ -1245,9 +1332,9 @@ export default function HomePage() {
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                     aria-expanded={isOpen}
-                    className="faq-q w-full flex items-center justify-between gap-4 min-h-[64px] p-5 border-0 bg-transparent cursor-pointer text-left font-bold text-base text-[#0B1533]"
+                    className="faq-q w-full flex items-center justify-between gap-4 min-h-[56px] sm:min-h-[64px] p-4 sm:p-5 border-0 bg-transparent cursor-pointer text-left font-bold text-sm sm:text-base text-[#0B1533]"
                   >
-                    {f.q}
+                    <span>{f.q}</span>
                     <span
                       className="faq-plus w-7 h-7 flex-shrink-0 rounded-full flex items-center justify-center transition-transform"
                       style={{
@@ -1275,7 +1362,7 @@ export default function HomePage() {
                     style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
                   >
                     <div className="overflow-hidden">
-                      <p className="m-0 px-5 pb-5 text-sm leading-relaxed text-[#4A5578]">
+                      <p className="m-0 px-4 sm:px-5 pb-4 sm:pb-5 text-xs sm:text-sm leading-relaxed text-[#4A5578]">
                         {f.a}
                       </p>
                     </div>
@@ -1289,12 +1376,12 @@ export default function HomePage() {
 
       {/* ================= FOOTER ================= */}
       <footer
-        className="text-white flex flex-col items-center pt-20 px-6 overflow-hidden"
+        className="text-white flex flex-col items-center pt-16 sm:pt-20 px-4 sm:px-6 overflow-hidden"
         style={{ background: primary }}
       >
-        <div className="w-full max-w-[1200px] grid grid-cols-5 gap-8">
-          <div className="col-span-2 flex flex-col gap-4">
-            <div className="flex gap-2">
+        <div className="w-full max-w-[1200px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 flex flex-col gap-4">
+            <div className="flex gap-2 flex-wrap">
               <span className="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-white/15">
                 HIPAA § 164.312
               </span>
@@ -1302,12 +1389,12 @@ export default function HomePage() {
                 DPDP ACT 2023
               </span>
             </div>
-            <h3 className="m-0 text-4xl leading-tight font-extrabold tracking-tight">
+            <h3 className="m-0 text-3xl sm:text-4xl leading-tight font-extrabold tracking-tight">
               Hospital care,
               <br />
               built zero-trust.
             </h3>
-            <p className="m-0 max-w-[380px] text-sm leading-relaxed text-[#E3E9FF]">
+            <p className="m-0 max-w-[380px] text-xs sm:text-sm leading-relaxed text-[#E3E9FF]">
               Appointments and medical records on Cloudflare&apos;s edge. Every clinical record is
               encrypted end-to-end.
             </p>
@@ -1349,7 +1436,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="w-full max-w-[1200px] flex justify-between py-10 pb-5 text-xs text-[#DCE4FF] border-b border-white/20">
+        <div className="w-full max-w-[1200px] flex flex-col sm:flex-row items-center justify-between gap-4 py-8 pb-5 text-xs text-[#DCE4FF] border-b border-white/20 text-center sm:text-left">
           <span>&copy; 2026 DoctorCare Platform &bull; itsmesyaam</span>
           <span className="inline-flex items-center gap-2">
             <span className="live" />
@@ -1360,12 +1447,11 @@ export default function HomePage() {
         {/* Big Wordmark Artwork */}
         <div
           aria-hidden="true"
-          className="flex items-center gap-6 pt-7 -mb-9 pointer-events-none select-none"
+          className="flex items-center gap-3 sm:gap-6 pt-7 -mb-9 pointer-events-none select-none max-w-full overflow-hidden"
         >
-          <span className="letter w-44 h-44 rounded-3xl bg-white flex items-center justify-center shadow-2xl">
+          <span className="letter w-16 h-16 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-2xl sm:rounded-3xl bg-white flex items-center justify-center shadow-2xl flex-shrink-0">
             <svg
-              width="96"
-              height="96"
+              className="w-8 h-8 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24"
               viewBox="0 0 24 24"
               fill="none"
               stroke="#2B59FF"
@@ -1375,7 +1461,7 @@ export default function HomePage() {
               <path d="M12 5v14M5 12h14" />
             </svg>
           </span>
-          <div className="flex text-[230px] leading-[0.9] font-extrabold tracking-tighter text-white">
+          <div className="flex text-[52px] sm:text-[100px] md:text-[160px] lg:text-[230px] leading-[0.9] font-extrabold tracking-tighter text-white">
             {letters.map((l, i) => (
               <span
                 key={i}
@@ -1390,12 +1476,12 @@ export default function HomePage() {
       </footer>
 
       {/* ================= FLOATING AI CARE ASSISTANT ================= */}
-      <div className="fixed right-6 bottom-6 z-50 flex flex-col items-end gap-3">
+      <div className="fixed right-3 sm:right-6 bottom-3 sm:bottom-6 z-50 flex flex-col items-end gap-3">
         {chatOpen && (
           <div
             role="dialog"
             aria-label="Care Assistant"
-            className="pop w-[360px] rounded-3xl bg-white shadow-2xl shadow-[#0B1533]/50 overflow-hidden flex flex-col border border-[#0B1533]/10"
+            className="pop w-[calc(100vw-1.5rem)] sm:w-[360px] max-h-[85vh] rounded-3xl bg-white shadow-2xl shadow-[#0B1533]/50 overflow-hidden flex flex-col border border-[#0B1533]/10"
           >
             <div className="p-4 bg-[#0B1533] text-white flex items-center gap-3">
               <span
@@ -1481,7 +1567,7 @@ export default function HomePage() {
         )}
 
         {!chatOpen && !bubbleGone && (
-          <div className="bubble max-w-[250px] p-3 px-3.5 rounded-2xl rounded-br-sm bg-white shadow-xl shadow-[#0B1533]/15 text-xs leading-relaxed text-[#0B1533] border border-[#0B1533]/5">
+          <div className="bubble max-w-[calc(100vw-5rem)] sm:max-w-[250px] p-3 px-3.5 rounded-2xl rounded-br-sm bg-white shadow-xl shadow-[#0B1533]/15 text-xs leading-relaxed text-[#0B1533] border border-[#0B1533]/5">
             <strong>Hi, need a doctor?</strong> I can find you a slot in seconds.
           </div>
         )}
@@ -1493,7 +1579,7 @@ export default function HomePage() {
             setBubbleGone(true);
           }}
           aria-label="Open Care Assistant"
-          className="bot w-16 h-16 border-0 rounded-2xl text-white shadow-xl shadow-blue-500/40 cursor-pointer flex items-center justify-center hover:scale-105 transition-transform"
+          className="bot w-14 h-14 sm:w-16 sm:h-16 min-h-[48px] min-w-[48px] border-0 rounded-2xl text-white shadow-xl shadow-blue-500/40 cursor-pointer flex items-center justify-center hover:scale-105 transition-transform"
           style={{ background: primary }}
         >
           <svg

@@ -129,10 +129,10 @@ export default function DirectoryPage() {
           <Stethoscope className="h-3.5 w-3.5" />
           <span>Care Directory &bull; Cloudflare D1 OpsDB</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B1533]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Physician & Specialist Directory
         </h1>
-        <p className="text-base text-[#4A5578] max-w-2xl leading-relaxed">
+        <p className="text-sm sm:text-base text-[#4A5578] max-w-2xl leading-relaxed">
           Select a verified physician to review real-time availability slots sharded across
           the DoctorCare Slot Durable Object architecture.
         </p>
@@ -146,7 +146,7 @@ export default function DirectoryPage() {
             <button
               key={dept}
               onClick={() => setSelectedDept(dept)}
-              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center justify-center ${
                 selectedDept === dept
                   ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
                   : 'bg-white text-[#4A5578] hover:text-[#0B1533] hover:bg-[#F4F6FB] border border-[#0B1533]/[0.08]'
@@ -158,14 +158,14 @@ export default function DirectoryPage() {
         </div>
 
         {/* Search Input */}
-        <div className="relative min-w-[280px]">
+        <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7596]" />
           <input
             type="text"
             placeholder="Search doctors, specialties..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white border border-[#0B1533]/[0.12] text-xs text-[#0B1533] placeholder-[#6B7596] focus:outline-none focus:border-[#2B59FF] shadow-sm transition-all"
+            className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-full bg-white border border-[#0B1533]/[0.12] text-xs text-[#0B1533] placeholder-[#6B7596] focus:outline-none focus:border-[#2B59FF] shadow-sm transition-all"
           />
         </div>
       </div>
@@ -175,11 +175,11 @@ export default function DirectoryPage() {
         {filteredDoctors.map((doctor) => (
           <div
             key={doctor.id}
-            className="rounded-[26px] p-6 bg-white flex flex-col justify-between space-y-6 border border-[#0B1533]/[0.08] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
+            className="rounded-[26px] p-5 sm:p-6 bg-white flex flex-col justify-between space-y-6 border border-[#0B1533]/[0.08] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
           >
             <div className="space-y-4">
               <div className="flex items-start justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E9EEFE] text-[#2B59FF]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E9EEFE] text-[#2B59FF] flex-shrink-0">
                   <Stethoscope className="h-6 w-6" />
                 </div>
                 <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20">
@@ -205,7 +205,7 @@ export default function DirectoryPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#0B1533]/[0.08] flex items-center justify-between">
+            <div className="pt-4 border-t border-[#0B1533]/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div>
                 <span className="text-[10px] uppercase font-mono text-[#6B7596] block font-semibold">
                   Consultation Fee
@@ -218,7 +218,7 @@ export default function DirectoryPage() {
                 href={`/booking?doctor_id=${doctor.id}&doctor_name=${encodeURIComponent(
                   doctor.name
                 )}&specialty=${encodeURIComponent(doctor.specialty)}`}
-                className="btn inline-flex items-center gap-1.5 py-2 px-4 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold shadow-md shadow-blue-500/20"
+                className="btn inline-flex items-center justify-center gap-1.5 py-2.5 px-5 min-h-[44px] rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold shadow-md shadow-blue-500/20 w-full sm:w-auto"
               >
                 <span>Book Slot</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -229,7 +229,7 @@ export default function DirectoryPage() {
       </div>
 
       {filteredDoctors.length === 0 && (
-        <div className="rounded-[26px] bg-white border border-[#0B1533]/[0.08] p-12 text-center space-y-3 shadow-sm">
+        <div className="rounded-[26px] bg-white border border-[#0B1533]/[0.08] p-8 sm:p-12 text-center space-y-3 shadow-sm">
           <p className="text-sm text-[#4A5578]">
             No doctors found matching &ldquo;{searchQuery}&rdquo; in {selectedDept}.
           </p>
@@ -238,7 +238,7 @@ export default function DirectoryPage() {
               setSelectedDept('All');
               setSearchQuery('');
             }}
-            className="text-xs text-[#2B59FF] font-bold hover:underline font-mono cursor-pointer"
+            className="min-h-[44px] px-4 text-xs text-[#2B59FF] font-bold hover:underline font-mono cursor-pointer inline-flex items-center justify-center"
           >
             Clear all filters
           </button>

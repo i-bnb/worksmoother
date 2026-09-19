@@ -4,7 +4,7 @@ import { Shield, Key, Database, CheckCircle2 } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="mt-20 border-t border-[#0B1533]/[0.08] bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-10 sm:py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: Platform */}
           <div className="space-y-3 md:col-span-1">
@@ -15,7 +15,7 @@ export function Footer() {
               Enterprise healthcare platform engineered on Cloudflare Workers, Cloudflare Secrets Store,
               Cloudflare D1 physical isolation, and DPDP Act 2023 compliance.
             </p>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#6B7596] font-mono">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#6B7596] font-mono break-all">
               <span>origin: github.com/itsmesyaam/doctorcare</span>
             </div>
           </div>
@@ -82,11 +82,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-[#0B1533]/[0.06] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#6B7596]">
+        <div className="pt-8 border-t border-[#0B1533]/[0.06] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-[#6B7596]">
           <div>
             &copy; 2026 DoctorCare Platform &bull; All clinical records encrypted end-to-end under Secrets Store KEK.
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#15803D] animate-ping" />
               <span>Edge Network: Online (Global Anycast)</span>

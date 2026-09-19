@@ -55,18 +55,20 @@ const PRESET_STAFF = [
  */
 async function attemptAppwriteLogin(email: string, password: string): Promise<string | null> {
   try {
-    const { getClient, getAccount } = await import('../../lib/appwrite/client');
+    const { Account } = await import('appwrite');
+    const { getClient } = await import('../../lib/appwrite/client');
     const client = getClient();
-    const account = getAccount();
+    const account = new Account(client);
     // Create session then issue a short-lived JWT
-    await account.createEmailPasswordSession(email, password);
-    const jwtObj = await account.createJWT();
+    await (account as any).createEmailPasswordSession(email, password);
+    const jwtObj = await (account as any).createJWT();
     return jwtObj.jwt;
   } catch (err: any) {
     // If env vars are missing / Appwrite unreachable, surface the error
     if (
       err?.message?.includes('Missing required environment') ||
-      err?.code === 'ERR_INVALID_URL'
+      err?.code === 'ERR_INVALID_URL' ||
+      err?.message?.includes('Failed to construct')
     ) {
       return null; // silently fall through to mock
     }
@@ -181,10 +183,10 @@ export default function LoginPage() {
             ZERO WEB STORAGE FOOTPRINT
           </span>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#0B1533]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Staff & Physician Authentication Portal
         </h1>
-        <p className="text-[#4A5578] mt-1.5 text-sm max-w-2xl leading-relaxed">
+        <p className="text-[#4A5578] mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
           Exchange authenticated staff JWTs for first-party sessions. The short-lived access token is stored
           strictly in memory, while the long-lived refresh token is managed by the browser as an HttpOnly, SameSite=Strict cookie.
         </p>
@@ -203,7 +205,7 @@ export default function LoginPage() {
         {/* Left Column: Form & Presets (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {isAuthenticated && user ? (
-            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-[#0D8244]/30 shadow-sm space-y-6">
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-[#0D8244]/30 shadow-sm space-y-6">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-full bg-[#E8F7EE] border border-[#0D8244]/30 flex items-center justify-center text-[#0D8244]">
@@ -219,12 +221,12 @@ export default function LoginPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="bg-[#FAFBFD] p-3.5 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
                   <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Session ID</span>
                   <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.sessionId || 'sess_active'}</p>
                 </div>
-                <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
+                <div className="bg-[#FAFBFD] p-3.5 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
                   <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Family ID</span>
                   <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.familyId || 'fam_active'}</p>
                 </div>
@@ -234,18 +236,18 @@ export default function LoginPage() {
                 <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Assigned Roles</span>
                 <div className="flex flex-wrap gap-1.5">
                   {user.roles.map((r, idx) => (
-                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-[10px] font-mono font-medium">
+                    <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-[10px] font-mono font-medium">
                       {r}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center gap-3 flex-wrap">
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <button
                   onClick={() => refresh()}
                   disabled={isLoading}
-                  className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl px-4 py-2 font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm"
+                  className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl px-4 py-2.5 min-h-[44px] font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                   <span>Rotate Token Now</span>
@@ -253,7 +255,7 @@ export default function LoginPage() {
                 <button
                   onClick={() => logout()}
                   disabled={isLoading}
-                  className="px-4 py-2 rounded-xl border border-red-200 bg-[#FFF5F5] text-[#D93025] hover:bg-[#FEECEB] text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  className="px-4 py-2.5 min-h-[44px] rounded-xl border border-red-200 bg-[#FFF5F5] text-[#D93025] hover:bg-[#FEECEB] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -261,7 +263,7 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-5">
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-5">
               <div>
                 <h2 className="text-base font-bold text-[#0B1533] flex items-center gap-2">
                   <Key className="w-4 h-4 text-[#2B59FF]" />
@@ -278,7 +280,7 @@ export default function LoginPage() {
                   <button
                     key={tab}
                     onClick={() => setLoginTab(tab)}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center ${
                       loginTab === tab
                         ? 'bg-white text-[#0B1533] shadow-sm'
                         : 'text-[#4A5578] hover:text-[#0B1533]'
@@ -297,7 +299,7 @@ export default function LoginPage() {
                       key={staff.email}
                       onClick={() => handlePersonaLogin(staff)}
                       disabled={isSubmitting}
-                      className="w-full text-left p-4 rounded-xl border border-[#0B1533]/[0.08] bg-[#FAFBFD] hover:bg-white hover:border-[#2B59FF]/40 hover:shadow-sm transition-all flex items-center justify-between group disabled:opacity-50 cursor-pointer"
+                      className="w-full text-left p-4 rounded-xl border border-[#0B1533]/[0.08] bg-[#FAFBFD] hover:bg-white hover:border-[#2B59FF]/40 hover:shadow-sm transition-all flex items-center justify-between group disabled:opacity-50 cursor-pointer min-h-[48px]"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -310,7 +312,7 @@ export default function LoginPage() {
                         </div>
                         <p className="text-[11px] text-[#4A5578] font-mono">{staff.email}</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-[#6B7596] group-hover:text-[#2B59FF] group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-4 h-4 text-[#6B7596] group-hover:text-[#2B59FF] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                     </button>
                   ))}
                   <p className="text-[11px] text-[#6B7596] pt-1 leading-relaxed">
@@ -332,7 +334,7 @@ export default function LoginPage() {
                         onChange={(e) => setEmailInput(e.target.value)}
                         placeholder="staff@doctorcare.org"
                         required
-                        className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
+                        className="w-full pl-9 pr-4 py-2.5 min-h-[44px] bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
                       />
                     </div>
                   </div>
@@ -346,12 +348,12 @@ export default function LoginPage() {
                         onChange={(e) => setPasswordInput(e.target.value)}
                         placeholder="••••••••••"
                         required
-                        className="w-full pl-9 pr-10 py-2.5 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
+                        className="w-full pl-9 pr-10 py-2.5 min-h-[44px] bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7596] hover:text-[#0B1533] cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7596] hover:text-[#0B1533] cursor-pointer p-1"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -360,7 +362,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting || !emailInput.trim() || !passwordInput.trim()}
-                    className="w-full bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl py-2.5 font-bold shadow-md shadow-blue-500/20 text-xs flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer transition-all"
+                    className="w-full bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl py-3 min-h-[44px] font-bold shadow-md shadow-blue-500/20 text-xs flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer transition-all"
                   >
                     <LogIn className="w-4 h-4" />
                     {isSubmitting ? 'Signing in...' : 'Sign In with Secure Session'}
@@ -375,18 +377,18 @@ export default function LoginPage() {
               {loginTab === 'jwt' && (
                 <div className="space-y-3">
                   <label className="text-xs text-[#4A5578] block font-medium">Paste a raw verified 15-min JWT:</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={inputJwt}
                       onChange={(e) => setInputJwt(e.target.value)}
                       placeholder="eyJhbGciOiJSUzI1NiIs..."
-                      className="flex-1 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl px-3.5 py-2 text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF] focus:bg-white"
+                      className="flex-1 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl px-3.5 py-2.5 min-h-[44px] text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF] focus:bg-white"
                     />
                     <button
                       onClick={() => handleLogin(inputJwt)}
                       disabled={isSubmitting || !inputJwt.trim()}
-                      className="bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl text-xs py-2 px-4 font-bold shadow-sm shrink-0 disabled:opacity-40 cursor-pointer transition-all"
+                      className="bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl text-xs py-2.5 px-5 min-h-[44px] font-bold shadow-sm shrink-0 disabled:opacity-40 cursor-pointer transition-all flex items-center justify-center"
                     >
                       {isSubmitting ? 'Exchanging...' : 'Exchange'}
                     </button>
@@ -398,7 +400,7 @@ export default function LoginPage() {
 
           {/* Interactive Authenticated API Test */}
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold text-[#0B1533]">Test Authenticated Request</h3>
                 <p className="text-[11px] text-[#4A5578]">
@@ -408,13 +410,13 @@ export default function LoginPage() {
               <button
                 onClick={handleTestApi}
                 disabled={isTestingApi}
-                className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl text-xs font-semibold py-1.5 px-3 cursor-pointer transition-all shadow-sm"
+                className="w-full sm:w-auto bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl text-xs font-semibold py-2.5 px-4 min-h-[44px] cursor-pointer transition-all shadow-sm flex items-center justify-center"
               >
                 {isTestingApi ? 'Testing...' : 'Execute Request'}
               </button>
             </div>
             {apiTestResult && (
-              <div className="p-3 rounded-xl bg-[#E8F7EE] border border-[#0D8244]/30 font-mono text-xs text-[#0D8244] font-medium animate-fade-in">
+              <div className="p-3 rounded-xl bg-[#E8F7EE] border border-[#0D8244]/30 font-mono text-xs text-[#0D8244] font-medium animate-fade-in break-all">
                 {apiTestResult}
               </div>
             )}

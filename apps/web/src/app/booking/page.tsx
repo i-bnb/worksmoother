@@ -102,36 +102,36 @@ function BookingContent() {
           <CalendarIcon className="h-3.5 w-3.5" />
           <span>Slot Durable Object &bull; Sharded Locking</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B1533]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Reserve Consultation Slot
         </h1>
-        <p className="text-base text-[#4A5578] leading-relaxed">
+        <p className="text-sm sm:text-base text-[#4A5578] leading-relaxed">
           Select a time window to establish a single-threaded 10-minute hold in the DoctorCare
           Durable Object storage. If unconfirmed within 10 minutes, the hold releases automatically.
         </p>
       </div>
 
       {/* Doctor Info Card */}
-      <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-[#E9EEFE] flex items-center justify-center text-[#2B59FF]">
+          <div className="h-14 w-14 rounded-2xl bg-[#E9EEFE] flex items-center justify-center text-[#2B59FF] flex-shrink-0">
             <User className="h-7 w-7" />
           </div>
           <div>
             <span className="text-[11px] font-mono text-[#2B59FF] font-bold block uppercase tracking-wider">
               Selected Specialist
             </span>
-            <h2 className="text-xl font-extrabold text-[#0B1533]">{doctorName}</h2>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#0B1533]">{doctorName}</h2>
             <p className="text-xs text-[#6B7596]">{specialty} &bull; Suite 402</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-right">
+          <div className="px-4 py-2 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-right flex-1 sm:flex-initial">
             <span className="text-[10px] text-[#6B7596] block font-mono font-semibold">FEE ESTIMATE</span>
-            <span className="text-lg font-bold text-[#0B1533] font-mono">₹1,770</span>
+            <span className="text-base sm:text-lg font-bold text-[#0B1533] font-mono">₹1,770</span>
           </div>
-          <div className="px-3.5 py-2 rounded-2xl bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20 text-xs font-mono font-bold flex items-center gap-1.5">
+          <div className="px-3.5 py-2.5 rounded-2xl bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20 text-xs font-mono font-bold flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
             <ShieldCheck className="h-4 w-4" />
             <span>IDEMPOTENT</span>
           </div>
@@ -157,7 +157,7 @@ function BookingContent() {
                   key={slot.startIso}
                   disabled={!slot.isAvailable || isHeld}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between h-24 cursor-pointer disabled:cursor-not-allowed ${
+                  className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between min-h-[72px] sm:min-h-[88px] cursor-pointer disabled:cursor-not-allowed ${
                     !slot.isAvailable
                       ? 'bg-zinc-100/60 border-zinc-200 text-zinc-400 opacity-60'
                       : isSelected
@@ -176,7 +176,7 @@ function BookingContent() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-[#6B7596]">
+                  <div className="flex items-center justify-between text-xs text-[#6B7596] pt-2">
                     <span>30-min slot</span>
                     {isSelected && <CheckCircle2 className="h-4 w-4 text-[#2B59FF]" />}
                   </div>
@@ -186,7 +186,7 @@ function BookingContent() {
           </div>
 
           {/* Patient Details Form */}
-          <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4 mt-6">
+          <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4 mt-6">
             <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
               Patient Identification
             </h3>
@@ -198,7 +198,7 @@ function BookingContent() {
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
                   disabled={isHeld}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#0B1533]/[0.12] text-xs text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
+                  className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-white border border-[#0B1533]/[0.12] text-sm text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -208,7 +208,7 @@ function BookingContent() {
                   value={patientId}
                   onChange={(e) => setPatientId(e.target.value)}
                   disabled={isHeld}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#0B1533]/[0.12] text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
+                  className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-white border border-[#0B1533]/[0.12] text-sm font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
                 />
               </div>
             </div>
@@ -217,7 +217,7 @@ function BookingContent() {
 
         {/* Right: Hold & Payment Action Panel (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-6">
+          <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-4">
               <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
                 Reservation State
@@ -296,7 +296,7 @@ function BookingContent() {
                 <button
                   disabled={!selectedSlot}
                   onClick={handleHoldSlot}
-                  className="btn w-full py-3 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 disabled:bg-[#AEB6CF] disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                  className="btn w-full py-3.5 min-h-[48px] rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-blue-500/20 disabled:bg-[#AEB6CF] disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Lock className="h-3.5 w-3.5" />
                   <span>Hold Slot for 10 Minutes</span>
@@ -308,7 +308,7 @@ function BookingContent() {
                   <button
                     onClick={handleConfirmAndPay}
                     disabled={paymentStatus === 'PROCESSING'}
-                    className="btn w-full py-3 rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-2"
+                    className="btn w-full py-3.5 min-h-[48px] rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-3.5 w-3.5" />
                     <span>{paymentStatus === 'PROCESSING' ? 'Processing...' : 'Pay ₹1,770 & Confirm'}</span>
@@ -316,7 +316,7 @@ function BookingContent() {
 
                   <button
                     onClick={handleReleaseSlot}
-                    className="w-full py-2.5 rounded-full border border-[#0B1533]/[0.12] bg-white text-[#4A5578] hover:text-[#0B1533] text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-3 min-h-[44px] rounded-full border border-[#0B1533]/[0.12] bg-white text-[#4A5578] hover:text-[#0B1533] text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
                     <span>Release Slot Lock</span>
@@ -331,9 +331,9 @@ function BookingContent() {
                     setIsHeld(false);
                     setSelectedSlot(null);
                   }}
-                  className="btn w-full py-3 rounded-full bg-[#0B1533] text-white text-xs font-bold cursor-pointer"
+                  className="btn w-full py-3.5 min-h-[48px] rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer flex items-center justify-center gap-2"
                 >
-                  Book Another Appointment
+                  <span>Book Another Consultation</span>
                 </button>
               )}
             </div>

@@ -176,10 +176,10 @@ export default function RecordsPage() {
           <Lock className="h-3.5 w-3.5" />
           <span>Cloudflare Secrets Store &bull; KEK kek-2026-09</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B1533]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Encrypted Clinical Records
         </h1>
-        <p className="text-base text-[#4A5578] max-w-3xl leading-relaxed">
+        <p className="text-sm sm:text-base text-[#4A5578] max-w-3xl leading-relaxed">
           Protected Health Information (PHI) is envelope-encrypted under a non-extractable Key-Encryption Key
           with AES-256-GCM AEAD and cryptographic AAD binding. Access is governed by a fail-closed audit log
           and an immutable write-only R2 hash-chained ledger.
@@ -187,10 +187,10 @@ export default function RecordsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#0B1533]/[0.08] pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#0B1533]/[0.08] pb-3">
         <button
           onClick={() => setActiveTab('RECORDS')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+          className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'RECORDS'
               ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
               : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
@@ -200,7 +200,7 @@ export default function RecordsPage() {
         </button>
         <button
           onClick={() => setActiveTab('CHAIN')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+          className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'CHAIN'
               ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
               : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
@@ -328,7 +328,7 @@ export default function RecordsPage() {
                 )}
 
                 {/* Card Bottom: Action & Verification */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
                   <div className="text-[11px] text-[#6B7596]">
                     Retention policy: <span className="font-mono text-[#0B1533] font-medium">{record.retentionUntil.split('T')[0]}</span>
                   </div>
@@ -336,7 +336,7 @@ export default function RecordsPage() {
                   <button
                     onClick={() => handleDecrypt(record.id)}
                     disabled={isBusy}
-                    className={`btn px-5 py-2.5 rounded-full text-xs font-bold cursor-pointer transition-all flex items-center gap-2 ${
+                    className={`btn px-5 py-2.5 min-h-[44px] rounded-full text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2 w-full sm:w-auto ${
                       isDecrypted
                         ? 'bg-white border border-[#0B1533]/[0.14] text-[#0B1533] hover:bg-[#F4F6FB]'
                         : 'bg-[#2B59FF] hover:bg-[#1E45D9] text-white shadow-md shadow-blue-500/20'
@@ -369,8 +369,8 @@ export default function RecordsPage() {
       {/* TAB 2: Write-Only R2 Hash Chain Audit Trail */}
       {activeTab === 'CHAIN' && (
         <div className="space-y-6">
-          <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-4">
+          <div className="rounded-[26px] p-4 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#0B1533]/[0.06] pb-4">
               <div>
                 <h3 className="text-base font-extrabold text-[#0B1533]">
                   Write-Only R2 Hash-Chained Audit Trail
@@ -379,7 +379,7 @@ export default function RecordsPage() {
                   Every access attempt is canonically serialized, SHA-256 hashed, and mirrored into write-only R2 vault.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] text-xs font-mono font-bold border border-[#15803D]/20">
+              <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] text-xs font-mono font-bold border border-[#15803D]/20">
                 CHAIN VERIFIED (3/3)
               </span>
             </div>
@@ -389,25 +389,25 @@ export default function RecordsPage() {
               {chainBlocks.map((block) => (
                 <div
                   key={block.sequenceNumber}
-                  className="p-5 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] space-y-3 font-mono text-xs"
+                  className="p-4 sm:p-5 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] space-y-3 font-mono text-xs"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] font-bold">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] font-bold w-fit">
                       Block #{block.sequenceNumber} &bull; {block.action}
                     </span>
-                    <span className="text-[#6B7596]">{block.timestamp}</span>
+                    <span className="text-[#6B7596] text-[10px] sm:text-xs">{block.timestamp}</span>
                   </div>
 
                   <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-start gap-2">
-                      <span className="text-[#6B7596] w-24 flex-shrink-0">Prev Hash:</span>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                      <span className="text-[#6B7596] sm:w-24 flex-shrink-0">Prev Hash:</span>
                       <span className="text-[#0B1533] break-all font-semibold">{block.prevHash}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-[#6B7596] w-24 flex-shrink-0">Block Hash:</span>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                      <span className="text-[#6B7596] sm:w-24 flex-shrink-0">Block Hash:</span>
                       <span className="text-[#2B59FF] break-all font-bold">{block.hash}</span>
                     </div>
-                    <div className="flex items-center gap-2 pt-1 text-[#4A5578]">
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[#4A5578]">
                       <span>Target: {block.recordId}</span>
                       <span>&bull;</span>
                       <span>Actor: {block.actorId}</span>
@@ -417,7 +417,7 @@ export default function RecordsPage() {
               ))}
             </div>
 
-            <div className="pt-2 text-[11px] text-[#6B7596] font-mono">
+            <div className="pt-2 text-[11px] text-[#6B7596] font-mono break-all">
               Genesis Hash Anchor: 0000000000000000000000000000000000000000000000000000000000000000
             </div>
           </div>

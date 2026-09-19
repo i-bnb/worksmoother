@@ -128,10 +128,10 @@ export default function ConsentPage() {
             D1 OPS LEDGER: CONSENT_LOG
           </span>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#0B1533]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Patient Consent & Privacy Center
         </h1>
-        <p className="text-[#4A5578] mt-1.5 text-sm max-w-2xl leading-relaxed">
+        <p className="text-[#4A5578] mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
           Granular consent management adhering strictly to the Digital Personal Data Protection (DPDP) Act 2023.
           Every grant and withdrawal is logged with immutable timestamps and notice versions.
         </p>
@@ -140,9 +140,11 @@ export default function ConsentPage() {
       {/* Language & Notice Version Bar */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <Languages className="w-4 h-4 text-[#2B59FF]" />
-          <span className="text-xs font-medium text-[#4A5578]">Notice Language:</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <Languages className="w-4 h-4 text-[#2B59FF]" />
+            <span className="text-xs font-medium text-[#4A5578]">Notice Language:</span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
             {[
               { code: 'en', label: 'English' },
               { code: 'hi', label: 'हिंदी' },
@@ -152,10 +154,10 @@ export default function ConsentPage() {
               <button
                 key={lang.code}
                 onClick={() => setSelectedLanguage(lang.code as any)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
                   selectedLanguage === lang.code
                     ? 'bg-[#2B59FF] text-white shadow-sm'
-                    : 'text-[#4A5578] hover:text-[#0B1533] hover:bg-[#F4F6FB]'
+                    : 'text-[#4A5578] hover:text-[#0B1533] hover:bg-[#F4F6FB] bg-white border border-[#0B1533]/[0.06]'
                 }`}
               >
                 {lang.label}
@@ -166,7 +168,7 @@ export default function ConsentPage() {
 
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-mono text-[#4A5578]">Notice Version:</span>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
             v2.1-DPDP2023
           </span>
         </div>
@@ -174,14 +176,14 @@ export default function ConsentPage() {
 
       {/* Status Alert Toast */}
       {statusMessage && (
-        <div className="p-3.5 rounded-xl bg-[#E9EEFE] border border-[#2B59FF]/30 text-xs font-medium text-[#2B59FF] flex items-center gap-2 animate-fade-in shadow-sm">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-[#E9EEFE] border border-[#2B59FF]/30 text-xs font-medium text-[#2B59FF] flex items-center gap-2 animate-fade-in shadow-sm">
           <Info className="w-4 h-4 text-[#2B59FF] shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {/* Consent Items */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#0B1533]/[0.08] shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl p-4 sm:p-7 border border-[#0B1533]/[0.08] shadow-sm space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-lg font-bold text-[#0B1533] flex items-center gap-2">
@@ -201,14 +203,14 @@ export default function ConsentPage() {
           {consents.map((item) => (
             <div
               key={item.id}
-              className={`p-5 rounded-xl border transition-all ${
+              className={`p-4 sm:p-5 rounded-2xl border transition-all ${
                 item.granted
                   ? 'border-[#0B1533]/[0.08] bg-[#FAFBFD] hover:border-[#2B59FF]/40'
                   : 'border-red-200 bg-[#FFF9F9]'
               }`}
             >
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="space-y-1.5 flex-1">
+                <div className="space-y-1.5 flex-1 w-full">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm font-bold text-[#0B1533]">{item.title}</h3>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono bg-white text-[#4A5578] border border-[#0B1533]/[0.08]">
@@ -228,7 +230,7 @@ export default function ConsentPage() {
                     {item.description}
                   </p>
 
-                  <div className="flex items-center gap-3 text-[11px] text-[#6B7596] font-mono pt-1">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] text-[#6B7596] font-mono pt-1">
                     <span>Notice: {item.noticeVersion}</span>
                     <span>•</span>
                     {item.granted ? (
@@ -243,10 +245,10 @@ export default function ConsentPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center w-full md:w-auto shrink-0">
                   <button
                     onClick={() => toggleConsent(item.id)}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm ${
+                    className={`w-full md:w-auto px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
                       item.granted
                         ? 'bg-[#E8F7EE] hover:bg-[#D6F0E0] text-[#0D8244] border border-[#0D8244]/30'
                         : 'bg-white hover:bg-[#FEECEB] text-[#D93025] border border-red-200'
