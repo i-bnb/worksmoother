@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '../../context/AuthContext';
 import {
   ShieldCheck,
   Lock,
@@ -17,6 +19,9 @@ import {
   Server,
   ArrowRight,
   RefreshCw,
+  UserCheck,
+  LogOut,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface ClinicalRecord {
@@ -53,7 +58,7 @@ const INITIAL_RECORDS: ClinicalRecord[] = [
   {
     id: 'rec_live_90214a1c',
     patientId: 'pat_enc_892348',
-    hospitalId: 'hosp_mumbai_apex_01',
+    hospitalId: 'hosp_blr_central_01',
     recordClass: 'DISCHARGE_SUMMARY',
     kekId: 'kek-2026-09',
     retentionUntil: '2036-09-18T12:00:00Z',
@@ -71,7 +76,7 @@ const INITIAL_RECORDS: ClinicalRecord[] = [
   {
     id: 'rec_live_44921b7e',
     patientId: 'pat_enc_110943',
-    hospitalId: 'hosp_mumbai_apex_01',
+    hospitalId: 'hosp_blr_whitefield_02',
     recordClass: 'LAB_REPORT',
     kekId: 'kek-2026-09',
     retentionUntil: '2034-03-12T08:00:00Z',
@@ -89,7 +94,7 @@ const INITIAL_RECORDS: ClinicalRecord[] = [
   {
     id: 'rec_live_77189c93',
     patientId: 'pat_enc_554190',
-    hospitalId: 'hosp_delhi_maxima_02',
+    hospitalId: 'hosp_blr_indiranagar_03',
     recordClass: 'PRESCRIPTION',
     kekId: 'kek-2026-09',
     retentionUntil: '2031-11-25T14:30:00Z',
@@ -140,11 +145,24 @@ const INITIAL_HASH_CHAIN: HashChainBlock[] = [
 ];
 
 export default function RecordsPage() {
+  const { isAuthenticated, user, loginWithJwt, logout } = useAuth();
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [records, setRecords] = useState<ClinicalRecord[]>(INITIAL_RECORDS);
   const [chainBlocks, setChainBlocks] = useState<HashChainBlock[]>(INITIAL_HASH_CHAIN);
   const [activeTab, setActiveTab] = useState<'RECORDS' | 'CHAIN' | 'AUDIT'>('RECORDS');
   const [decryptingId, setDecryptingId] = useState<string | null>(null);
   const [auditLogStatus, setAuditLogStatus] = useState<string | null>(null);
+
+  const handleDemoPatientLogin = async () => {
+    setIsSigningIn(true);
+    try {
+      await loginWithJwt('appwrite_jwt_mock_patient_rahul_01');
+    } catch (err) {
+      console.error('Demo login failed', err);
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
 
   const handleDecrypt = (recordId: string) => {
     setDecryptingId(recordId);
@@ -186,43 +204,140 @@ export default function RecordsPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#0B1533]/[0.08] pb-3">
-        <button
-          onClick={() => setActiveTab('RECORDS')}
-          className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'RECORDS'
-              ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
-              : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
-          }`}
-        >
-          Encrypted Envelopes ({records.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('CHAIN')}
-          className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'CHAIN'
-              ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
-              : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
-          }`}
-        >
-          Write-Only R2 Hash-Chained Audit Trail
-        </button>
-      </div>
-
-      {/* Audit Status Alert */}
-      {auditLogStatus && (
-        <div className="p-4 rounded-2xl bg-[#E8F7EE] border border-[#15803D]/25 text-[#15803D] text-xs flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2 font-medium">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>{auditLogStatus}</span>
+      {/* PRIVACY BARRIER: Displayed when user is unauthenticated */}
+      {!isAuthenticated ? (
+        <div className="rounded-[28px] p-6 sm:p-10 bg-white border border-[#0B1533]/[0.08] shadow-lg space-y-6 text-center max-w-3xl mx-auto">
+          <div className="w-16 h-16 rounded-full bg-[#FFF5F5] border border-red-200 text-[#D93025] flex items-center justify-center mx-auto shadow-sm">
+            <Lock className="w-8 h-8 text-[#D93025]" />
           </div>
-          <span className="font-mono text-[10px] text-[#15803D] uppercase font-bold">FAIL-CLOSED PASSED</span>
-        </div>
-      )}
 
-      {/* TAB 1: Clinical Records */}
-      {activeTab === 'RECORDS' && (
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF5F5] text-[#D93025] text-xs font-mono font-bold border border-red-200">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>DPDP ACT 2023 &bull; RESTRICTED CLINICAL VAULT</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0B1533]">
+              Authentication Required to Access Medical Records
+            </h2>
+            <p className="text-xs sm:text-sm text-[#4A5578] max-w-xl mx-auto leading-relaxed">
+              In strict adherence to India’s Digital Personal Data Protection (DPDP) Act 2023 and HIPAA § 164.312,
+              Protected Health Information (PHI) and cryptographic decryption keys are locked. Please authenticate with
+              your registered patient identity or authorized practitioner credentials.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto pt-2 text-xs">
+            <div className="p-3.5 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-left space-y-1">
+              <span className="font-mono text-[10px] text-[#6B7596] uppercase font-bold">Cryptographic Envelope</span>
+              <p className="font-bold text-[#0B1533]">AES-256-GCM AEAD Sealed</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-left space-y-1">
+              <span className="font-mono text-[10px] text-[#6B7596] uppercase font-bold">Audit Ledger</span>
+              <p className="font-bold text-[#0B1533]">Write-Only R2 Hash Chain</p>
+            </div>
+          </div>
+
+          <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <Link
+              href="/login"
+              className="btn px-6 py-3 min-h-[48px] rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center gap-2"
+            >
+              <span>Sign In with Patient / Staff Credentials</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <button
+              onClick={handleDemoPatientLogin}
+              disabled={isSigningIn}
+              className="btn px-5 py-3 min-h-[48px] rounded-full bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isSigningIn ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-[#2B59FF]" />
+                  <span>Verifying Session...</span>
+                </>
+              ) : (
+                <>
+                  <UserCheck className="w-4 h-4 text-[#15803D]" />
+                  <span>Quick Demo Sign-In (Rahul M. Verma)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <p className="text-[11px] text-[#6B7596] font-mono">
+            Genesis Hash Anchor: 0000000000000000000000000000000000000000000000000000000000000000
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Active Session & Lock Banner */}
+          <div className="p-4 rounded-2xl bg-white border border-[#15803D]/25 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#E8F7EE] text-[#15803D] flex items-center justify-center font-bold">
+                <UserCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-[#0B1533]">
+                    {user?.name || 'Rahul M. Verma'}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#E8F7EE] text-[#15803D] font-mono text-[10px] font-bold border border-[#15803D]/20">
+                    VERIFIED SESSION
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#6B7596] font-mono">
+                  {user?.email || 'patient.rahul@doctorcare.org'} &bull; Campus: DoctorCare Bengaluru Central
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => logout()}
+              className="px-4 py-2 min-h-[40px] rounded-full border border-red-200 bg-[#FFF5F5] text-[#D93025] hover:bg-[#FEECEB] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer self-stretch sm:self-auto"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Lock Vault &amp; Sign Out</span>
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-[#0B1533]/[0.08] pb-3">
+            <button
+              onClick={() => setActiveTab('RECORDS')}
+              className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                activeTab === 'RECORDS'
+                  ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
+              }`}
+            >
+              Encrypted Envelopes ({records.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('CHAIN')}
+              className={`px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                activeTab === 'CHAIN'
+                  ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white text-[#4A5578] hover:text-[#0B1533] border border-[#0B1533]/[0.08]'
+              }`}
+            >
+              Write-Only R2 Hash-Chained Audit Trail
+            </button>
+          </div>
+
+          {/* Audit Status Alert */}
+          {auditLogStatus && (
+            <div className="p-4 rounded-2xl bg-[#E8F7EE] border border-[#15803D]/25 text-[#15803D] text-xs flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>{auditLogStatus}</span>
+              </div>
+              <span className="font-mono text-[10px] text-[#15803D] uppercase font-bold">FAIL-CLOSED PASSED</span>
+            </div>
+          )}
+
+          {/* TAB 1: Clinical Records */}
+          {activeTab === 'RECORDS' && (
         <div className="space-y-6">
           {records.map((record) => {
             const isDecrypted = record.status === 'DECRYPTED';
@@ -422,6 +537,8 @@ export default function RecordsPage() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

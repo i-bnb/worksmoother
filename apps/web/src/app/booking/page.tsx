@@ -285,8 +285,10 @@ function BookingContent() {
                 <span className="font-mono text-[#0B1533]">10 Minutes (600s)</span>
               </div>
               <div className="flex justify-between">
-                <span>Fee (Base + GST):</span>
-                <span className="font-mono font-bold text-[#0B1533]">₹1,500 + ₹270 = ₹1,770</span>
+                <span>Consultation Fee:</span>
+                <span className="font-mono font-bold text-[#0B1533]">
+                  ₹1,500 <span className="text-[10px] text-[#0D8244] font-semibold">(0% GST Exempt)</span>
+                </span>
               </div>
             </div>
 
@@ -311,7 +313,7 @@ function BookingContent() {
                     className="btn w-full py-3.5 min-h-[48px] rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-3.5 w-3.5" />
-                    <span>{paymentStatus === 'PROCESSING' ? 'Processing...' : 'Pay ₹1,770 & Confirm'}</span>
+                    <span>{paymentStatus === 'PROCESSING' ? 'Processing...' : 'Pay ₹1,500 & Confirm'}</span>
                   </button>
 
                   <button
@@ -344,9 +346,90 @@ function BookingContent() {
   );
 }
 
+function BookingSkeleton() {
+  return (
+    <div className="space-y-8 py-6 max-w-7xl mx-auto animate-fade-in">
+      {/* Page Header */}
+      <div className="space-y-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          <span>Slot Durable Object &bull; Atomic 10-Minute Hold</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
+          Reserve Consultation Slot
+        </h1>
+        <p className="text-sm sm:text-base text-[#4A5578] max-w-2xl leading-relaxed">
+          Slots are atomically reserved via Cloudflare Durable Objects. Each reservation grants a guaranteed
+          10-minute hold window before automatic release.
+        </p>
+      </div>
+
+      {/* Doctor Header Banner Placeholder */}
+      <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-[#E9EEFE] text-[#2B59FF] flex items-center justify-center font-bold text-lg flex-shrink-0">
+            DR
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base sm:text-lg font-bold text-[#0B1533]">Dr. Suresh R. Nair</h2>
+            <p className="text-xs text-[#2B59FF] font-semibold">Interventional Cardiology &bull; OPD Suite 402</p>
+            <p className="text-[11px] text-[#6B7596]">Campus: DoctorCare Bengaluru Central Campus</p>
+          </div>
+        </div>
+        <div className="text-left sm:text-right">
+          <span className="text-[10px] uppercase font-mono text-[#6B7596] block">Consultation Fee</span>
+          <span className="text-lg font-bold text-[#0B1533] font-mono">₹1,500</span>
+          <span className="text-[10px] text-[#0D8244] block font-semibold">0% GST (Exempt)</span>
+        </div>
+      </div>
+
+      {/* Main Grid: Slots & Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-3">
+              <span className="text-sm font-bold text-[#0B1533]">Available Slots (Today)</span>
+              <span className="text-xs text-[#2B59FF] font-semibold animate-pulse">Initializing engine...</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {['09:00 AM', '10:00 AM', '02:00 PM', '03:30 PM', '04:30 PM'].map((t, idx) => (
+                <div key={idx} className="p-3 sm:p-4 rounded-2xl border border-[#0B1533]/[0.06] bg-[#F4F6FB] flex flex-col items-center justify-center min-h-[72px] sm:min-h-[88px] space-y-1">
+                  <span className="font-mono text-xs font-bold text-[#0B1533]">{t}</span>
+                  <span className="text-[10px] text-[#15803D] font-bold">Ready</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-4 bg-[#FAFBFD] border border-[#0B1533]/[0.06] text-xs text-[#4A5578] flex items-center justify-between flex-wrap gap-2">
+            <span>Direct OPD Desk Assistance: <strong className="text-[#0B1533]">+91 (080) 6192 4000</strong></span>
+            <span className="text-[11px] text-[#6B7596]">Mon–Sat, 8:00 AM – 8:00 PM IST</span>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-[#0B1533]">Reservation Summary</h3>
+            <div className="space-y-2 text-xs text-[#4A5578]">
+              <div className="flex justify-between">
+                <span>Hold Period:</span>
+                <span className="font-mono text-[#0B1533]">10 Minutes</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Consultation Fee:</span>
+                <span className="font-mono font-bold text-[#0B1533]">₹1,500 (0% GST)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#4A5578]">Loading booking engine...</div>}>
+    <Suspense fallback={<BookingSkeleton />}>
       <BookingContent />
     </Suspense>
   );

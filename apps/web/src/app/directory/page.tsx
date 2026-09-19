@@ -33,7 +33,7 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 18,
     consultationType: 'REGULAR',
     baseFeePaise: 150000,
-    totalFeeInr: 1770,
+    totalFeeInr: 1500,
     availableSlotsCount: 6,
   },
   {
@@ -45,7 +45,7 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 14,
     consultationType: 'SPECIALIST',
     baseFeePaise: 200000,
-    totalFeeInr: 2360,
+    totalFeeInr: 2000,
     availableSlotsCount: 4,
   },
   {
@@ -57,7 +57,7 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 22,
     consultationType: 'SPECIALIST',
     baseFeePaise: 250000,
-    totalFeeInr: 2950,
+    totalFeeInr: 2500,
     availableSlotsCount: 3,
   },
   {
@@ -69,7 +69,7 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 16,
     consultationType: 'SPECIALIST',
     baseFeePaise: 220000,
-    totalFeeInr: 2596,
+    totalFeeInr: 2200,
     availableSlotsCount: 5,
   },
   {
@@ -81,8 +81,56 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 19,
     consultationType: 'REGULAR',
     baseFeePaise: 180000,
-    totalFeeInr: 2124,
+    totalFeeInr: 1800,
     availableSlotsCount: 7,
+  },
+  {
+    id: 'doc_rajesh_07',
+    name: 'Dr. Rajesh N. Sundaram',
+    specialty: 'Emergency & Trauma Resuscitation',
+    department: 'Emergency',
+    room: 'Level 1 Trauma Bay Suite 01',
+    experienceYears: 15,
+    consultationType: 'EMERGENCY',
+    baseFeePaise: 150000,
+    totalFeeInr: 1500,
+    availableSlotsCount: 8,
+  },
+  {
+    id: 'doc_kavita_08',
+    name: 'Dr. Kavita S. Nair',
+    specialty: 'Neonatology & Pediatric Critical Care',
+    department: 'Pediatrics',
+    room: 'Pediatric Center Suite 202',
+    experienceYears: 16,
+    consultationType: 'SPECIALIST',
+    baseFeePaise: 180000,
+    totalFeeInr: 1800,
+    availableSlotsCount: 5,
+  },
+  {
+    id: 'doc_shalini_09',
+    name: 'Dr. Shalini K. Rao',
+    specialty: 'Clinical Dermatology & Cutaneous Medicine',
+    department: 'Dermatology',
+    room: 'Dermatology OPD Suite 310',
+    experienceYears: 11,
+    consultationType: 'REGULAR',
+    baseFeePaise: 120000,
+    totalFeeInr: 1200,
+    availableSlotsCount: 6,
+  },
+  {
+    id: 'doc_deepak_10',
+    name: 'Dr. Deepak P. Menon',
+    specialty: 'Otolaryngology & Head-Neck Care',
+    department: 'ENT',
+    room: 'ENT Care Center Suite 115',
+    experienceYears: 14,
+    consultationType: 'SPECIALIST',
+    baseFeePaise: 160000,
+    totalFeeInr: 1600,
+    availableSlotsCount: 4,
   },
   {
     id: 'doc_meera_06',
@@ -93,7 +141,7 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     experienceYears: 12,
     consultationType: 'REGULAR',
     baseFeePaise: 100000,
-    totalFeeInr: 1180,
+    totalFeeInr: 1000,
     availableSlotsCount: 8,
   },
 ];
@@ -105,6 +153,9 @@ const DEPARTMENTS = [
   'Emergency',
   'Orthopedics',
   'Oncology',
+  'Pediatrics',
+  'Dermatology',
+  'ENT',
   'Internal Medicine',
 ];
 
@@ -211,7 +262,7 @@ export default function DirectoryPage() {
                   Consultation Fee
                 </span>
                 <span className="text-lg font-bold text-[#0B1533] font-mono">₹{doctor.totalFeeInr}</span>
-                <span className="text-[10px] text-[#6B7596] block">incl. 18% GST</span>
+                <span className="text-[10px] text-[#0D8244] block font-medium">0% GST (Clinical Exemption)</span>
               </div>
 
               <Link

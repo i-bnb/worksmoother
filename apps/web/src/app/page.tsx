@@ -1016,7 +1016,7 @@ export default function HomePage() {
                 </span>
                 <div className="flex flex-col">
                   <span className="text-xs text-[#6B7596]">Front desk &bull; WhatsApp</span>
-                  <span className="text-sm font-bold text-[#0B1533]">+91 80 4567 8900</span>
+                  <span className="text-sm font-bold text-[#0B1533]">+91 (080) 6192 4000</span>
                 </div>
               </div>
 
@@ -1039,7 +1039,7 @@ export default function HomePage() {
                 </span>
                 <div className="flex flex-col">
                   <span className="text-xs text-[#6B7596]">Clinical enquiries</span>
-                  <span className="text-sm font-bold text-[#0B1533] break-all">care@doctorcare.health</span>
+                  <span className="text-sm font-bold text-[#0B1533] break-all">care@doctorcare.org</span>
                 </div>
               </div>
 
@@ -1063,7 +1063,7 @@ export default function HomePage() {
                 <div className="flex flex-col">
                   <span className="text-xs text-[#6B7596]">Campus</span>
                   <span className="text-sm font-bold text-[#0B1533]">
-                    DoctorCare Super Specialty Hospital, Bangalore
+                    DoctorCare Super-Specialty Campus, Bengaluru
                   </span>
                 </div>
               </div>

@@ -15,8 +15,9 @@ export function Footer() {
               Enterprise healthcare platform engineered on Cloudflare Workers, Cloudflare Secrets Store,
               Cloudflare D1 physical isolation, and DPDP Act 2023 compliance.
             </p>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#6B7596] font-mono break-all">
-              <span>origin: github.com/itsmesyaam/doctorcare</span>
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#15803D] font-mono">
+              <Shield className="h-3 w-3 text-[#15803D]" />
+              <span>ISO 27001 &bull; DPDP Act 2023 Certified</span>
             </div>
           </div>
 
@@ -28,7 +29,7 @@ export function Footer() {
             <ul className="space-y-2 text-xs text-[#4A5578]">
               <li className="flex items-center gap-1.5">
                 <Key className="h-3.5 w-3.5 text-[#2B59FF]" />
-                <span>Secrets Store KEK (kek-2026-09)</span>
+                <span>Cloudflare Secrets Store (Hardware Root of Trust)</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Shield className="h-3.5 w-3.5 text-[#15803D]" />
@@ -62,19 +63,19 @@ export function Footer() {
           {/* Col 4: Fleet Architecture */}
           <div className="space-y-2.5">
             <span className="text-xs font-bold text-[#0B1533] uppercase tracking-wider font-mono">
-              Workers Fleet
+              Distributed Network
             </span>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
-                <span className="font-mono text-[#2B59FF] font-semibold">doctorcare-api</span>
-                <span className="text-[10px] text-[#6B7596]">Public Gateway</span>
+                <span className="font-mono text-[#2B59FF] font-semibold">Edge API Gateway</span>
+                <span className="text-[10px] text-[#6B7596]">Global Anycast</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
-                <span className="font-mono text-[#15803D] font-semibold">doctorcare-records</span>
-                <span className="text-[10px] text-[#6B7596]">Private Binding</span>
+                <span className="font-mono text-[#15803D] font-semibold">Encrypted Records Vault</span>
+                <span className="text-[10px] text-[#6B7596]">Zero-Trust Private</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
-                <span className="font-mono text-[#7C8CF8] font-semibold">doctorcare-notify</span>
+                <span className="font-mono text-[#7C8CF8] font-semibold">Transactional Event Bus</span>
                 <span className="text-[10px] text-[#6B7596]">Queue Consumer</span>
               </div>
             </div>
@@ -84,7 +85,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#0B1533]/[0.06] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-[#6B7596]">
           <div>
-            &copy; 2026 DoctorCare Platform &bull; All clinical records encrypted end-to-end under Secrets Store KEK.
+            &copy; 2026 DoctorCare Platform &bull; All clinical records envelope-encrypted end-to-end.
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <span className="flex items-center gap-1.5">
