@@ -27,6 +27,8 @@
     "infra:queues": "npm --workspace=@doctorcare/infra run setup:queues",
     "infra:r2": "npm --workspace=@doctorcare/infra run setup:r2",
     "infra:audit-vault": "npm --workspace=@doctorcare/infra run setup:audit-vault",
+    "cf:build": "npm --workspace=@doctorcare/web run build:worker",
+    "cf:deploy": "npx wrangler deploy --config apps/web/wrangler.toml",
     "test": "npx tsx tests/record-access-log-fail-closed.test.ts",
     "test:access-log": "npx tsx tests/record-access-log-fail-closed.test.ts",
     "test:records": "npx tsx tests/records-r2-aad.test.ts",

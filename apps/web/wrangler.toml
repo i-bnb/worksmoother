@@ -1,13 +1,14 @@
 name = "doctorcare-web"
 main = ".open-next/worker.js"
-compatibility_date = "2024-09-18"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-# Service Binding to internal API Worker
+# Service Binding to internal API Worker (doctorcare-api must be deployed first)
+# Uncomment after deploying workers/api with: npm run deploy:api
 [[services]]
 binding = "API_SERVICE"
 service = "doctorcare-api"
@@ -15,3 +16,5 @@ service = "doctorcare-api"
 [vars]
 NEXT_PUBLIC_APP_NAME = "DoctorCare"
 NEXT_PUBLIC_API_URL = "https://api.yourhospital.com"
+NEXT_PUBLIC_APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
+NEXT_PUBLIC_APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
