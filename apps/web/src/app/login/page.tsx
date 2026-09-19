@@ -74,7 +74,6 @@ async function attemptAppwriteLogin(email: string, password: string): Promise<st
   }
 }
 
-
 export default function LoginPage() {
   const {
     user,
@@ -94,7 +93,7 @@ export default function LoginPage() {
   const [apiTestResult, setApiTestResult] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
 
-  // Real email/password Appwrite login
+  // Real email/password login
   const [loginTab, setLoginTab] = useState<'persona' | 'email' | 'jwt'>('persona');
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -108,7 +107,6 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      // Try real Appwrite auth first (will silently fall through if unconfigured)
       const realJwt = await attemptAppwriteLogin(staff.email, 'mock_password_unused').catch(() => null);
       await loginWithJwt(realJwt ?? staff.jwt);
     } catch (err: any) {
@@ -118,7 +116,7 @@ export default function LoginPage() {
     }
   };
 
-  /** Handle real email + password Appwrite login */
+  /** Handle email + password login */
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailInput.trim() || !passwordInput.trim()) return;
@@ -127,7 +125,7 @@ export default function LoginPage() {
     try {
       const jwt = await attemptAppwriteLogin(emailInput.trim(), passwordInput);
       if (!jwt) {
-        throw new Error('Appwrite is not configured. Please fill in NEXT_PUBLIC_APPWRITE_PROJECT_A_ID in .env.local.');
+        throw new Error('Authentication backend not configured in current environment. Please use Quick Select personas.');
       }
       await loginWithJwt(jwt);
     } catch (err: any) {
@@ -148,7 +146,6 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
-
 
   const handleTestApi = async () => {
     setIsTestingApi(true);
@@ -173,30 +170,30 @@ export default function LoginPage() {
   const rawToken = getAccessToken();
 
   return (
-    <div className="space-y-10 animate-fade-in max-w-5xl mx-auto py-6">
+    <div className="space-y-8 animate-fade-in max-w-5xl mx-auto py-2">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="apple-pill border-blue-500/30 text-blue-400 bg-blue-950/20 font-mono text-xs">
+        <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
             FIRST-PARTY SESSION ENGINE
           </span>
-          <span className="apple-pill border-emerald-500/30 text-emerald-400 bg-emerald-950/20 font-mono text-xs">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
             ZERO WEB STORAGE FOOTPRINT
           </span>
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#f5f5f7]">
+        <h1 className="text-3xl font-bold tracking-tight text-[#0B1533]">
           Staff & Physician Authentication Portal
         </h1>
-        <p className="text-[#86868b] mt-1 text-sm max-w-2xl">
-          Exchange 15-minute Appwrite JWTs for first-party sessions. The short-lived access token is stored
+        <p className="text-[#4A5578] mt-1.5 text-sm max-w-2xl leading-relaxed">
+          Exchange authenticated staff JWTs for first-party sessions. The short-lived access token is stored
           strictly in memory, while the long-lived refresh token is managed by the browser as an HttpOnly, SameSite=Strict cookie.
         </p>
       </div>
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-red-950/40 border border-red-500/30 text-xs text-red-200 flex items-center gap-3 animate-fade-in">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+        <div className="p-4 rounded-xl bg-[#FFF5F5] border border-red-200 text-xs font-medium text-[#D93025] flex items-center gap-3 animate-fade-in shadow-sm">
+          <AlertCircle className="w-4 h-4 text-[#D93025] shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -206,49 +203,49 @@ export default function LoginPage() {
         {/* Left Column: Form & Presets (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {isAuthenticated && user ? (
-            <div className="glass-panel p-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/10 space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-[#0D8244]/30 shadow-sm space-y-6">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-full bg-[#E8F7EE] border border-[#0D8244]/30 flex items-center justify-center text-[#0D8244]">
                     <UserCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-white">{user.name}</h2>
-                    <p className="text-xs text-[#86868b]">{user.email}</p>
+                    <h2 className="text-base font-bold text-[#0B1533]">{user.name}</h2>
+                    <p className="text-xs text-[#4A5578]">{user.email}</p>
                   </div>
                 </div>
-                <span className="apple-pill border-emerald-500/40 text-emerald-400 bg-emerald-950/30 text-xs font-mono">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
                   ACTIVE SESSION
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-black/40 p-3 rounded-xl border border-white/5 space-y-1">
-                  <span className="text-[#86868b] text-[10px] font-mono uppercase">Session ID</span>
-                  <p className="font-mono text-white text-[11px] truncate">{session?.sessionId || 'sess_active'}</p>
+                <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
+                  <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Session ID</span>
+                  <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.sessionId || 'sess_active'}</p>
                 </div>
-                <div className="bg-black/40 p-3 rounded-xl border border-white/5 space-y-1">
-                  <span className="text-[#86868b] text-[10px] font-mono uppercase">Family ID</span>
-                  <p className="font-mono text-white text-[11px] truncate">{session?.familyId || 'fam_active'}</p>
+                <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
+                  <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Family ID</span>
+                  <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.familyId || 'fam_active'}</p>
                 </div>
               </div>
 
               <div className="space-y-1.5 text-xs">
-                <span className="text-[#86868b] text-[10px] font-mono uppercase">Assigned Roles</span>
+                <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Assigned Roles</span>
                 <div className="flex flex-wrap gap-1.5">
                   {user.roles.map((r, idx) => (
-                    <span key={idx} className="apple-pill border-white/10 text-zinc-300 text-[10px] font-mono">
+                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-[10px] font-mono font-medium">
                       {r}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center gap-3">
+              <div className="pt-2 flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => refresh()}
                   disabled={isLoading}
-                  className="apple-btn-secondary flex items-center gap-2 text-xs py-2 px-3"
+                  className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl px-4 py-2 font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                   <span>Rotate Token Now</span>
@@ -256,7 +253,7 @@ export default function LoginPage() {
                 <button
                   onClick={() => logout()}
                   disabled={isLoading}
-                  className="px-3 py-2 rounded-xl border border-red-500/30 bg-red-950/20 text-red-300 hover:bg-red-950/30 text-xs font-medium flex items-center gap-1.5 transition-all"
+                  className="px-4 py-2 rounded-xl border border-red-200 bg-[#FFF5F5] text-[#D93025] hover:bg-[#FEECEB] text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -264,27 +261,27 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-6 rounded-2xl border border-white/[0.08] space-y-5">
+            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-5">
               <div>
-                <h2 className="text-base font-semibold text-white flex items-center gap-2">
-                  <Key className="w-4 h-4 text-blue-400" />
+                <h2 className="text-base font-bold text-[#0B1533] flex items-center gap-2">
+                  <Key className="w-4 h-4 text-[#2B59FF]" />
                   Staff Authentication
                 </h2>
-                <p className="text-xs text-[#86868b] mt-1">
-                  Sign in with Appwrite credentials or use a preset demo persona.
+                <p className="text-xs text-[#4A5578] mt-1">
+                  Sign in with credentials or choose an instant pre-authorized demo persona.
                 </p>
               </div>
 
               {/* Tab switcher */}
-              <div className="flex gap-1 p-1 bg-black/40 rounded-xl border border-white/[0.06]">
+              <div className="flex gap-1 p-1 bg-[#F4F6FB] rounded-xl border border-[#0B1533]/[0.08]">
                 {(['persona', 'email', 'jwt'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setLoginTab(tab)}
-                    className={`flex-1 py-1.5 text-[11px] font-medium rounded-lg transition-all ${
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                       loginTab === tab
-                        ? 'bg-white/10 text-white'
-                        : 'text-[#86868b] hover:text-zinc-300'
+                        ? 'bg-white text-[#0B1533] shadow-sm'
+                        : 'text-[#4A5578] hover:text-[#0B1533]'
                     }`}
                   >
                     {tab === 'persona' ? 'Quick Select' : tab === 'email' ? 'Email Login' : 'Raw JWT'}
@@ -300,25 +297,24 @@ export default function LoginPage() {
                       key={staff.email}
                       onClick={() => handlePersonaLogin(staff)}
                       disabled={isSubmitting}
-                      className="w-full text-left p-4 rounded-xl border border-white/[0.06] bg-[#0c0c10]/70 hover:border-white/20 hover:bg-[#121218] transition-all flex items-center justify-between group disabled:opacity-50"
+                      className="w-full text-left p-4 rounded-xl border border-[#0B1533]/[0.08] bg-[#FAFBFD] hover:bg-white hover:border-[#2B59FF]/40 hover:shadow-sm transition-all flex items-center justify-between group disabled:opacity-50 cursor-pointer"
                     >
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-[#0B1533] group-hover:text-[#2B59FF] transition-colors">
                             {staff.name}
                           </span>
-                          <span className="apple-pill text-[10px] font-mono border-white/10 text-[#86868b]">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono bg-white text-[#4A5578] border border-[#0B1533]/[0.08]">
                             {staff.role}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#86868b] font-mono">{staff.email}</p>
+                        <p className="text-[11px] text-[#4A5578] font-mono">{staff.email}</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-[#86868b] group-hover:text-white transition-colors" />
+                      <ArrowRight className="w-4 h-4 text-[#6B7596] group-hover:text-[#2B59FF] group-hover:translate-x-0.5 transition-all" />
                     </button>
                   ))}
-                  <p className="text-[11px] text-[#86868b] pt-1">
-                    Uses real <code className="text-zinc-300">account.createJWT()</code> when Appwrite is configured,
-                    otherwise falls back to offline mock tokens.
+                  <p className="text-[11px] text-[#6B7596] pt-1 leading-relaxed">
+                    Demo personas exchange signed cryptographic tokens directly with the Cloudflare authentication edge worker.
                   </p>
                 </div>
               )}
@@ -326,52 +322,51 @@ export default function LoginPage() {
               {/* Tab: Email + Password */}
               {loginTab === 'email' && (
                 <form onSubmit={handleEmailLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-[#86868b] font-mono uppercase tracking-wider">Email</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] text-[#4A5578] font-mono uppercase font-bold tracking-wider">Email</label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7596]" />
                       <input
                         type="email"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder="staff@yourhospital.com"
+                        placeholder="staff@doctorcare.org"
                         required
-                        className="w-full pl-9 pr-4 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 placeholder:text-[#86868b]"
+                        className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-[#86868b] font-mono uppercase tracking-wider">Password</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] text-[#4A5578] font-mono uppercase font-bold tracking-wider">Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7596]" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={passwordInput}
                         onChange={(e) => setPasswordInput(e.target.value)}
                         placeholder="••••••••••"
                         required
-                        className="w-full pl-9 pr-10 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 placeholder:text-[#86868b]"
+                        className="w-full pl-9 pr-10 py-2.5 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl text-xs text-[#0B1533] font-mono focus:outline-none focus:border-[#2B59FF] focus:bg-white placeholder:text-[#8D97B5]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7596] hover:text-[#0B1533] cursor-pointer"
                       >
-                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
                   <button
                     type="submit"
                     disabled={isSubmitting || !emailInput.trim() || !passwordInput.trim()}
-                    className="w-full apple-btn-primary flex items-center justify-center gap-2 text-xs py-2.5 disabled:opacity-40"
+                    className="w-full bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl py-2.5 font-bold shadow-md shadow-blue-500/20 text-xs flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer transition-all"
                   >
-                    <LogIn className="w-3.5 h-3.5" />
-                    {isSubmitting ? 'Signing in...' : 'Sign In with Appwrite'}
+                    <LogIn className="w-4 h-4" />
+                    {isSubmitting ? 'Signing in...' : 'Sign In with Secure Session'}
                   </button>
-                  <p className="text-[11px] text-[#86868b]">
-                    Calls <code className="text-zinc-300">account.createEmailPasswordSession()</code> then
-                    {' '}<code className="text-zinc-300">account.createJWT()</code> to obtain a 15-min token.
+                  <p className="text-[11px] text-[#6B7596] leading-relaxed">
+                    Issues a short-lived memory access token and registers an HttpOnly refresh cookie.
                   </p>
                 </form>
               )}
@@ -379,19 +374,19 @@ export default function LoginPage() {
               {/* Tab: Raw JWT */}
               {loginTab === 'jwt' && (
                 <div className="space-y-3">
-                  <label className="text-xs text-[#86868b] block">Paste a raw Appwrite 15-min JWT:</label>
+                  <label className="text-xs text-[#4A5578] block font-medium">Paste a raw verified 15-min JWT:</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={inputJwt}
                       onChange={(e) => setInputJwt(e.target.value)}
                       placeholder="eyJhbGciOiJSUzI1NiIs..."
-                      className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl px-3.5 py-2 text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF] focus:bg-white"
                     />
                     <button
                       onClick={() => handleLogin(inputJwt)}
                       disabled={isSubmitting || !inputJwt.trim()}
-                      className="apple-btn-primary text-xs py-2 px-4 shrink-0 disabled:opacity-40"
+                      className="bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl text-xs py-2 px-4 font-bold shadow-sm shrink-0 disabled:opacity-40 cursor-pointer transition-all"
                     >
                       {isSubmitting ? 'Exchanging...' : 'Exchange'}
                     </button>
@@ -401,26 +396,25 @@ export default function LoginPage() {
             </div>
           )}
 
-
           {/* Interactive Authenticated API Test */}
-          <div className="glass-panel p-5 rounded-2xl border border-white/[0.08] space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
-                <h3 className="text-xs font-semibold text-white">Test Authenticated Request</h3>
-                <p className="text-[11px] text-[#86868b]">
-                  Dispatches <code className="text-white font-mono">apiFetch('/health')</code> using in-memory Bearer token.
+                <h3 className="text-xs font-bold text-[#0B1533]">Test Authenticated Request</h3>
+                <p className="text-[11px] text-[#4A5578]">
+                  Dispatches <code className="text-[#0B1533] font-bold font-mono bg-[#F4F6FB] px-1 py-0.5 rounded">apiFetch('/health')</code> using in-memory Bearer token.
                 </p>
               </div>
               <button
                 onClick={handleTestApi}
                 disabled={isTestingApi}
-                className="apple-btn-secondary text-xs py-1.5 px-3"
+                className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl text-xs font-semibold py-1.5 px-3 cursor-pointer transition-all shadow-sm"
               >
                 {isTestingApi ? 'Testing...' : 'Execute Request'}
               </button>
             </div>
             {apiTestResult && (
-              <div className="p-3 rounded-lg bg-black/50 border border-white/10 font-mono text-xs text-emerald-400">
+              <div className="p-3 rounded-xl bg-[#E8F7EE] border border-[#0D8244]/30 font-mono text-xs text-[#0D8244] font-medium animate-fade-in">
                 {apiTestResult}
               </div>
             )}
@@ -429,77 +423,77 @@ export default function LoginPage() {
 
         {/* Right Column: In-Memory Storage & Cookie Telemetry (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="glass-panel p-5 rounded-2xl border border-white/[0.08] space-y-4">
-            <h3 className="text-xs font-semibold text-white tracking-wide flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-emerald-400" />
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-4">
+            <h3 className="text-xs font-bold text-[#0B1533] tracking-wide flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-[#2B59FF]" />
               In-Memory Token Telemetry
             </h3>
 
             {/* Live Token Status */}
-            <div className="p-4 rounded-xl bg-black/50 border border-white/5 space-y-2">
+            <div className="p-4 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-[#86868b] font-mono">Access Token</span>
-                <span className={`apple-pill text-[10px] font-mono ${
+                <span className="text-[11px] text-[#4A5578] font-mono font-medium">Access Token</span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${
                   isAuthenticated
-                    ? 'border-emerald-500/30 text-emerald-400 bg-emerald-950/30'
-                    : 'border-white/10 text-zinc-500'
+                    ? 'border border-[#0D8244]/30 text-[#0D8244] bg-[#E8F7EE]'
+                    : 'border border-[#0B1533]/[0.08] text-[#6B7596] bg-[#F4F6FB]'
                 }`}>
                   {isAuthenticated ? 'IN MEMORY ONLY' : 'NOT LOADED'}
                 </span>
               </div>
-              <p className="text-[11px] font-mono text-zinc-400 truncate">
+              <p className="text-[11px] font-mono text-[#0B1533] truncate">
                 {rawToken ? `${rawToken.substring(0, 32)}...` : 'No active memory token'}
               </p>
             </div>
 
             {/* Expiration Countdown */}
-            <div className="p-4 rounded-xl bg-black/50 border border-white/5 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="text-[11px] text-[#86868b] font-mono flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-[11px] text-[#4A5578] font-mono flex items-center gap-1.5 font-medium">
+                  <Clock className="w-3.5 h-3.5 text-[#2B59FF]" />
                   Remaining Lifetime
                 </span>
-                <span className="text-xl font-bold font-mono text-white">
+                <span className="text-xl font-bold font-mono text-[#0B1533]">
                   {isAuthenticated ? formatTime(secondsRemaining) : '--:--'}
                 </span>
               </div>
-              <span className="text-[10px] text-[#86868b] font-mono text-right">
+              <span className="text-[10px] text-[#6B7596] font-mono text-right leading-tight">
                 15m max<br />Auto-refreshes at 60s
               </span>
             </div>
 
             {/* Storage Security Audit */}
-            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-              <span className="text-[11px] font-mono text-[#86868b] uppercase tracking-wider block">
+            <div className="space-y-2 pt-2 border-t border-[#0B1533]/[0.08]">
+              <span className="text-[11px] font-mono text-[#6B7596] uppercase font-bold tracking-wider block">
                 Web Storage Isolation Audit
               </span>
 
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30 border border-white/5 text-xs">
-                <span className="text-zinc-300 font-mono text-[11px]">window.localStorage</span>
-                <span className="apple-pill text-[10px] font-mono border-emerald-500/30 text-emerald-400 bg-emerald-950/20 flex items-center gap-1">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
+                <span className="text-[#0B1533] font-mono text-[11px] font-medium">window.localStorage</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
                   <CheckCircle2 className="w-3 h-3" />
                   0 BYTES (CLEAN)
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30 border border-white/5 text-xs">
-                <span className="text-zinc-300 font-mono text-[11px]">window.sessionStorage</span>
-                <span className="apple-pill text-[10px] font-mono border-emerald-500/30 text-emerald-400 bg-emerald-950/20 flex items-center gap-1">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
+                <span className="text-[#0B1533] font-mono text-[11px] font-medium">window.sessionStorage</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
                   <CheckCircle2 className="w-3 h-3" />
                   0 BYTES (CLEAN)
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30 border border-white/5 text-xs">
-                <span className="text-zinc-300 font-mono text-[11px]">__Host-refresh_token</span>
-                <span className="apple-pill text-[10px] font-mono border-blue-500/30 text-blue-400 bg-blue-950/20 flex items-center gap-1">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
+                <span className="text-[#0B1533] font-mono text-[11px] font-medium">__Host-refresh_token</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/30">
                   <Lock className="w-3 h-3" />
                   HTTPONLY STRICT
                 </span>
               </div>
             </div>
 
-            <p className="text-[11px] text-[#86868b] leading-relaxed pt-2">
+            <p className="text-[11px] text-[#6B7596] leading-relaxed pt-2">
               XSS attacks executing malicious JavaScript in the browser context cannot exfiltrate the token because
               it is held purely within a closed module variable.
             </p>

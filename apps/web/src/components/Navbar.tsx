@@ -11,7 +11,6 @@ import {
   FileText,
   UserCheck,
   Stethoscope,
-  Sparkles,
 } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
@@ -29,28 +28,27 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full px-4 pt-4 pb-2">
+    <header className="sticky top-3 z-50 w-full px-4 pt-3 pb-2">
       <div className="mx-auto max-w-7xl">
-        <nav className="flex items-center justify-between rounded-full bg-black/60 px-5 py-3 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all">
+        <nav className="flex items-center justify-between rounded-full bg-white/85 px-5 py-2.5 backdrop-blur-2xl border border-[#0B1533]/[0.08] shadow-lg shadow-[#0B1533]/5 transition-all">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/20 to-green-500/20 border border-white/15 group-hover:border-white/30 transition-all">
-              <Activity className="h-4 w-4 text-emerald-400 animate-pulse" />
-              <div className="absolute -inset-0.5 rounded-full bg-emerald-500/20 blur-sm opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-[#2B59FF] text-white shadow-sm transition-transform group-hover:scale-105">
+              <Activity className="h-4 w-4 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
+              <span className="font-extrabold text-sm tracking-tight text-[#0B1533] flex items-center gap-1.5">
                 DoctorCare
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70 border border-white/10">
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 font-bold">
                   Cloudflare Pro
                 </span>
               </span>
-              <span className="text-[11px] text-zinc-400 font-normal">Healthcare Zero-Trust</span>
+              <span className="text-[11px] text-[#6B7596] font-medium">Healthcare Zero-Trust</span>
             </div>
           </Link>
 
           {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-1 bg-white/[0.03] px-2 py-1 rounded-full border border-white/5">
+          <div className="hidden md:flex items-center gap-1 bg-[#F4F6FB] px-2 py-1 rounded-full border border-[#0B1533]/[0.05]">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -58,13 +56,17 @@ export function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-white/15 text-white shadow-sm border border-white/15'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                      ? 'bg-white text-[#2B59FF] shadow-sm border border-[#0B1533]/[0.06]'
+                      : 'text-[#4A5578] hover:text-[#0B1533] hover:bg-white/60'
                   }`}
                 >
-                  <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-blue-400' : 'text-zinc-400'}`} />
+                  <Icon
+                    className={`h-3.5 w-3.5 ${
+                      isActive ? 'text-[#2B59FF]' : 'text-[#6B7596]'
+                    }`}
+                  />
                   {link.name}
                 </Link>
               );
@@ -73,7 +75,7 @@ export function Navbar() {
 
           {/* Right Section: Security Badge & Action */}
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] font-mono text-emerald-400">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F7EE] border border-[#15803D]/25 text-[11px] font-mono font-bold text-[#15803D]">
               <ShieldCheck className="h-3.5 w-3.5" />
               <span>4-LAYER WAF ACTIVE</span>
             </div>
@@ -82,18 +84,18 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-medium hover:bg-emerald-900/40 transition-all"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8F7EE] border border-[#15803D]/30 text-[#15803D] text-xs font-semibold hover:bg-emerald-100/60 transition-all shadow-sm"
                 >
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="h-2 w-2 rounded-full bg-[#15803D] animate-ping" />
                   <span className="truncate max-w-[120px]">{user.name.split(' ')[0]}</span>
-                  <span className="text-[10px] font-mono text-emerald-400/70 border-l border-emerald-500/20 pl-1.5">
+                  <span className="text-[10px] font-mono text-[#15803D]/80 border-l border-[#15803D]/20 pl-1.5">
                     In-Memory
                   </span>
                 </Link>
                 <button
                   onClick={() => logout()}
                   title="Sign Out"
-                  className="p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all text-xs"
+                  className="p-1.5 px-2.5 rounded-full hover:bg-zinc-100 text-[#6B7596] hover:text-[#0B1533] transition-all text-xs font-medium cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -101,7 +103,7 @@ export function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 text-xs font-medium transition-all shadow-lg shadow-blue-500/25 border border-blue-400/30"
+                className="flex items-center gap-1.5 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white px-4 py-1.5 text-xs font-bold transition-all shadow-md shadow-blue-500/20"
               >
                 <UserCheck className="h-3.5 w-3.5" />
                 <span>Staff Portal</span>

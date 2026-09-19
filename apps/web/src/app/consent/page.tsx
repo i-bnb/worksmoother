@@ -46,7 +46,7 @@ const INITIAL_CONSENTS: ConsentItem[] = [
     id: 'cst_02_ehr',
     purpose: 'EHR_DATA_PROCESSING',
     title: 'Electronic Health Record (EHR) Storage & Decryption',
-    description: 'Store and envelope-encrypt medical history, laboratory observations, and discharge summaries in Appwrite Project B with AES-256-GCM and scoped KEK kek-2026-09.',
+    description: 'Store and envelope-encrypt medical history, laboratory observations, and discharge summaries in Cloudflare Records D1 with AES-256-GCM and scoped KEK kek-2026-09.',
     noticeVersion: 'v2.1-DPDP2023',
     language: 'en',
     granted: true,
@@ -117,31 +117,31 @@ export default function ConsentPage() {
   };
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="space-y-8 animate-fade-in py-2">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="apple-pill border-emerald-500/30 text-emerald-400 bg-emerald-950/20 font-mono text-xs">
+        <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
             DPDP ACT 2023 COMPLIANCE
           </span>
-          <span className="apple-pill border-blue-500/30 text-blue-400 bg-blue-950/20 font-mono text-xs">
-            PROJECT A: CONSENT_LOG
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
+            D1 OPS LEDGER: CONSENT_LOG
           </span>
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#f5f5f7]">
+        <h1 className="text-3xl font-bold tracking-tight text-[#0B1533]">
           Patient Consent & Privacy Center
         </h1>
-        <p className="text-[#86868b] mt-1 text-sm max-w-2xl">
+        <p className="text-[#4A5578] mt-1.5 text-sm max-w-2xl leading-relaxed">
           Granular consent management adhering strictly to the Digital Personal Data Protection (DPDP) Act 2023.
           Every grant and withdrawal is logged with immutable timestamps and notice versions.
         </p>
       </div>
 
       {/* Language & Notice Version Bar */}
-      <div className="glass-panel p-4 rounded-xl border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Languages className="w-4 h-4 text-[#86868b]" />
-          <span className="text-xs text-[#86868b]">Notice Language:</span>
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Languages className="w-4 h-4 text-[#2B59FF]" />
+          <span className="text-xs font-medium text-[#4A5578]">Notice Language:</span>
           <div className="flex items-center gap-1.5">
             {[
               { code: 'en', label: 'English' },
@@ -152,10 +152,10 @@ export default function ConsentPage() {
               <button
                 key={lang.code}
                 onClick={() => setSelectedLanguage(lang.code as any)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                   selectedLanguage === lang.code
-                    ? 'bg-white/15 text-white border border-white/20'
-                    : 'text-[#86868b] hover:text-white'
+                    ? 'bg-[#2B59FF] text-white shadow-sm'
+                    : 'text-[#4A5578] hover:text-[#0B1533] hover:bg-[#F4F6FB]'
                 }`}
               >
                 {lang.label}
@@ -165,8 +165,8 @@ export default function ConsentPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-[#86868b]">Notice Version:</span>
-          <span className="apple-pill font-mono text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-950/20">
+          <span className="text-[11px] font-mono text-[#4A5578]">Notice Version:</span>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
             v2.1-DPDP2023
           </span>
         </div>
@@ -174,25 +174,25 @@ export default function ConsentPage() {
 
       {/* Status Alert Toast */}
       {statusMessage && (
-        <div className="p-3 rounded-lg bg-blue-950/40 border border-blue-500/30 text-xs text-blue-200 flex items-center gap-2 animate-fade-in">
-          <Info className="w-4 h-4 text-blue-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-[#E9EEFE] border border-[#2B59FF]/30 text-xs font-medium text-[#2B59FF] flex items-center gap-2 animate-fade-in shadow-sm">
+          <Info className="w-4 h-4 text-[#2B59FF] shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {/* Consent Items */}
-      <div className="glass-panel rounded-2xl p-6 border border-white/[0.08] space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#0B1533]/[0.08] shadow-sm space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="text-lg font-medium text-[#f5f5f7] flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-lg font-bold text-[#0B1533] flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#2B59FF]" />
               Purpose Limitation & Permissions
             </h2>
-            <p className="text-xs text-[#86868b] mt-0.5">
-              Review and manage each purpose-specific processing authorization
+            <p className="text-xs text-[#4A5578] mt-0.5">
+              Review and manage each purpose-specific processing authorization under DPDP statutory mandates
             </p>
           </div>
-          <span className="apple-pill border-white/10 text-xs text-[#86868b]">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#F4F6FB] text-[#4A5578] border border-[#0B1533]/[0.08]">
             {consents.filter(c => c.granted).length} / {consents.length} Granted
           </span>
         </div>
@@ -203,40 +203,40 @@ export default function ConsentPage() {
               key={item.id}
               className={`p-5 rounded-xl border transition-all ${
                 item.granted
-                  ? 'border-white/[0.08] bg-[#0c0c10]/70'
-                  : 'border-red-500/20 bg-red-950/10'
+                  ? 'border-[#0B1533]/[0.08] bg-[#FAFBFD] hover:border-[#2B59FF]/40'
+                  : 'border-red-200 bg-[#FFF9F9]'
               }`}
             >
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-medium text-white">{item.title}</h3>
-                    <span className="apple-pill text-[10px] font-mono border-white/10 text-[#86868b]">
+                    <h3 className="text-sm font-bold text-[#0B1533]">{item.title}</h3>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono bg-white text-[#4A5578] border border-[#0B1533]/[0.08]">
                       {item.purpose}
                     </span>
                     {item.mandatory ? (
-                      <span className="apple-pill text-[10px] border-amber-500/30 text-amber-400 bg-amber-950/20">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold font-mono bg-[#FFF4E5] text-[#B76E00] border border-[#B76E00]/20">
                         ESSENTIAL SERVICE
                       </span>
                     ) : (
-                      <span className="apple-pill text-[10px] border-blue-500/30 text-blue-400 bg-blue-950/20">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold font-mono bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
                         OPTIONAL
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-[#86868b] leading-relaxed max-w-3xl">
+                  <p className="text-xs text-[#4A5578] leading-relaxed max-w-3xl">
                     {item.description}
                   </p>
 
-                  <div className="flex items-center gap-4 text-[11px] text-[#86868b]/70 font-mono pt-1">
+                  <div className="flex items-center gap-3 text-[11px] text-[#6B7596] font-mono pt-1">
                     <span>Notice: {item.noticeVersion}</span>
                     <span>•</span>
                     {item.granted ? (
-                      <span className="text-emerald-400">
+                      <span className="text-[#0D8244] font-semibold">
                         Granted: {item.grantedAt ? item.grantedAt.substring(0, 19).replace('T', ' ') : 'N/A'} UTC
                       </span>
                     ) : (
-                      <span className="text-red-400">
+                      <span className="text-[#D93025] font-semibold">
                         Withdrawn: {item.withdrawnAt ? item.withdrawnAt.substring(0, 19).replace('T', ' ') : 'N/A'} UTC
                       </span>
                     )}
@@ -246,20 +246,20 @@ export default function ConsentPage() {
                 <div className="flex items-center gap-3 shrink-0">
                   <button
                     onClick={() => toggleConsent(item.id)}
-                    className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all ${
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm ${
                       item.granted
-                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                        : 'bg-white/10 hover:bg-white/15 text-white/80 border border-white/20'
+                        ? 'bg-[#E8F7EE] hover:bg-[#D6F0E0] text-[#0D8244] border border-[#0D8244]/30'
+                        : 'bg-white hover:bg-[#FEECEB] text-[#D93025] border border-red-200'
                     }`}
                   >
                     {item.granted ? (
                       <>
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0D8244]" />
                         Consent Active
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-3.5 h-3.5" />
+                        <XCircle className="w-3.5 h-3.5 text-[#D93025]" />
                         Withdrawn
                       </>
                     )}
@@ -273,33 +273,33 @@ export default function ConsentPage() {
 
       {/* DPDP Legal Safeguards Callout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-        <div className="glass-panel p-4 rounded-xl border border-white/[0.08] space-y-1.5">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <Clock className="w-4 h-4 text-emerald-400" />
+        <div className="bg-white p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-2">
+          <div className="flex items-center gap-2 text-[#0B1533] font-bold">
+            <Clock className="w-4 h-4 text-[#0D8244]" />
             <span>Right to Withdraw</span>
           </div>
-          <p className="text-[#86868b] leading-relaxed">
+          <p className="text-[#4A5578] leading-relaxed text-[11px]">
             Under Section 6(4) of DPDP Act 2023, data principals can withdraw consent at any time as easily as giving it.
           </p>
         </div>
 
-        <div className="glass-panel p-4 rounded-xl border border-white/[0.08] space-y-1.5">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <Lock className="w-4 h-4 text-blue-400" />
+        <div className="bg-white p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-2">
+          <div className="flex items-center gap-2 text-[#0B1533] font-bold">
+            <Lock className="w-4 h-4 text-[#2B59FF]" />
             <span>Purpose Specification</span>
           </div>
-          <p className="text-[#86868b] leading-relaxed">
+          <p className="text-[#4A5578] leading-relaxed text-[11px]">
             Data is strictly processed solely for the purposes enumerated above and not retained past designated statutory periods.
           </p>
         </div>
 
-        <div className="glass-panel p-4 rounded-xl border border-white/[0.08] space-y-1.5">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <Database className="w-4 h-4 text-purple-400" />
+        <div className="bg-white p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-2">
+          <div className="flex items-center gap-2 text-[#0B1533] font-bold">
+            <Database className="w-4 h-4 text-[#7928CA]" />
             <span>Audit Trail Ledger</span>
           </div>
-          <p className="text-[#86868b] leading-relaxed">
-            State transitions are written to Appwrite Project A <code className="text-white font-mono">CONSENT_LOG</code> with cryptographic timestamps.
+          <p className="text-[#4A5578] leading-relaxed text-[11px]">
+            State transitions are written to Cloudflare D1 Ops ledger <code className="text-[#0B1533] font-bold font-mono bg-[#F4F6FB] px-1 py-0.5 rounded border border-[#0B1533]/[0.08]">CONSENT_LOG</code> with cryptographic timestamps.
           </p>
         </div>
       </div>

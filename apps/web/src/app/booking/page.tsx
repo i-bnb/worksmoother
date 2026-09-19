@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Calendar as CalendarIcon,
@@ -95,42 +95,58 @@ function BookingContent() {
   };
 
   return (
-    <div className="space-y-8 py-4 max-w-5xl mx-auto">
+    <div className="space-y-8 py-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-mono">
+      <div className="space-y-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
           <CalendarIcon className="h-3.5 w-3.5" />
-          <span>Slot Durable Object &bull; Single-Threaded Atomic Reservation</span>
+          <span>Slot Durable Object &bull; Sharded Locking</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Reserve Consultation Slot
         </h1>
-        <p className="text-sm text-zinc-400">
-          Booking mutations are serialized per doctor-day in Cloudflare SQLite to guarantee zero double-booking races.
+        <p className="text-base text-[#4A5578] leading-relaxed">
+          Select a time window to establish a single-threaded 10-minute hold in the DoctorCare
+          Durable Object storage. If unconfirmed within 10 minutes, the hold releases automatically.
         </p>
       </div>
 
-      {/* Doctor Overview Card */}
-      <div className="glass-panel rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-white/10">
-        <div className="space-y-1">
-          <span className="text-[10px] font-mono text-blue-400 uppercase tracking-wider">Designated Specialist</span>
-          <h2 className="text-xl font-bold text-white tracking-tight">{doctorName}</h2>
-          <p className="text-xs text-zinc-400">{specialty} &bull; Shard ID: {doctorId}:2026-09-19</p>
+      {/* Doctor Info Card */}
+      <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-[#E9EEFE] flex items-center justify-center text-[#2B59FF]">
+            <User className="h-7 w-7" />
+          </div>
+          <div>
+            <span className="text-[11px] font-mono text-[#2B59FF] font-bold block uppercase tracking-wider">
+              Selected Specialist
+            </span>
+            <h2 className="text-xl font-extrabold text-[#0B1533]">{doctorName}</h2>
+            <p className="text-xs text-[#6B7596]">{specialty} &bull; Suite 402</p>
+          </div>
         </div>
-        <div className="sm:text-right">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase">Consultation Fee</span>
-          <div className="text-xl font-bold text-white font-mono">₹1,770</div>
-          <span className="text-[10px] text-zinc-500 font-mono">Derived on Server (PAISE: 177000)</span>
+
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-right">
+            <span className="text-[10px] text-[#6B7596] block font-mono font-semibold">FEE ESTIMATE</span>
+            <span className="text-lg font-bold text-[#0B1533] font-mono">₹1,770</span>
+          </div>
+          <div className="px-3.5 py-2 rounded-2xl bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20 text-xs font-mono font-bold flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4" />
+            <span>IDEMPOTENT</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: Slot Selection & Hold Lock */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Col 1 & 2: Slot Picker */}
-        <div className="lg:col-span-2 glass-panel rounded-3xl p-6 space-y-6 border border-white/10">
-          <div>
-            <h3 className="text-sm font-semibold text-white tracking-tight">Available Consultation Slots</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">Saturday, September 19, 2026 (UTC Standard Timeslot)</p>
+      {/* Main Grid: Slots & Hold Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Slot Selection (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
+              Available Windows &bull; Today
+            </h3>
+            <span className="text-xs text-[#6B7596]">UTC+05:30 (IST)</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -141,167 +157,186 @@ function BookingContent() {
                   key={slot.startIso}
                   disabled={!slot.isAvailable || isHeld}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`p-4 rounded-2xl text-left border transition-all flex items-center justify-between ${
+                  className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between h-24 cursor-pointer disabled:cursor-not-allowed ${
                     !slot.isAvailable
-                      ? 'opacity-40 cursor-not-allowed bg-white/[0.01] border-white/5'
+                      ? 'bg-zinc-100/60 border-zinc-200 text-zinc-400 opacity-60'
                       : isSelected
-                      ? 'bg-blue-500/15 border-blue-500/60 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/50'
-                      : 'glass-panel-interactive hover:border-white/20'
+                      ? 'bg-[#EEF2FF] border-[#2B59FF] shadow-md shadow-blue-500/15'
+                      : 'bg-white border-[#0B1533]/[0.08] hover:border-[#2B59FF] shadow-sm'
                   }`}
                 >
-                  <div className="space-y-1">
-                    <span className="text-xs font-semibold text-white font-mono block">{slot.time}</span>
-                    <span className="text-[10px] text-zinc-500 block">30 mins consultation</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-xs font-mono font-bold text-[#0B1533]">
+                      {slot.time.split(' - ')[0]}
+                    </span>
+                    {slot.isAvailable ? (
+                      <span className="h-2 w-2 rounded-full bg-[#15803D]" />
+                    ) : (
+                      <span className="text-[10px] text-zinc-400 uppercase font-mono">Booked</span>
+                    )}
                   </div>
-                  {slot.isAvailable ? (
-                    <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full ${
-                      isSelected ? 'bg-blue-500 text-white' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                    }`}>
-                      {isSelected ? 'Selected' : 'Open'}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-500">
-                      Booked
-                    </span>
-                  )}
+
+                  <div className="flex items-center justify-between text-xs text-[#6B7596]">
+                    <span>30-min slot</span>
+                    {isSelected && <CheckCircle2 className="h-4 w-4 text-[#2B59FF]" />}
+                  </div>
                 </button>
               );
             })}
           </div>
 
-          {/* Patient Details Input */}
-          <div className="pt-4 border-t border-white/5 space-y-3">
-            <span className="text-xs font-semibold text-zinc-300 font-mono">Patient Identification</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] text-zinc-500 block mb-1">Patient ID (Project A/B Link)</label>
-                <input
-                  type="text"
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  disabled={isHeld}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-zinc-500 block mb-1">Full Legal Name</label>
+          {/* Patient Details Form */}
+          <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4 mt-6">
+            <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
+              Patient Identification
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-[#4A5578] font-semibold">Patient Name</label>
                 <input
                   type="text"
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
                   disabled={isHeld}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#0B1533]/[0.12] text-xs text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-[#4A5578] font-semibold">Patient ID</label>
+                <input
+                  type="text"
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                  disabled={isHeld}
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#0B1533]/[0.12] text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF]"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Col 3: Atomic Lock & Payment Panel */}
-        <div className="glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-6 border border-white/10">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-400">
-                Reservation Lock
-              </span>
-              {isHeld && !isConfirmed && (
-                <span className="flex items-center gap-1.5 text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full animate-pulse">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{formatTimer(secondsRemaining)}</span>
+        {/* Right: Hold & Payment Action Panel (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="rounded-[26px] p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-6">
+            <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-4">
+              <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
+                Reservation State
+              </h3>
+              {isHeld ? (
+                <span className="flex items-center gap-1.5 text-xs font-mono text-[#2B59FF] font-bold">
+                  <Lock className="h-3.5 w-3.5" />
+                  HELD
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs font-mono text-[#6B7596]">
+                  <Unlock className="h-3.5 w-3.5" />
+                  UNLOCKED
                 </span>
               )}
             </div>
 
-            {/* Active Hold Status Box */}
-            {isHeld && !isConfirmed ? (
-              <div className="p-4 rounded-2xl bg-amber-500/[0.08] border border-amber-500/25 space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold">
-                  <Lock className="h-4 w-4" />
-                  <span>Slot Held in SQLite</span>
+            {/* Countdown State */}
+            {isHeld && !isConfirmed && (
+              <div className="p-4 rounded-2xl bg-[#EEF2FF] border border-[#2B59FF]/30 space-y-2">
+                <div className="flex items-center justify-between text-xs text-[#2B59FF]">
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <Clock className="h-4 w-4" />
+                    Slot Hold Timer
+                  </span>
+                  <span className="font-mono text-xs font-semibold">DO Alarm Active</span>
                 </div>
-                <p className="text-[11px] text-amber-200/80 leading-relaxed">
-                  Locked in SlotDurableObject. Alarm set for automated release in {formatTimer(secondsRemaining)} if unconfirmed.
-                </p>
-                <div className="pt-2 text-[10px] font-mono text-zinc-400">
-                  slot_key: {doctorId}:{selectedSlot?.startIso}
-                </div>
-              </div>
-            ) : isConfirmed ? (
-              <div className="p-4 rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/25 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Appointment Confirmed</span>
-                </div>
-                <p className="text-[11px] text-emerald-200/80 leading-relaxed">
-                  Razorpay webhook verified via timingSafeEqual. Meta WhatsApp alert dispatched.
-                </p>
-              </div>
-            ) : (
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs text-zinc-400">
-                <p>Select an available timeslot to initiate a single-threaded 10-minute hold lock.</p>
-                <div className="text-[11px] text-zinc-500 flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />
-                  <span>Layer 4 Cap: Max 3 active holds</span>
+                <div className="flex items-baseline justify-between">
+                  <span className="mono text-3xl font-extrabold text-[#0B1533]">
+                    {formatTimer(secondsRemaining)}
+                  </span>
+                  <span className="text-[11px] text-[#4A5578]">releases on expiry</span>
                 </div>
               </div>
             )}
 
-            {/* Fee summary */}
-            <div className="space-y-1.5 pt-2 border-t border-white/5 text-xs">
-              <div className="flex justify-between text-zinc-400">
-                <span>Base Consultation</span>
-                <span className="font-mono">₹1,500.00</span>
+            {/* Confirmation State */}
+            {isConfirmed && (
+              <div className="p-4 rounded-2xl bg-[#E8F7EE] border border-[#15803D]/30 space-y-2 text-[#15803D]">
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>Appointment Confirmed!</span>
+                </div>
+                <p className="text-xs text-[#15803D] leading-relaxed">
+                  Razorpay payment order reconciled. Booking record committed to D1 Operational DB.
+                  WhatsApp confirmation dispatched via Cloudflare Queue.
+                </p>
               </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>GST (18%)</span>
-                <span className="font-mono">₹270.00</span>
+            )}
+
+            {/* Summary details */}
+            <div className="space-y-2.5 text-xs text-[#4A5578]">
+              <div className="flex justify-between">
+                <span>Physician:</span>
+                <span className="font-bold text-[#0B1533]">{doctorName}</span>
               </div>
-              <div className="flex justify-between text-white font-semibold pt-2 border-t border-white/10 text-sm">
-                <span>Total Due</span>
-                <span className="font-mono">₹1,770.00</span>
+              <div className="flex justify-between">
+                <span>Timeslot:</span>
+                <span className="font-bold text-[#0B1533]">
+                  {selectedSlot ? selectedSlot.time : 'None Selected'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Hold Duration:</span>
+                <span className="font-mono text-[#0B1533]">10 Minutes (600s)</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Fee (Base + GST):</span>
+                <span className="font-mono font-bold text-[#0B1533]">₹1,500 + ₹270 = ₹1,770</span>
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-2">
-            {!isHeld ? (
-              <button
-                onClick={handleHoldSlot}
-                disabled={!selectedSlot}
-                className="w-full apple-btn-primary flex items-center justify-center gap-2 text-xs py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Lock className="h-3.5 w-3.5" />
-                <span>Lock Slot (Hold for 10 Min)</span>
-              </button>
-            ) : !isConfirmed ? (
-              <div className="space-y-2">
+            {/* Action Buttons */}
+            <div className="space-y-3 pt-2">
+              {!isHeld && !isConfirmed && (
                 <button
-                  onClick={handleConfirmAndPay}
-                  disabled={paymentStatus === 'PROCESSING'}
-                  className="w-full apple-btn-primary bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center gap-2 text-xs py-2.5"
+                  disabled={!selectedSlot}
+                  onClick={handleHoldSlot}
+                  className="btn w-full py-3 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 disabled:bg-[#AEB6CF] disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <CreditCard className="h-3.5 w-3.5" />
-                  <span>
-                    {paymentStatus === 'PROCESSING' ? 'Deriving Order...' : 'Pay ₹1,770 with Razorpay'}
-                  </span>
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Hold Slot for 10 Minutes</span>
                 </button>
+              )}
+
+              {isHeld && !isConfirmed && (
+                <>
+                  <button
+                    onClick={handleConfirmAndPay}
+                    disabled={paymentStatus === 'PROCESSING'}
+                    className="btn w-full py-3 rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <CreditCard className="h-3.5 w-3.5" />
+                    <span>{paymentStatus === 'PROCESSING' ? 'Processing...' : 'Pay ₹1,770 & Confirm'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleReleaseSlot}
+                    className="w-full py-2.5 rounded-full border border-[#0B1533]/[0.12] bg-white text-[#4A5578] hover:text-[#0B1533] text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Release Slot Lock</span>
+                  </button>
+                </>
+              )}
+
+              {isConfirmed && (
                 <button
-                  onClick={handleReleaseSlot}
-                  className="w-full text-center text-[11px] font-mono text-zinc-400 hover:text-white py-1 transition-colors"
+                  onClick={() => {
+                    setIsConfirmed(false);
+                    setIsHeld(false);
+                    setSelectedSlot(null);
+                  }}
+                  className="btn w-full py-3 rounded-full bg-[#0B1533] text-white text-xs font-bold cursor-pointer"
                 >
-                  Release Hold Early
+                  Book Another Appointment
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => { setIsConfirmed(false); setIsHeld(false); setSelectedSlot(null); }}
-                className="w-full apple-btn-secondary flex items-center justify-center gap-2 text-xs py-2.5"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Book Another Slot</span>
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -311,15 +346,8 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="flex items-center justify-center py-20 text-zinc-400 font-mono text-xs">
-          Loading Slot Reservation Engine...
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="p-8 text-center text-[#4A5578]">Loading booking engine...</div>}>
       <BookingContent />
-    </React.Suspense>
+    </Suspense>
   );
 }
-

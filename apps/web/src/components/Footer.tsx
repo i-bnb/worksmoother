@@ -1,42 +1,45 @@
 import React from 'react';
-import { Shield, Key, Database, Cpu, CheckCircle2 } from 'lucide-react';
+import { Shield, Key, Database, CheckCircle2 } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-white/[0.08] bg-black/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-6 py-12">
+    <footer className="mt-20 border-t border-[#0B1533]/[0.08] bg-white">
+      <div className="mx-auto max-w-7xl px-6 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: Platform */}
           <div className="space-y-3 md:col-span-1">
-            <span className="text-sm font-semibold text-white tracking-tight">DoctorCare Engine</span>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Enterprise healthcare platform engineered on Cloudflare Workers, Cloudflare Secrets Store, and Appwrite Cloud dual-project credential isolation.
+            <span className="text-base font-extrabold text-[#0B1533] tracking-tight">
+              DoctorCare Engine
+            </span>
+            <p className="text-xs text-[#4A5578] leading-relaxed">
+              Enterprise healthcare platform engineered on Cloudflare Workers, Cloudflare Secrets Store,
+              Cloudflare D1 physical isolation, and DPDP Act 2023 compliance.
             </p>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-500 font-mono">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#6B7596] font-mono">
               <span>origin: github.com/itsmesyaam/doctorcare</span>
             </div>
           </div>
 
           {/* Col 2: Security Specifications */}
           <div className="space-y-2.5">
-            <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
+            <span className="text-xs font-bold text-[#0B1533] uppercase tracking-wider font-mono">
               Cryptographic Core
             </span>
-            <ul className="space-y-1.5 text-xs text-zinc-400">
+            <ul className="space-y-2 text-xs text-[#4A5578]">
               <li className="flex items-center gap-1.5">
-                <Key className="h-3 w-3 text-blue-400" />
+                <Key className="h-3.5 w-3.5 text-[#2B59FF]" />
                 <span>Secrets Store KEK (kek-2026-09)</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <Shield className="h-3 w-3 text-emerald-400" />
+                <Shield className="h-3.5 w-3.5 text-[#15803D]" />
                 <span>AES-256-GCM + 5-Tuple AAD</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-[#15803D]" />
                 <span>Non-Extractable CryptoKey</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <Database className="h-3 w-3 text-purple-400" />
+                <Database className="h-3.5 w-3.5 text-[#7C8CF8]" />
                 <span>Fail-Closed RECORD_ACCESS_LOG</span>
               </li>
             </ul>
@@ -44,10 +47,10 @@ export function Footer() {
 
           {/* Col 3: Compliance & Architecture */}
           <div className="space-y-2.5">
-            <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
-              Compliance & Edge
+            <span className="text-xs font-bold text-[#0B1533] uppercase tracking-wider font-mono">
+              Compliance &amp; Edge
             </span>
-            <ul className="space-y-1.5 text-xs text-zinc-400">
+            <ul className="space-y-1.5 text-xs text-[#4A5578]">
               <li>Cloudflare Pro Zone Managed WAF</li>
               <li>OWASP ModSecurity Core Ruleset</li>
               <li>India DPDP Act 2023 Consent Audit</li>
@@ -58,38 +61,38 @@ export function Footer() {
 
           {/* Col 4: Fleet Architecture */}
           <div className="space-y-2.5">
-            <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
+            <span className="text-xs font-bold text-[#0B1533] uppercase tracking-wider font-mono">
               Workers Fleet
             </span>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-white/[0.03] border border-white/5">
-                <span className="font-mono text-blue-400">doctorcare-api</span>
-                <span className="text-[10px] text-zinc-500">Public Gateway</span>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
+                <span className="font-mono text-[#2B59FF] font-semibold">doctorcare-api</span>
+                <span className="text-[10px] text-[#6B7596]">Public Gateway</span>
               </div>
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-white/[0.03] border border-white/5">
-                <span className="font-mono text-emerald-400">doctorcare-records</span>
-                <span className="text-[10px] text-zinc-500">Private Binding</span>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
+                <span className="font-mono text-[#15803D] font-semibold">doctorcare-records</span>
+                <span className="text-[10px] text-[#6B7596]">Private Binding</span>
               </div>
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-white/[0.03] border border-white/5">
-                <span className="font-mono text-purple-400">doctorcare-notify</span>
-                <span className="text-[10px] text-zinc-500">Queue Consumer</span>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#F4F6FB] border border-[#0B1533]/[0.06]">
+                <span className="font-mono text-[#7C8CF8] font-semibold">doctorcare-notify</span>
+                <span className="text-[10px] text-[#6B7596]">Queue Consumer</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/[0.05] flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
+        <div className="pt-8 border-t border-[#0B1533]/[0.06] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#6B7596]">
           <div>
-            &copy; 2026 DoctorCare Platform. All clinical records encrypted end-to-end under Secrets Store KEK.
+            &copy; 2026 DoctorCare Platform &bull; All clinical records encrypted end-to-end under Secrets Store KEK.
           </div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="h-2 w-2 rounded-full bg-[#15803D] animate-ping" />
               <span>Edge Network: Online (Global Anycast)</span>
             </span>
             <span>&bull;</span>
-            <span>Appwrite Cloud Project A & B Isolated</span>
+            <span>Cloudflare D1 Physical Isolation</span>
           </div>
         </div>
       </div>

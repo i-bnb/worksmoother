@@ -7,10 +7,7 @@ import {
   Search,
   Building2,
   DoorClosed,
-  Clock,
   ArrowRight,
-  ShieldCheck,
-  Check,
 } from 'lucide-react';
 
 interface DoctorItem {
@@ -32,71 +29,71 @@ const SAMPLE_DOCTORS: DoctorItem[] = [
     name: 'Dr. Suresh R. Nair',
     specialty: 'Interventional Cardiology',
     department: 'Cardiology',
-    room: 'Room 304, Tower B',
-    experienceYears: 16,
-    consultationType: 'SPECIALIST',
-    baseFeePaise: 150000,
-    totalFeeInr: 1770,
-    availableSlotsCount: 4,
-  },
-  {
-    id: 'doc_priya_02',
-    name: 'Dr. Priya V. Sharma',
-    specialty: 'Pediatric Neurology',
-    department: 'Neurology',
-    room: 'Room 212, Tower A',
-    experienceYears: 12,
-    consultationType: 'SPECIALIST',
+    room: 'Consultation Suite 402, Block A',
+    experienceYears: 18,
+    consultationType: 'REGULAR',
     baseFeePaise: 150000,
     totalFeeInr: 1770,
     availableSlotsCount: 6,
   },
   {
-    id: 'doc_arun_03',
-    name: 'Dr. Arun M. Thomas',
-    specialty: 'Trauma & Emergency Care',
-    department: 'Emergency',
-    room: 'ER Suite 01',
+    id: 'doc_priya_02',
+    name: 'Dr. Priya V. Sharma',
+    specialty: 'Pediatric Cardiology & Congenital Heart',
+    department: 'Cardiology',
+    room: 'Pediatric Wing OPD-12',
     experienceYears: 14,
-    consultationType: 'EMERGENCY',
+    consultationType: 'SPECIALIST',
     baseFeePaise: 200000,
     totalFeeInr: 2360,
-    availableSlotsCount: 2,
+    availableSlotsCount: 4,
   },
   {
-    id: 'doc_ananya_04',
-    name: 'Dr. Ananya K. Sengupta',
-    specialty: 'Orthopedic Spine Surgery',
-    department: 'Orthopedics',
-    room: 'Room 408, Tower C',
-    experienceYears: 18,
-    consultationType: 'SURGICAL',
-    baseFeePaise: 350000,
-    totalFeeInr: 4130,
+    id: 'doc_arun_03',
+    name: 'Dr. Arun K. Sundaram',
+    specialty: 'Cerebrovascular & Stroke Neurology',
+    department: 'Neurology',
+    room: 'Neurosciences Center Room 204',
+    experienceYears: 22,
+    consultationType: 'SPECIALIST',
+    baseFeePaise: 250000,
+    totalFeeInr: 2950,
     availableSlotsCount: 3,
   },
   {
-    id: 'doc_vikram_05',
-    name: 'Dr. Vikram D. Malhotra',
-    specialty: 'Medical Oncology',
+    id: 'doc_ananya_04',
+    name: 'Dr. Ananya Sen',
+    specialty: 'Medical Oncology & Immunotherapy',
     department: 'Oncology',
-    room: 'Room 501, Tower B',
-    experienceYears: 20,
+    room: 'Cancer Care OPD Suite 101',
+    experienceYears: 16,
     consultationType: 'SPECIALIST',
-    baseFeePaise: 150000,
-    totalFeeInr: 1770,
+    baseFeePaise: 220000,
+    totalFeeInr: 2596,
     availableSlotsCount: 5,
   },
   {
-    id: 'doc_meera_06',
-    name: 'Dr. Meera G. Iyer',
-    specialty: 'General Internal Medicine',
-    department: 'Internal Medicine',
-    room: 'Room 105, Clinic Wing',
-    experienceYears: 9,
+    id: 'doc_vikram_05',
+    name: 'Dr. Vikramaditya Joshi',
+    specialty: 'Orthopedic Joint Replacement',
+    department: 'Orthopedics',
+    room: 'Orthopedics Suite 305',
+    experienceYears: 19,
     consultationType: 'REGULAR',
-    baseFeePaise: 80000,
-    totalFeeInr: 944,
+    baseFeePaise: 180000,
+    totalFeeInr: 2124,
+    availableSlotsCount: 7,
+  },
+  {
+    id: 'doc_meera_06',
+    name: 'Dr. Meera N. Swaminathan',
+    specialty: 'Internal Medicine & Diabetology',
+    department: 'Internal Medicine',
+    room: 'Primary Care Clinic Room 108',
+    experienceYears: 12,
+    consultationType: 'REGULAR',
+    baseFeePaise: 100000,
+    totalFeeInr: 1180,
     availableSlotsCount: 8,
   },
 ];
@@ -125,17 +122,17 @@ export default function DirectoryPage() {
   });
 
   return (
-    <div className="space-y-8 py-4">
+    <div className="space-y-8 py-6 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-400 font-mono">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
           <Stethoscope className="h-3.5 w-3.5" />
-          <span>Care Directory &bull; Appwrite Project A TablesDB</span>
+          <span>Care Directory &bull; Cloudflare D1 OpsDB</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Physician & Specialist Directory
         </h1>
-        <p className="text-sm text-zinc-400 max-w-2xl leading-relaxed">
+        <p className="text-base text-[#4A5578] max-w-2xl leading-relaxed">
           Select a verified physician to review real-time availability slots sharded across
           the DoctorCare Slot Durable Object architecture.
         </p>
@@ -144,15 +141,15 @@ export default function DirectoryPage() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Department Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
           {DEPARTMENTS.map((dept) => (
             <button
               key={dept}
               onClick={() => setSelectedDept(dept)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedDept === dept
-                  ? 'bg-white text-black font-semibold shadow-md'
-                  : 'bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08] border border-white/5'
+                  ? 'bg-[#2B59FF] text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white text-[#4A5578] hover:text-[#0B1533] hover:bg-[#F4F6FB] border border-[#0B1533]/[0.08]'
               }`}
             >
               {dept}
@@ -161,63 +158,67 @@ export default function DirectoryPage() {
         </div>
 
         {/* Search Input */}
-        <div className="relative min-w-[260px]">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+        <div className="relative min-w-[280px]">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7596]" />
           <input
             type="text"
             placeholder="Search doctors, specialties..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-full bg-white/[0.05] border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white border border-[#0B1533]/[0.12] text-xs text-[#0B1533] placeholder-[#6B7596] focus:outline-none focus:border-[#2B59FF] shadow-sm transition-all"
           />
         </div>
       </div>
 
       {/* Doctor Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredDoctors.map((doctor) => (
           <div
             key={doctor.id}
-            className="glass-panel-interactive rounded-3xl p-6 flex flex-col justify-between space-y-5 border border-white/10"
+            className="rounded-[26px] p-6 bg-white flex flex-col justify-between space-y-6 border border-[#0B1533]/[0.08] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
           >
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/10 border border-white/15 text-blue-400">
-                  <Stethoscope className="h-5 w-5" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E9EEFE] text-[#2B59FF]">
+                  <Stethoscope className="h-6 w-6" />
                 </div>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20">
                   {doctor.availableSlotsCount} slots open
                 </span>
               </div>
 
               <div>
-                <h3 className="text-base font-semibold text-white tracking-tight">{doctor.name}</h3>
-                <p className="text-xs text-blue-400 font-medium mt-0.5">{doctor.specialty}</p>
-                <p className="text-xs text-zinc-500">{doctor.experienceYears} years clinical experience</p>
+                <h3 className="text-lg font-extrabold text-[#0B1533] tracking-tight">{doctor.name}</h3>
+                <p className="text-xs text-[#2B59FF] font-semibold mt-0.5">{doctor.specialty}</p>
+                <p className="text-xs text-[#6B7596] mt-0.5">{doctor.experienceYears} years clinical experience</p>
               </div>
 
-              <div className="pt-2 space-y-1.5 border-t border-white/5 text-xs text-zinc-400">
+              <div className="pt-2 space-y-1.5 border-t border-[#0B1533]/[0.06] text-xs text-[#4A5578]">
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-3.5 w-3.5 text-zinc-500" />
+                  <Building2 className="h-3.5 w-3.5 text-[#6B7596]" />
                   <span>{doctor.department}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DoorClosed className="h-3.5 w-3.5 text-zinc-500" />
+                  <DoorClosed className="h-3.5 w-3.5 text-[#6B7596]" />
                   <span>{doctor.room}</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-4 border-t border-[#0B1533]/[0.08] flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-mono text-zinc-500 block">Consultation Fee</span>
-                <span className="text-base font-bold text-white font-mono">₹{doctor.totalFeeInr}</span>
-                <span className="text-[10px] text-zinc-500 block">incl. 18% GST</span>
+                <span className="text-[10px] uppercase font-mono text-[#6B7596] block font-semibold">
+                  Consultation Fee
+                </span>
+                <span className="text-lg font-bold text-[#0B1533] font-mono">₹{doctor.totalFeeInr}</span>
+                <span className="text-[10px] text-[#6B7596] block">incl. 18% GST</span>
               </div>
 
               <Link
-                href={`/booking?doctor_id=${doctor.id}&doctor_name=${encodeURIComponent(doctor.name)}&specialty=${encodeURIComponent(doctor.specialty)}`}
-                className="apple-btn-primary text-xs flex items-center gap-1.5 py-2 px-3.5"
+                href={`/booking?doctor_id=${doctor.id}&doctor_name=${encodeURIComponent(
+                  doctor.name
+                )}&specialty=${encodeURIComponent(doctor.specialty)}`}
+                className="btn inline-flex items-center gap-1.5 py-2 px-4 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-xs font-bold shadow-md shadow-blue-500/20"
               >
                 <span>Book Slot</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -228,11 +229,16 @@ export default function DirectoryPage() {
       </div>
 
       {filteredDoctors.length === 0 && (
-        <div className="glass-panel rounded-3xl p-12 text-center space-y-3">
-          <p className="text-sm text-zinc-400">No doctors found matching "{searchQuery}" in {selectedDept}.</p>
+        <div className="rounded-[26px] bg-white border border-[#0B1533]/[0.08] p-12 text-center space-y-3 shadow-sm">
+          <p className="text-sm text-[#4A5578]">
+            No doctors found matching &ldquo;{searchQuery}&rdquo; in {selectedDept}.
+          </p>
           <button
-            onClick={() => { setSelectedDept('All'); setSearchQuery(''); }}
-            className="text-xs text-blue-400 hover:underline font-mono"
+            onClick={() => {
+              setSelectedDept('All');
+              setSearchQuery('');
+            }}
+            className="text-xs text-[#2B59FF] font-bold hover:underline font-mono cursor-pointer"
           >
             Clear all filters
           </button>
