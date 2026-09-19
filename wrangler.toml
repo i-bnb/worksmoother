@@ -1,14 +1,14 @@
-name = "doctorcare-web"
-main = ".open-next/worker.js"
+name = "doctorcare"
+main = "apps/web/.open-next/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
-directory = ".open-next/assets"
+directory = "apps/web/.open-next/assets"
 binding = "ASSETS"
 
-# Service Binding to internal API Worker (doctorcare-api must be deployed first)
-# Uncomment after deploying workers/api with: npm run deploy:api
+# Service Binding to internal API Worker
+# Uncomment once doctorcare-api is deployed:
 # [[services]]
 # binding = "API_SERVICE"
 # service = "doctorcare-api"
