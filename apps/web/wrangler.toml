@@ -17,5 +17,3 @@ binding = "ASSETS"
 [vars]
 NEXT_PUBLIC_APP_NAME = "DoctorCare"
 NEXT_PUBLIC_API_URL = "https://api.yourhospital.com"
-NEXT_PUBLIC_APPWRITE_ENDPOINT = "https://cloud.appwrite.io/v1"
-NEXT_PUBLIC_APPWRITE_PROJECT_A_ID = "doctorcare-operational-prod"
