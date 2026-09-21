@@ -1,0 +1,24 @@
+{
+  "name": "@maintenance-erp/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-grade Maintenance Management ERP - Backend Foundation & Migrations",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx supabase/seed/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
