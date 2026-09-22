@@ -502,7 +502,7 @@ export default function HomePage() {
                   <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#3A4466]" />
                 </div>
-                <span className="text-xs sm:text-sm font-bold text-white">DoctorCare &bull; OPD console</span>
+                <span className="text-xs sm:text-sm font-bold text-white">DoctorCare &bull; OPD Live Schedule</span>
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <span className="hidden md:flex w-60 h-8 rounded-full bg-white/[0.08] items-center gap-2 px-3.5 text-xs text-[#8C95B3]">
@@ -525,7 +525,7 @@ export default function HomePage() {
                   href="/booking"
                   className="h-8 min-h-[32px] px-3.5 rounded-full bg-white text-[#0B1533] text-xs font-bold flex items-center hover:bg-zinc-100 transition-colors flex-shrink-0"
                 >
-                  Open queue
+                  Book Visit
                 </Link>
               </div>
             </div>
@@ -903,7 +903,7 @@ export default function HomePage() {
                     </span>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">ECG_report.pdf</span>
-                      <span className="text-[10px] text-[#6B7596]">Encrypted &bull; in vault</span>
+                      <span className="text-[10px] text-[#6B7596]">Confidential Report</span>
                     </div>
                   </div>
 

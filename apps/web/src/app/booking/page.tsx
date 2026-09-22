@@ -39,7 +39,7 @@ function BookingContent() {
   const specialty = searchParams.get('specialty') || 'Interventional Cardiology';
 
   const [selectedSlot, setSelectedSlot] = useState<SlotOption | null>(null);
-  const [patientId, setPatientId] = useState('pat_demo_patient_01');
+  const [patientId, setPatientId] = useState('UHID-2026-8942');
   const [patientName, setPatientName] = useState('Rahul M. Verma');
   const [isHeld, setIsHeld] = useState(false);
   const [holdExpiresAt, setHoldExpiresAt] = useState<number | null>(null);
@@ -221,17 +221,17 @@ function BookingContent() {
           <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-4">
               <h3 className="text-sm font-bold text-[#0B1533] uppercase tracking-wider font-mono">
-                Reservation State
+                Booking Status
               </h3>
               {isHeld ? (
                 <span className="flex items-center gap-1.5 text-xs font-mono text-[#2B59FF] font-bold">
                   <Lock className="h-3.5 w-3.5" />
-                  HELD
+                  Reserved (10 min)
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5 text-xs font-mono text-[#6B7596]">
                   <Unlock className="h-3.5 w-3.5" />
-                  UNLOCKED
+                  Select a Time
                 </span>
               )}
             </div>
@@ -283,7 +283,7 @@ function BookingContent() {
               </div>
               <div className="flex justify-between">
                 <span>Hold Duration:</span>
-                <span className="font-mono text-[#0B1533]">10 Minutes (600s)</span>
+                <span className="font-mono text-[#0B1533]">10 Minutes</span>
               </div>
               <div className="flex justify-between">
                 <span>Consultation Fee:</span>
@@ -322,7 +322,7 @@ function BookingContent() {
                     className="w-full py-3 min-h-[44px] rounded-full border border-[#0B1533]/[0.12] bg-white text-[#4A5578] hover:text-[#0B1533] text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
-                    <span>Release Slot Lock</span>
+                    <span>Cancel &amp; Choose Another Slot</span>
                   </button>
                 </>
               )}
@@ -390,7 +390,7 @@ function BookingSkeleton() {
           <div className="rounded-[26px] p-5 sm:p-6 bg-white border border-[#0B1533]/[0.08] shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-[#0B1533]/[0.06] pb-3">
               <span className="text-sm font-bold text-[#0B1533]">Available Slots (Today)</span>
-              <span className="text-xs text-[#2B59FF] font-semibold animate-pulse">Initializing engine...</span>
+              <span className="text-xs text-[#2B59FF] font-semibold animate-pulse">Checking today&apos;s open timings...</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {['09:00 AM', '10:00 AM', '02:00 PM', '03:30 PM', '04:30 PM'].map((t, idx) => (

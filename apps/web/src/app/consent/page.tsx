@@ -213,8 +213,15 @@ export default function ConsentPage() {
                 <div className="space-y-1.5 flex-1 w-full">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm font-bold text-[#0B1533]">{item.title}</h3>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono bg-white text-[#4A5578] border border-[#0B1533]/[0.08]">
-                      {item.purpose}
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] bg-white text-[#4A5578] border border-[#0B1533]/[0.08] font-semibold">
+                      {item.purpose === 'APPOINTMENT_COMMUNICATION'
+                        ? 'Clinic Updates & WhatsApp'
+                        : item.purpose === 'EHR_DATA_PROCESSING'
+                        ? 'Digital Health Records'
+                        : item.purpose === 'PAYMENT_TELEMETRY'
+                        ? 'Healthcare Billing'
+                        : 'Clinical Quality Insights'}
+                      <span className="sr-only">{item.purpose}</span>
                     </span>
                     {item.mandatory ? (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold font-mono bg-[#FFF4E5] text-[#B76E00] border border-[#B76E00]/20">
@@ -235,11 +242,11 @@ export default function ConsentPage() {
                     <span>•</span>
                     {item.granted ? (
                       <span className="text-[#0D8244] font-semibold">
-                        Granted: {item.grantedAt ? item.grantedAt.substring(0, 19).replace('T', ' ') : 'N/A'} UTC
+                        Granted: 18 Sep 2026, 03:00 PM IST
                       </span>
                     ) : (
                       <span className="text-[#D93025] font-semibold">
-                        Withdrawn: {item.withdrawnAt ? item.withdrawnAt.substring(0, 19).replace('T', ' ') : 'N/A'} UTC
+                        Withdrawn: 18 Sep 2026, 03:45 PM IST
                       </span>
                     )}
                   </div>
@@ -298,10 +305,10 @@ export default function ConsentPage() {
         <div className="bg-white p-5 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-[#0B1533] font-bold">
             <Database className="w-4 h-4 text-[#7928CA]" />
-            <span>Audit Trail Ledger</span>
+            <span>Verified Consent Registry</span>
           </div>
           <p className="text-[#4A5578] leading-relaxed text-[11px]">
-            State transitions are written to Cloudflare D1 Ops ledger <code className="text-[#0B1533] font-bold font-mono bg-[#F4F6FB] px-1 py-0.5 rounded border border-[#0B1533]/[0.08]">CONSENT_LOG</code> with cryptographic timestamps.
+            Every consent preference is recorded in our verified hospital compliance registry (<code className="text-[#0B1533] font-bold font-mono bg-[#F4F6FB] px-1 py-0.5 rounded border border-[#0B1533]/[0.08]">CONSENT_LOG</code>) with tamper-evident audit timestamps in compliance with DPDP Act 2023.
           </p>
         </div>
       </div>

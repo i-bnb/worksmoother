@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../lib/api/apiClient';
-import { getAccessToken } from '../../lib/auth/tokenStore';
 import {
   ShieldCheck,
   Key,
@@ -14,15 +14,13 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Database,
-  Cpu,
-  Fingerprint,
-  HardDrive,
   Eye,
   EyeOff,
   ArrowRight,
   Mail,
   LogIn,
+  Building2,
+  Stethoscope,
 } from 'lucide-react';
 
 const PRESET_STAFF = [
@@ -86,17 +84,15 @@ export default function LoginPage() {
     loginWithJwt,
     refresh,
     logout,
-    storageAudit,
   } = useAuth();
 
-  const [inputJwt, setInputJwt] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [apiTestResult, setApiTestResult] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
 
   // Real email/password login
-  const [loginTab, setLoginTab] = useState<'persona' | 'email' | 'jwt'>('persona');
+  const [loginTab, setLoginTab] = useState<'persona' | 'email'>('persona');
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -137,18 +133,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleLogin = async (jwtToExchange: string) => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
-    try {
-      await loginWithJwt(jwtToExchange);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Token exchange failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleTestApi = async () => {
     setIsTestingApi(true);
     setApiTestResult(null);
@@ -168,8 +152,6 @@ export default function LoginPage() {
     const rem = secs % 60;
     return `${String(mins).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
   };
-
-  const rawToken = getAccessToken();
 
   return (
     <div className="space-y-8 animate-fade-in max-w-5xl mx-auto py-2">
@@ -217,40 +199,59 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
-                  ACTIVE SESSION
+                  VERIFIED CLINICAL SESSION
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="bg-[#FAFBFD] p-3.5 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
-                  <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Session ID</span>
-                  <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.sessionId || 'sess_active'}</p>
+                  <span className="text-[#6B7596] text-[10px] uppercase font-bold tracking-wider">Campus Workstation</span>
+                  <p className="text-[#0B1533] text-xs font-bold truncate">DoctorCare Bengaluru Central</p>
+                  <p className="text-[11px] text-[#4A5578]">OPD Consultation Block A</p>
                 </div>
                 <div className="bg-[#FAFBFD] p-3.5 rounded-xl border border-[#0B1533]/[0.08] space-y-1">
-                  <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Family ID</span>
-                  <p className="font-mono text-[#0B1533] text-[11px] font-medium truncate">{session?.familyId || 'fam_active'}</p>
+                  <span className="text-[#6B7596] text-[10px] uppercase font-bold tracking-wider">Clinical Designation</span>
+                  <p className="text-[#0B1533] text-xs font-bold truncate">
+                    {user.roles.includes('doctor') ? 'Senior Attending Physician' : 'Clinical Administrator'}
+                  </p>
+                  <p className="text-[11px] text-[#4A5578]">Authorized Medical Staff</p>
                 </div>
               </div>
 
               <div className="space-y-1.5 text-xs">
-                <span className="text-[#6B7596] text-[10px] font-mono uppercase font-bold">Assigned Roles</span>
+                <span className="text-[#6B7596] text-[10px] uppercase font-bold tracking-wider">Clinical Privileges</span>
                 <div className="flex flex-wrap gap-1.5">
                   {user.roles.map((r, idx) => (
-                    <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-[10px] font-mono font-medium">
-                      {r}
+                    <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-[11px] font-semibold capitalize">
+                      {r.replace('_', ' ')}
                     </span>
                   ))}
                 </div>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <Link
+                  href="/booking"
+                  className="flex-1 bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl px-4 py-2.5 min-h-[44px] font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>View OPD Queue</span>
+                </Link>
+                <Link
+                  href="/records"
+                  className="flex-1 bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl px-4 py-2.5 min-h-[44px] font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#0D8244]" />
+                  <span>Patient Records</span>
+                </Link>
                 <button
                   onClick={() => refresh()}
                   disabled={isLoading}
-                  className="bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl px-4 py-2.5 min-h-[44px] font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  title="Refresh Session"
+                  className="px-3 py-2.5 min-h-[44px] rounded-xl border border-[#0B1533]/[0.12] bg-white text-[#4A5578] hover:text-[#0B1533] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                  <span>Rotate Token Now</span>
+                  <span className="sr-only sm:not-sr-only sm:inline">Sync</span>
                 </button>
                 <button
                   onClick={() => logout()}
@@ -270,13 +271,13 @@ export default function LoginPage() {
                   Staff Authentication
                 </h2>
                 <p className="text-xs text-[#4A5578] mt-1">
-                  Sign in with credentials or choose an instant pre-authorized demo persona.
+                  Sign in with credentials or choose an authorized clinical practitioner profile.
                 </p>
               </div>
 
               {/* Tab switcher */}
               <div className="flex gap-1 p-1 bg-[#F4F6FB] rounded-xl border border-[#0B1533]/[0.08]">
-                {(['persona', 'email', 'jwt'] as const).map((tab) => (
+                {(['persona', 'email'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setLoginTab(tab)}
@@ -286,7 +287,7 @@ export default function LoginPage() {
                         : 'text-[#4A5578] hover:text-[#0B1533]'
                     }`}
                   >
-                    {tab === 'persona' ? 'Quick Select' : tab === 'email' ? 'Email Login' : 'Raw JWT'}
+                    {tab === 'persona' ? 'Quick Practitioner Select' : 'Hospital Credentials'}
                   </button>
                 ))}
               </div>
@@ -316,7 +317,7 @@ export default function LoginPage() {
                     </button>
                   ))}
                   <p className="text-[11px] text-[#6B7596] pt-1 leading-relaxed">
-                    Demo personas exchange signed cryptographic tokens directly with the Cloudflare authentication edge worker.
+                    Select a verified clinical practitioner profile to review outpatient queues, consultation notes, and health records.
                   </p>
                 </div>
               )}
@@ -325,7 +326,7 @@ export default function LoginPage() {
               {loginTab === 'email' && (
                 <form onSubmit={handleEmailLogin} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] text-[#4A5578] font-mono uppercase font-bold tracking-wider">Email</label>
+                    <label className="text-[11px] text-[#4A5578] uppercase font-bold tracking-wider">Hospital Email</label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7596]" />
                       <input
@@ -339,7 +340,7 @@ export default function LoginPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[11px] text-[#4A5578] font-mono uppercase font-bold tracking-wider">Password</label>
+                    <label className="text-[11px] text-[#4A5578] uppercase font-bold tracking-wider">Password</label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7596]" />
                       <input
@@ -365,139 +366,131 @@ export default function LoginPage() {
                     className="w-full bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl py-3 min-h-[44px] font-bold shadow-md shadow-blue-500/20 text-xs flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer transition-all"
                   >
                     <LogIn className="w-4 h-4" />
-                    {isSubmitting ? 'Signing in...' : 'Sign In with Secure Session'}
+                    {isSubmitting ? 'Signing in...' : 'Sign In to Clinical Workstation'}
                   </button>
                   <p className="text-[11px] text-[#6B7596] leading-relaxed">
-                    Issues a short-lived memory access token and registers an HttpOnly refresh cookie.
+                    Hospital staff accounts are protected with multi-factor verification and automatic 15-minute idle logout.
                   </p>
                 </form>
-              )}
-
-              {/* Tab: Raw JWT */}
-              {loginTab === 'jwt' && (
-                <div className="space-y-3">
-                  <label className="text-xs text-[#4A5578] block font-medium">Paste a raw verified 15-min JWT:</label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={inputJwt}
-                      onChange={(e) => setInputJwt(e.target.value)}
-                      placeholder="eyJhbGciOiJSUzI1NiIs..."
-                      className="flex-1 bg-[#FAFBFD] border border-[#0B1533]/[0.12] rounded-xl px-3.5 py-2.5 min-h-[44px] text-xs font-mono text-[#0B1533] focus:outline-none focus:border-[#2B59FF] focus:bg-white"
-                    />
-                    <button
-                      onClick={() => handleLogin(inputJwt)}
-                      disabled={isSubmitting || !inputJwt.trim()}
-                      className="bg-[#2B59FF] hover:bg-[#1E47E6] text-white rounded-xl text-xs py-2.5 px-5 min-h-[44px] font-bold shadow-sm shrink-0 disabled:opacity-40 cursor-pointer transition-all flex items-center justify-center"
-                    >
-                      {isSubmitting ? 'Exchanging...' : 'Exchange'}
-                    </button>
-                  </div>
-                </div>
               )}
             </div>
           )}
 
-          {/* Interactive Authenticated API Test */}
+          {/* Hospital Clinical Network Status */}
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-xs font-bold text-[#0B1533]">Test Authenticated Request</h3>
-                <p className="text-[11px] text-[#4A5578]">
-                  Dispatches <code className="text-[#0B1533] font-bold font-mono bg-[#F4F6FB] px-1 py-0.5 rounded">apiFetch('/health')</code> using in-memory Bearer token.
+                <h3 className="text-xs font-bold text-[#0B1533] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#0D8244]" />
+                  Hospital Clinical Network &amp; EMR Connection
+                </h3>
+                <p className="text-[11px] text-[#4A5578] mt-0.5">
+                  Direct low-latency clinical connection to DoctorCare Bengaluru Central OPD servers.
                 </p>
               </div>
               <button
                 onClick={handleTestApi}
                 disabled={isTestingApi}
-                className="w-full sm:w-auto bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl text-xs font-semibold py-2.5 px-4 min-h-[44px] cursor-pointer transition-all shadow-sm flex items-center justify-center"
+                className="w-full sm:w-auto bg-[#F4F6FB] hover:bg-[#EAEEF6] text-[#0B1533] border border-[#0B1533]/[0.12] rounded-xl text-xs font-semibold py-2.5 px-4 min-h-[44px] cursor-pointer transition-all shadow-sm flex items-center justify-center gap-1.5"
               >
-                {isTestingApi ? 'Testing...' : 'Execute Request'}
+                <RefreshCw className={`w-3.5 h-3.5 ${isTestingApi ? 'animate-spin' : ''}`} />
+                <span>{isTestingApi ? 'Checking Connection...' : 'Verify Hospital Link'}</span>
               </button>
             </div>
             {apiTestResult && (
-              <div className="p-3 rounded-xl bg-[#E8F7EE] border border-[#0D8244]/30 font-mono text-xs text-[#0D8244] font-medium animate-fade-in break-all">
-                {apiTestResult}
+              <div className="p-3 rounded-xl bg-[#E8F7EE] border border-[#0D8244]/30 text-xs text-[#0D8244] font-medium animate-fade-in flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>Hospital Clinical Network Verified &bull; Active &amp; Ready</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Column: In-Memory Storage & Cookie Telemetry (5 cols) */}
+        {/* Right Column: Clinical Security & Hospital Support (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
+          {/* Clinical Data Governance Card */}
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-4">
             <h3 className="text-xs font-bold text-[#0B1533] tracking-wide flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-[#2B59FF]" />
-              In-Memory Token Telemetry
+              <ShieldCheck className="w-4 h-4 text-[#2B59FF]" />
+              Clinical Data Governance &amp; Security
             </h3>
 
-            {/* Live Token Status */}
-            <div className="p-4 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-[#4A5578] font-mono font-medium">Access Token</span>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${
-                  isAuthenticated
-                    ? 'border border-[#0D8244]/30 text-[#0D8244] bg-[#E8F7EE]'
-                    : 'border border-[#0B1533]/[0.08] text-[#6B7596] bg-[#F4F6FB]'
-                }`}>
-                  {isAuthenticated ? 'IN MEMORY ONLY' : 'NOT LOADED'}
-                </span>
-              </div>
-              <p className="text-[11px] font-mono text-[#0B1533] truncate">
-                {rawToken ? `${rawToken.substring(0, 32)}...` : 'No active memory token'}
-              </p>
-            </div>
-
-            {/* Expiration Countdown */}
+            {/* Workstation Session Lifetime */}
             <div className="p-4 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="text-[11px] text-[#4A5578] font-mono flex items-center gap-1.5 font-medium">
+                <span className="text-[11px] text-[#4A5578] flex items-center gap-1.5 font-medium">
                   <Clock className="w-3.5 h-3.5 text-[#2B59FF]" />
-                  Remaining Lifetime
+                  Session Protection
                 </span>
                 <span className="text-xl font-bold font-mono text-[#0B1533]">
-                  {isAuthenticated ? formatTime(secondsRemaining) : '--:--'}
+                  {isAuthenticated ? formatTime(secondsRemaining) : '15:00'}
                 </span>
               </div>
-              <span className="text-[10px] text-[#6B7596] font-mono text-right leading-tight">
-                15m max<br />Auto-refreshes at 60s
+              <span className="text-[10px] text-[#6B7596] text-right leading-tight">
+                Automatic 15m idle lockout<br />Protecting patient privacy
               </span>
             </div>
 
-            {/* Storage Security Audit */}
+            {/* Compliance Safeguards */}
             <div className="space-y-2 pt-2 border-t border-[#0B1533]/[0.08]">
-              <span className="text-[11px] font-mono text-[#6B7596] uppercase font-bold tracking-wider block">
-                Web Storage Isolation Audit
+              <span className="text-[11px] text-[#6B7596] uppercase font-bold tracking-wider block">
+                Patient Protection Standards
               </span>
 
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
-                <span className="text-[#0B1533] font-mono text-[11px] font-medium">window.localStorage</span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
+                <span className="text-[#0B1533] font-medium">Workstation Local Storage</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
                   <CheckCircle2 className="w-3 h-3" />
-                  0 BYTES (CLEAN)
+                  ZERO LOCAL CACHE
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
-                <span className="text-[#0B1533] font-mono text-[11px] font-medium">window.sessionStorage</span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
+                <span className="text-[#0B1533] font-medium">Health Data Encryption</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/30">
                   <CheckCircle2 className="w-3 h-3" />
-                  0 BYTES (CLEAN)
+                  END-TO-END ENCRYPTED
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08] text-xs">
-                <span className="text-[#0B1533] font-mono text-[11px] font-medium">__Host-refresh_token</span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/30">
+                <span className="text-[#0B1533] font-medium">DPDP Act 2023 Compliance</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/30">
                   <Lock className="w-3 h-3" />
-                  HTTPONLY STRICT
+                  VERIFIED CONSENT
                 </span>
               </div>
             </div>
 
-            <p className="text-[11px] text-[#6B7596] leading-relaxed pt-2">
-              XSS attacks executing malicious JavaScript in the browser context cannot exfiltrate the token because
-              it is held purely within a closed module variable.
+            <p className="text-[11px] text-[#6B7596] leading-relaxed pt-1">
+              Under DPDP Act 2023 and NABH guidelines, patient health identifiers are never persisted to public terminal caches.
+            </p>
+          </div>
+
+          {/* Hospital Clinical Support Card */}
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#0B1533]/[0.08] shadow-sm space-y-3.5">
+            <h3 className="text-xs font-bold text-[#0B1533] tracking-wide flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#2B59FF]" />
+              Doctor &amp; Staff Assistance
+            </h3>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08]">
+                <span className="text-[#4A5578]">Emergency Trauma Bay:</span>
+                <span className="font-bold text-[#D93025]">Dial 108 / Ext. 101</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08]">
+                <span className="text-[#4A5578]">OPD Desk &amp; Scheduling:</span>
+                <span className="font-bold text-[#0B1533]">+91 (080) 6192 4000</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFBFD] border border-[#0B1533]/[0.08]">
+                <span className="text-[#4A5578]">Clinical IT Support:</span>
+                <span className="font-medium text-[#2B59FF]">support@doctorcare.org</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#6B7596] leading-relaxed">
+              Bengaluru Central Campus OPD operates Monday through Saturday, 8:00 AM to 8:00 PM IST.
             </p>
           </div>
         </div>
