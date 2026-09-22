@@ -45,8 +45,8 @@ const INITIAL_CONSENTS: ConsentItem[] = [
   {
     id: 'cst_02_ehr',
     purpose: 'EHR_DATA_PROCESSING',
-    title: 'Electronic Health Record (EHR) Storage & Decryption',
-    description: 'Store and envelope-encrypt medical history, laboratory observations, and discharge summaries in Cloudflare Records D1 with AES-256-GCM and scoped KEK kek-2026-09.',
+    title: 'Digital Health Records & Clinical Consultation History',
+    description: 'Store and protect your medical history, laboratory observations, and discharge summaries with strict hospital privacy standards, accessible solely by your consulting physician.',
     noticeVersion: 'v2.1-DPDP2023',
     language: 'en',
     granted: true,
@@ -57,8 +57,8 @@ const INITIAL_CONSENTS: ConsentItem[] = [
   {
     id: 'cst_03_payment',
     purpose: 'PAYMENT_TELEMETRY',
-    title: 'Secure Payment & Order Reconciliation',
-    description: 'Transmit payment order derivation metadata to Razorpay SDK and process cryptographically verified HMAC-SHA256 webhook callbacks.',
+    title: 'Secure Healthcare Billing & Receipt Generation',
+    description: 'Process consultation fee payments securely and issue verified hospital billing receipts with 0% GST healthcare exemption.',
     noticeVersion: 'v2.1-DPDP2023',
     language: 'en',
     granted: true,
@@ -69,8 +69,8 @@ const INITIAL_CONSENTS: ConsentItem[] = [
   {
     id: 'cst_04_research',
     purpose: 'ANONYMIZED_EPIDEMIOLOGY',
-    title: 'Anonymized Clinical Quality & Research Insights',
-    description: 'Aggregate de-identified diagnostic statistics across hospital departments for epidemiological research and clinical pathway quality improvement.',
+    title: 'Anonymized Clinical Quality & Care Insights',
+    description: 'Aggregate de-identified statistics across hospital departments for healthcare quality improvement without exposing any personal health identifiers.',
     noticeVersion: 'v2.1-DPDP2023',
     language: 'en',
     granted: false,
@@ -125,15 +125,15 @@ export default function ConsentPage() {
             DPDP ACT 2023 COMPLIANCE
           </span>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
-            D1 OPS LEDGER: CONSENT_LOG
+            CONSENT_LOG &bull; BENGALURU
           </span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
-          Patient Consent & Privacy Center
+          {'Patient Consent & Privacy Center'}
         </h1>
         <p className="text-[#4A5578] mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
-          Granular consent management adhering strictly to the Digital Personal Data Protection (DPDP) Act 2023.
-          Every grant and withdrawal is logged with immutable timestamps and notice versions.
+          Granular consent management adhering strictly to India&apos;s Digital Personal Data Protection (DPDP) Act 2023.
+          You maintain complete control over how your health data is handled.
         </p>
       </div>
 

@@ -42,11 +42,11 @@ export function Navbar() {
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { name: 'Overview', href: '/', icon: Activity },
+    { name: 'Home', href: '/', icon: Activity },
     { name: 'Doctors', href: '/directory', icon: Stethoscope },
-    { name: 'Slot Booking', href: '/booking', icon: Calendar },
-    { name: 'Medical Vault', href: '/records', icon: Lock },
-    { name: 'DPDP Consent', href: '/consent', icon: FileText },
+    { name: 'Book Visit', href: '/booking', icon: Calendar },
+    { name: 'Health Records', href: '/records', icon: Lock },
+    { name: 'Patient Privacy', href: '/consent', icon: FileText },
   ];
 
   return (
@@ -61,11 +61,11 @@ export function Navbar() {
             <div className="flex flex-col">
               <span className="font-extrabold text-sm sm:text-base tracking-tight text-[#0B1533] flex items-center gap-1.5">
                 DoctorCare
-                <span className="hidden xs:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 font-bold">
-                  Cloudflare Pro
+                <span className="hidden xs:inline-block text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20">
+                  Bengaluru Campus
                 </span>
               </span>
-              <span className="text-[10px] sm:text-[11px] text-[#6B7596] font-medium">Healthcare Zero-Trust</span>
+              <span className="text-[10px] sm:text-[11px] text-[#6B7596] font-medium">Multi-Specialty Hospital</span>
             </div>
           </Link>
 
@@ -95,11 +95,11 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right Section: Security Badge & Action (Desktop & Mobile) */}
+          {/* Right Section: Hospital Status Badge & Action (Desktop & Mobile) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E8F7EE] border border-[#15803D]/25 text-[11px] font-mono font-bold text-[#15803D]">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>4-LAYER WAF ACTIVE</span>
+            <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8F7EE] border border-[#15803D]/25 text-[11px] font-semibold text-[#15803D]">
+              <span className="h-2 w-2 rounded-full bg-[#15803D] animate-ping" />
+              <span>OPD Open Today &bull; 24x7 Emergency</span>
             </div>
 
             {isAuthenticated && user ? (
@@ -108,10 +108,10 @@ export function Navbar() {
                   href="/login"
                   className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-[#E8F7EE] border border-[#15803D]/30 text-[#15803D] text-xs font-semibold hover:bg-emerald-100/60 transition-all shadow-sm"
                 >
-                  <span className="h-2 w-2 rounded-full bg-[#15803D] animate-ping" />
+                  <span className="h-2 w-2 rounded-full bg-[#15803D]" />
                   <span className="truncate max-w-[120px]">{user.name.split(' ')[0]}</span>
                   <span className="text-[10px] font-mono text-[#15803D]/80 border-l border-[#15803D]/20 pl-1.5">
-                    In-Memory
+                    Verified
                   </span>
                 </Link>
                 <button
@@ -128,7 +128,7 @@ export function Navbar() {
                 className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#2B59FF] hover:bg-[#1E45D9] text-white px-4 py-2 min-h-[44px] text-xs font-bold transition-all shadow-md shadow-blue-500/20"
               >
                 <UserCheck className="h-3.5 w-3.5" />
-                <span>Staff Portal</span>
+                <span>Doctor &amp; Staff Portal</span>
               </Link>
             )}
 
@@ -163,13 +163,13 @@ export function Navbar() {
             <div className="flex items-center justify-between pb-3 border-b border-[#0B1533]/[0.08]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#2B59FF]" />
-                <span className="text-xs font-bold uppercase tracking-wider font-mono text-[#0B1533]">
-                  Navigation Menu
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0B1533]">
+                  Hospital Menu
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] text-[10px] font-mono font-bold">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E8F7EE] text-[#15803D] text-[10px] font-bold">
                 <ShieldCheck className="h-3 w-3" />
-                <span>WAF ACTIVE</span>
+                <span>NABH Accredited</span>
               </span>
             </div>
 
@@ -219,8 +219,8 @@ export function Navbar() {
                         <div className="text-[#6B7596] text-[11px]">{user.email}</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-[#15803D] bg-[#E8F7EE] px-2 py-0.5 rounded-full font-bold">
-                      In-Memory
+                    <span className="text-[10px] text-[#15803D] bg-[#E8F7EE] px-2 py-0.5 rounded-full font-bold">
+                      Verified
                     </span>
                   </div>
 
@@ -230,7 +230,7 @@ export function Navbar() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center justify-center min-h-[44px] rounded-xl bg-[#2B59FF] text-white text-xs font-bold shadow-md shadow-blue-500/20"
                     >
-                      Auth Portal
+                      Staff Portal
                     </Link>
                     <button
                       onClick={() => {
@@ -251,7 +251,7 @@ export function Navbar() {
                   className="flex items-center justify-center gap-2 w-full py-3 min-h-[48px] rounded-2xl bg-[#2B59FF] hover:bg-[#1E45D9] text-white text-sm font-bold shadow-lg shadow-blue-500/25 transition-all"
                 >
                   <UserCheck className="h-4 w-4" />
-                  <span>Staff &amp; Physician Portal</span>
+                  <span>Doctor &amp; Staff Portal</span>
                 </Link>
               )}
             </div>

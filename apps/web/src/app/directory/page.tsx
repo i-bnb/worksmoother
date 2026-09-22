@@ -178,14 +178,14 @@ export default function DirectoryPage() {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
           <Stethoscope className="h-3.5 w-3.5" />
-          <span>Care Directory &bull; Cloudflare D1 OpsDB</span>
+          <span>Specialist Directory &bull; Bengaluru Campus</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Physician & Specialist Directory
         </h1>
         <p className="text-sm sm:text-base text-[#4A5578] max-w-2xl leading-relaxed">
-          Select a verified physician to review real-time availability slots sharded across
-          the DoctorCare Slot Durable Object architecture.
+          Consult with verified senior physicians, surgeons, and specialists. View open outpatient consultation
+          timings and reserve your guaranteed slot with 0% GST healthcare billing.
         </p>
       </div>
 

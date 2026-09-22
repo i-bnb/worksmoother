@@ -100,14 +100,14 @@ function BookingContent() {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
           <CalendarIcon className="h-3.5 w-3.5" />
-          <span>Slot Durable Object &bull; Sharded Locking</span>
+          <span>Guaranteed OPD Slot &bull; Bengaluru Campus</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Reserve Consultation Slot
         </h1>
         <p className="text-sm sm:text-base text-[#4A5578] leading-relaxed">
-          Select a time window to establish a single-threaded 10-minute hold in the DoctorCare
-          Durable Object storage. If unconfirmed within 10 minutes, the hold releases automatically.
+          Select a consultation time. Your appointment is held exclusively for 10 minutes while you confirm your details,
+          guaranteeing you are never double-booked.
         </p>
       </div>
 
@@ -128,12 +128,13 @@ function BookingContent() {
 
         <div className="flex items-center gap-3">
           <div className="px-4 py-2 rounded-2xl bg-[#F4F6FB] border border-[#0B1533]/[0.06] text-right flex-1 sm:flex-initial">
-            <span className="text-[10px] text-[#6B7596] block font-mono font-semibold">FEE ESTIMATE</span>
-            <span className="text-base sm:text-lg font-bold text-[#0B1533] font-mono">₹1,770</span>
+            <span className="text-[10px] text-[#6B7596] block font-mono font-semibold">CONSULTATION FEE</span>
+            <span className="text-base sm:text-lg font-bold text-[#0B1533] font-mono">₹1,500</span>
+            <span className="text-[10px] text-[#0D8244] block font-semibold">0% GST (Clinical Exemption)</span>
           </div>
           <div className="px-3.5 py-2.5 rounded-2xl bg-[#E8F7EE] text-[#15803D] border border-[#15803D]/20 text-xs font-mono font-bold flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
             <ShieldCheck className="h-4 w-4" />
-            <span>IDEMPOTENT</span>
+            <span>GUARANTEED SLOT</span>
           </div>
         </div>
       </div>
@@ -241,9 +242,9 @@ function BookingContent() {
                 <div className="flex items-center justify-between text-xs text-[#2B59FF]">
                   <span className="flex items-center gap-1.5 font-bold">
                     <Clock className="h-4 w-4" />
-                    Slot Hold Timer
+                    Slot Reservation Hold
                   </span>
-                  <span className="font-mono text-xs font-semibold">DO Alarm Active</span>
+                  <span className="text-xs font-semibold">Hold Active</span>
                 </div>
                 <div className="flex items-baseline justify-between">
                   <span className="mono text-3xl font-extrabold text-[#0B1533]">
@@ -262,8 +263,8 @@ function BookingContent() {
                   <span>Appointment Confirmed!</span>
                 </div>
                 <p className="text-xs text-[#15803D] leading-relaxed">
-                  Razorpay payment order reconciled. Booking record committed to D1 Operational DB.
-                  WhatsApp confirmation dispatched via Cloudflare Queue.
+                  Your appointment has been successfully scheduled. A confirmation SMS, WhatsApp update, and clinic receipt
+                  have been dispatched to your registered contact.
                 </p>
               </div>
             )}
@@ -353,14 +354,14 @@ function BookingSkeleton() {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20 text-xs font-bold font-mono">
           <ShieldCheck className="h-3.5 w-3.5" />
-          <span>Slot Durable Object &bull; Atomic 10-Minute Hold</span>
+          <span>Guaranteed OPD Timings &bull; 10-Minute Hold</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
           Reserve Consultation Slot
         </h1>
         <p className="text-sm sm:text-base text-[#4A5578] max-w-2xl leading-relaxed">
-          Slots are atomically reserved via Cloudflare Durable Objects. Each reservation grants a guaranteed
-          10-minute hold window before automatic release.
+          Select a consultation window. Each reservation is held exclusively for 10 minutes to ensure
+          you have ample time to confirm without double-booking.
         </p>
       </div>
 

@@ -176,19 +176,19 @@ export default function LoginPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
-            FIRST-PARTY SESSION ENGINE
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#E9EEFE] text-[#2B59FF] border border-[#2B59FF]/20">
+            HOSPITAL CLINICAL PORTAL
           </span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
-            ZERO WEB STORAGE FOOTPRINT
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F7EE] text-[#0D8244] border border-[#0D8244]/20">
+            SECURE PRACTITIONER ACCESS
           </span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B1533]">
-          Staff & Physician Authentication Portal
+          Doctor &amp; Staff Clinical Portal
         </h1>
         <p className="text-[#4A5578] mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
-          Exchange authenticated staff JWTs for first-party sessions. The short-lived access token is stored
-          strictly in memory, while the long-lived refresh token is managed by the browser as an HttpOnly, SameSite=Strict cookie.
+          Authorized hospital access for consulting physicians, clinical nurses, and medical records custodians.
+          Sign in with your hospital credentials or select an authorized clinical role below.
         </p>
       </div>
 

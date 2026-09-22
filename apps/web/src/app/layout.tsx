@@ -10,9 +10,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'DoctorCare | Zero-Trust Healthcare Platform',
+  title: 'DoctorCare Hospital | Multi-Specialty Healthcare & Digital Clinic, Bengaluru',
   description:
-    'Enterprise healthcare infrastructure built on Cloudflare Workers, Cloudflare Secrets Store, and Appwrite Cloud dual-project isolation.',
+    'DoctorCare Super-Specialty Hospital, Bengaluru. Book senior specialist doctor consultations, access 100% confidential health records, and experience compassionate on-time care.',
   icons: {
     icon: '/favicon.ico',
   },
