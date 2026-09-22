@@ -616,7 +616,7 @@ body {
       --n3: 4;
     }
   }
-  .grow {
+  .section-grow {
     animation: grow linear both;
     animation-timeline: view();
     animation-range: entry 0% cover 42%;

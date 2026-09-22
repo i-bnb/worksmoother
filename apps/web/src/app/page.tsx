@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -49,6 +49,10 @@ export default function HomePage() {
   // Mobile Navigation Drawer state
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  // Stats panel count-up (JS fallback for browsers without scroll-timeline)
+  const [statCount, setStatCount] = useState(0);
+  const statsRef = useRef<HTMLDivElement>(null);
+
   // Typewriter effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -89,6 +93,31 @@ export default function HomePage() {
     }, 1000);
 
     return () => clearInterval(clock);
+  }, []);
+
+  // Count-up animation for "10 min" stat (JS-driven, works in all browsers)
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          let start = 0;
+          const end = 10;
+          const duration = 1400;
+          const step = Math.ceil(duration / (end - start));
+          const timer = setInterval(() => {
+            start += 1;
+            setStatCount(start);
+            if (start >= end) clearInterval(timer);
+          }, step);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Format hold label
@@ -726,7 +755,7 @@ export default function HomePage() {
       </section>
 
       {/* ================= STICKY STATS (CIRCLE WIPES) ================= */}
-      <section className="stats relative h-[2800px]">
+      <section ref={statsRef} className="stats relative h-[2800px]">
         <div className="sticky top-0 h-[min(100vh,900px)] overflow-hidden">
           {/* Panel 1: Patient Privacy & Confidential Records */}
           <div className="absolute inset-0 bg-[#F4F6FB] flex flex-col items-center justify-center gap-3 sm:gap-4 text-center px-4 sm:px-6">
@@ -768,7 +797,12 @@ export default function HomePage() {
                 Never double-booked.
               </h2>
               <div className="flex items-end gap-1.5 sm:gap-2 text-white">
-                <span className="num2 text-[80px] sm:text-[120px] md:text-[170px] leading-[0.9] font-extrabold tracking-tighter" />
+                <span
+                  className="text-[80px] sm:text-[120px] md:text-[170px] leading-[0.9] font-extrabold tracking-tighter tabular-nums"
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {statCount}
+                </span>
                 <span className="text-lg sm:text-2xl font-bold pb-2 sm:pb-3.5">min</span>
               </div>
               <span className="text-sm sm:text-base font-semibold text-[#E3E9FF] px-2">
@@ -814,7 +848,7 @@ export default function HomePage() {
       {/* ================= APP PREVIEW (PHONE MOCKUP) ================= */}
       <section className="flex justify-center px-4 sm:px-6 py-16 sm:py-28">
         <div
-          className="grow w-full max-w-[1200px] min-h-[560px] h-auto rounded-[24px] sm:rounded-[32px] text-white grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 px-6 sm:px-10 lg:px-16 py-10 lg:py-0 overflow-hidden relative"
+          className="section-grow w-full max-w-[1200px] min-h-[560px] h-auto rounded-[24px] sm:rounded-[32px] text-white grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 px-6 sm:px-10 lg:px-16 py-10 lg:py-0 overflow-hidden relative"
           style={{ background: primary }}
         >
           <div
